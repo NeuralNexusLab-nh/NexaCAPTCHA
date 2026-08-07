@@ -108,32 +108,6 @@ if (!result.success) {
 
 Continue only when the response says `success: true`. A `responseToken` works once and expires after five minutes.
 
-## Run it yourself
-
-Requires Node.js 20 or newer and npm.
-
-```sh
-npm install
-npm run dev
-```
-
-Production:
-
-```sh
-npm run build
-npm start
-```
-
-For Zeabur, create a service from this repository and choose the native Node.js runtime. `zbpack.json` supplies the build and start commands.
-
-## Limits and checks
-
-```sh
-npm run check
-```
-
-The release budget is 0.25 vCPU, 100 MB RAM, and 10 GB storage. The current store supports one application instance. Restarting the service invalidates unfinished CAPTCHA sessions.
-
 Read [SECURITY.md](SECURITY.md) before production use.
 
 ## License
