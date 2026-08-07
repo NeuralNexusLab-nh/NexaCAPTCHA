@@ -48,7 +48,7 @@
     }
   };
 
-  var currentLanguage = "en";
+  var currentLanguage = localStorage.getItem("language") || "en";
   var languageSelect = document.getElementById("language-select");
   var copyStatus = document.getElementById("copy-status");
 
