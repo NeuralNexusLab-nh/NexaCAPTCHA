@@ -8,10 +8,10 @@ Try it at [nexacaptcha.zone.id](https://nexacaptcha.zone.id).
 
 ## Why it is harder to automate
 
-- **Incomplete by design:** most frames show only fragments, and at least one character is never shown in full.
+- **Incomplete by design:** most frames show only fragments, and two to four characters are never shown in full.
 - **Constant distortion:** characters keep bending, stretching, rotating, and changing shape.
 - **Independent movement:** every character moves in its own direction and at its own changing speed.
-- **An unpredictable window:** the visible area speeds up, slows down, and moves backward without a simple rhythm.
+- **An unpredictable window:** the visible shape keeps bending and changing while it speeds up, slows down, and moves backward.
 - **Different every time:** motion, distortion, timing, and the hidden character change with every CAPTCHA.
 - **Higher solving cost:** bots must inspect many frames, track moving fragments, and rebuild the answer instead of reading one image.
 
