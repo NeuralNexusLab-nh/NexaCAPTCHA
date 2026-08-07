@@ -7,8 +7,8 @@ Website and demo: [nexacaptcha.zone.id](https://nexacaptcha.zone.id)
 ## Features
 
 - Four uppercase English letters or digits; ambiguous `I`, `O`, `0`, and `1` are excluded.
-- Characters remain centered without moving up and down.
-- A wider view keeps the text readable.
+- Characters stay upright while drifting smoothly up, down, left, and right.
+- A moving partial view keeps the complete answer out of any single frame.
 - Five minutes to complete the CAPTCHA and five attempts per CAPTCHA.
 - One-time verification results.
 - No account, site key, or authorization header.

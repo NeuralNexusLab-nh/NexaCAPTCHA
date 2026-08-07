@@ -13,9 +13,9 @@ body { padding: 6px; }
 
 .captcha-shell {
   width: 100%;
-  max-width: 460px;
+  max-width: 560px;
   margin: 0 auto;
-  padding: 15px;
+  padding: clamp(11px, 3.5vw, 16px);
   overflow: hidden;
   border: 1px solid #485346;
   border-radius: 8px;
@@ -30,12 +30,14 @@ body { padding: 6px; }
 }
 
 .captcha-brand {
-  gap: 9px;
   min-height: 30px;
   font-weight: 700;
   letter-spacing: -.02em;
 }
 
+.captcha-home { display: inline-flex; align-items: center; gap: 9px; border-radius: 6px; color: inherit; text-decoration: none; }
+.captcha-home:hover { color: #7fee64; }
+.captcha-home:focus-visible { outline: 2px solid #7fee64; outline-offset: 3px; }
 .captcha-brand img { display: block; }
 
 .status-pill {
@@ -57,7 +59,8 @@ body { padding: 6px; }
 .verification-stage {
   position: relative;
   display: grid;
-  min-height: 116px;
+  min-height: 100px;
+  aspect-ratio: 320 / 116;
   margin: 14px 0;
   overflow: hidden;
   place-items: center;
@@ -77,9 +80,9 @@ body { padding: 6px; }
 #verification-image {
   display: none;
   width: 100%;
-  height: auto;
-  min-height: 108px;
-  object-fit: contain;
+  height: 100%;
+  min-height: 100px;
+  object-fit: fill;
   image-rendering: auto;
 }
 
@@ -169,10 +172,15 @@ input:disabled { cursor: not-allowed; opacity: .58; }
 .captcha-footer p.is-error { color: #e7aaa5; }
 .captcha-footer p.is-success { color: #7fee64; }
 
-@media (max-width: 370px) {
+@media (max-width: 430px) {
+  .captcha-shell { border-radius: 7px; }
+  .verification-stage { margin-block: 11px; }
+  .captcha-footer { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 360px) {
   .input-row { align-items: stretch; flex-direction: column; }
   .button-primary { width: 100%; }
-  .captcha-footer { align-items: flex-start; flex-direction: column; }
 }
 
 @media (prefers-reduced-motion: reduce) {

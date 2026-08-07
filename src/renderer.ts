@@ -123,18 +123,29 @@ function transformPoint(
   const glyphHeight = Math.max(1, glyph.maxY - glyph.minY);
   const normalizedX = (point[0] - (glyph.minX + glyph.maxX) / 2) / glyphWidth;
   const normalizedY = (point[1] - (glyph.minY + glyph.maxY) / 2) / glyphHeight;
+  const motion = frameProgress * Math.PI * 2;
   const wave = Math.sin(
-    normalizedY * 5.5 + frameProgress * Math.PI * 2 + randomPhase
+    normalizedY * 5.5 + motion * 2 + randomPhase
   );
-  const scaleX = 1 + 0.025 * Math.sin(frameProgress * Math.PI * 2 + randomPhase);
-  const scaleY = 1.14 + 0.02 * Math.cos(randomPhase);
-  const localX = normalizedX * 40 * scaleX + wave * 0.8;
-  const localY = normalizedY * 38 * scaleY;
-  const floatX = 1.2 * Math.sin(frameProgress * Math.PI * 1.5 + randomPhase * 1.3);
+  const scaleX = 1 + 0.1 * Math.sin(motion * 2 + randomPhase);
+  const scaleY = 1.14 + 0.08 * Math.cos(motion * 2 + randomPhase * 0.8);
+  const localX = normalizedX * 40 * scaleX + wave * 2.4;
+  // Hershey paths use an upward Y axis; browser pixels use a downward Y axis.
+  const localY = -normalizedY * 38 * scaleY;
+  const rotation =
+    (Math.PI / 180) * 6 * Math.sin(motion + randomPhase + characterIndex * 0.7);
+  const cosine = Math.cos(rotation);
+  const sine = Math.sin(rotation);
+  const floatX =
+    4.5 * Math.sin(motion + randomPhase * 1.3) +
+    1.5 * Math.sin(motion * 2 + randomPhase);
+  const floatY =
+    4 * Math.sin(motion + randomPhase + characterIndex) +
+    1.2 * Math.sin(motion * 3 + randomPhase * 0.6);
 
   return [
-    baseX + localX + floatX,
-    config.animation.height / 2 + localY
+    baseX + localX * cosine - localY * sine + floatX,
+    config.animation.height / 2 + localX * sine + localY * cosine + floatY
   ];
 }
 
@@ -157,7 +168,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
   const phases = glyphs.map(() => random() * Math.PI * 2);
   const pullbackAt = 0.43 + random() * 0.24;
   const pullbackSize = 0.035 + random() * 0.02;
-  const revealWidth = 148 + random() * 12;
+  const revealWidth = 96 + random() * 8;
   const textStart = 66;
   const characterSpacing = 62;
   const textEnd = textStart + characterSpacing * (glyphs.length - 1);
