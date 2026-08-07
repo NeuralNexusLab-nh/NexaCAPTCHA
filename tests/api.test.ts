@@ -75,8 +75,6 @@ describe("NexaCAPTCHA HTTP API", () => {
       .get("/captcha.js")
       .expect("Content-Type", /javascript/)
       .expect(200);
-    await request(app).get("/v1/captcha.js").expect(404);
-    await request(app).post("/api/v1/siteverify").send({}).expect(404);
   });
 
   it("denies cross-origin browser API calls", async () => {

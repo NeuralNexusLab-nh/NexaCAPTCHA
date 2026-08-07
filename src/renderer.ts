@@ -204,6 +204,8 @@ export function renderVerificationAnimation(answer: string): Buffer {
   const pullbackAt = 0.43 + random() * 0.24;
   const pullbackSize = 0.055 + random() * 0.045;
   const partialRevealWidth = 32 + random() * 8;
+  const neverFullCharacterIndex = Math.floor(random() * glyphs.length);
+  const protectedSlicePhase = random() * Math.PI * 2;
   const textStart = 66;
   const characterSpacing = 62;
   const textEnd = textStart + characterSpacing * (glyphs.length - 1);
@@ -221,11 +223,12 @@ export function renderVerificationAnimation(answer: string): Buffer {
     );
     const revealCenter = textStart - 40 + revealProgress * (textEnd - textStart + 80);
     const nearestCharacterDistance = glyphs.reduce((nearest, _glyph, index) => {
+      if (index === neverFullCharacterIndex) return nearest;
       const characterCenter = textStart + index * characterSpacing;
       return Math.min(nearest, Math.abs(revealCenter - characterCenter));
     }, Number.POSITIVE_INFINITY);
     const briefFullReveal =
-      43 * Math.exp(-(nearestCharacterDistance ** 2) / (2 * 4.5 ** 2));
+      40 * Math.exp(-(nearestCharacterDistance ** 2) / (2 * 2 ** 2));
     const widthPulse = partialRevealWidth + briefFullReveal;
     const revealLeft = revealCenter - widthPulse / 2;
     const revealRight = revealCenter + widthPulse / 2;
@@ -239,6 +242,15 @@ export function renderVerificationAnimation(answer: string): Buffer {
       const baseX = textStart + characterIndex * characterSpacing;
       const motionProfile = motionProfiles[characterIndex];
       if (!motionProfile) return;
+      let characterRevealLeft = revealLeft;
+      let characterRevealRight = revealRight;
+      if (characterIndex === neverFullCharacterIndex) {
+        // This character is restricted to a narrow moving slice for every frame.
+        const sliceCenter =
+          baseX + 7 * Math.sin(progress * Math.PI * 6 + protectedSlicePhase);
+        characterRevealLeft = Math.max(characterRevealLeft, sliceCenter - 9);
+        characterRevealRight = Math.min(characterRevealRight, sliceCenter + 9);
+      }
       glyph.paths.forEach((path) => {
         for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
           const previous = path[pointIndex - 1];
@@ -268,8 +280,8 @@ export function renderVerificationAnimation(answer: string): Buffer {
             to,
             2.05,
             characterIndex % 2 === 0 ? 4 : 5,
-            revealLeft,
-            revealRight
+            characterRevealLeft,
+            characterRevealRight
           );
         }
       });

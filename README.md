@@ -1,17 +1,19 @@
 # NexaCAPTCHA
 
-**Simple for people. Costly for bots.**
+**Let humans through. Make bots pay.**
 
-NexaCAPTCHA shows four moving characters through a small viewing window. A person can follow the animation and type the answer. A bot has to inspect many frames, track four characters moving in different ways, undo changing distortions, and rebuild the answer every time.
+NexaCAPTCHA turns four characters into a moving target. People follow it naturally. Bots must chase incomplete, distorted pieces across the full animation—on every attempt.
 
 Try it at [nexacaptcha.zone.id](https://nexacaptcha.zone.id).
 
 ## Why it is harder to automate
 
-- **No clean picture:** most frames show only part of a character. A complete character appears only briefly.
-- **Nothing moves the same way:** every character has its own speed, direction, rotation, and distortion.
-- **The window is unpredictable:** it changes speed and sometimes moves backward.
-- **More work for every answer:** reading one screenshot is not enough. Each attempt requires processing the animation.
+- **Incomplete by design:** most frames show only fragments, and at least one character is never shown in full.
+- **Constant distortion:** characters keep bending, stretching, rotating, and changing shape.
+- **Independent movement:** every character moves in its own direction and at its own changing speed.
+- **An unpredictable window:** the visible area speeds up, slows down, and moves backward without a simple rhythm.
+- **Different every time:** motion, distortion, timing, and the hidden character change with every CAPTCHA.
+- **Higher solving cost:** bots must inspect many frames, track moving fragments, and rebuild the answer instead of reading one image.
 
 NexaCAPTCHA is designed to raise the cost of automated solving. It does not claim that automation is impossible.
 

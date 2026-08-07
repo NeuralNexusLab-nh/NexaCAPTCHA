@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="NexaCAPTCHA makes automated solving more expensive by moving, distorting, and briefly revealing each character.">
     <meta name="theme-color" content="#050706">
-    <meta property="og:title" content="NexaCAPTCHA — Simple for people. Costly for bots.">
+    <meta property="og:title" content="NexaCAPTCHA — Let humans through. Make bots pay.">
     <meta property="og:description" content="A moving CAPTCHA designed to raise the cost of automated solving.">
-    <title>NexaCAPTCHA — Simple for people. Costly for bots.</title>
+    <title>NexaCAPTCHA — Let humans through. Make bots pay.</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="/site.webmanifest">
     <link rel="stylesheet" href="/vendor/fonts/inter/index.css">
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=4">
-    <script src="/app.js?v=4" defer></script>
+    <link rel="stylesheet" href="/styles.css?v=5">
+    <script src="/app.js?v=5" defer></script>
     <script src="/captcha.js?v=4" defer></script>
   </head>
   <body>
@@ -46,9 +46,9 @@
     <main id="main">
       <section class="hero shell" id="top">
         <div class="hero-copy reveal">
-          <p class="eyebrow"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span data-i18n="heroEyebrow">A HARDER CAPTCHA FOR BOTS</span></p>
-          <h1 data-i18n="heroTitle">Simple for people.<br>Costly for bots.</h1>
-          <p class="hero-lead" data-i18n="heroLead">People follow four moving characters and type what they see. Bots must inspect the full animation, track each character, undo changing distortions, and rebuild the answer every time.</p>
+          <p class="eyebrow"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span data-i18n="heroEyebrow">HUMANS IN. BOTS HELD BACK.</span></p>
+          <h1 data-i18n="heroTitle">Let humans through.<br>Make bots pay.</h1>
+          <p class="hero-lead" data-i18n="heroLead">NexaCAPTCHA turns four characters into a moving target. People follow it naturally. Bots must chase incomplete, distorted pieces across the full animation—on every attempt.</p>
           <div class="hero-actions">
             <a class="button button-primary" href="#demo"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="tryIt">Try it</span></a>
             <a class="button button-secondary" href="#setup"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="addToSite">Add to your site</span></a>
@@ -80,24 +80,39 @@
       <section class="section shell" id="features" aria-labelledby="features-title">
         <div class="section-heading reveal">
           <p class="eyebrow eyebrow-purple"><i class="fa-solid fa-star" aria-hidden="true"></i><span data-i18n="featuresEyebrow">FEATURES</span></p>
-          <h2 id="features-title" data-i18n="featuresTitle">Why is it harder to automate?</h2>
-          <p data-i18n="featuresLead">A normal text CAPTCHA gives a bot one picture. NexaCAPTCHA makes it follow a changing sequence.</p>
+          <h2 id="features-title" data-i18n="featuresTitle">Why use NexaCAPTCHA?</h2>
+          <p data-i18n="featuresLead">Random distortion, independent movement, and incomplete display force automated solvers to do far more work for every answer.</p>
         </div>
         <div class="feature-grid">
           <article class="feature-card reveal">
-            <i class="fa-solid fa-eye" aria-hidden="true"></i>
-            <h3 data-i18n="featureReadableTitle">No clean picture</h3>
-            <p data-i18n="featureReadableBody">Most of the time, only part of a character is visible. A complete character appears only briefly.</p>
+            <i class="fa-solid fa-eye-slash" aria-hidden="true"></i>
+            <h3 data-i18n="featureIncompleteTitle">Incomplete by design</h3>
+            <p data-i18n="featureIncompleteBody">Most frames show only fragments. At least one character is never shown in full.</p>
           </article>
           <article class="feature-card reveal">
-            <i class="fa-solid fa-film" aria-hidden="true"></i>
-            <h3 data-i18n="featureMotionTitle">Nothing moves the same way</h3>
-            <p data-i18n="featureMotionBody">Each character has its own speed, direction, rotation, and distortion. The viewing window also slows down and moves backward.</p>
+            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+            <h3 data-i18n="featureDistortionTitle">Constant distortion</h3>
+            <p data-i18n="featureDistortionBody">Characters keep bending, stretching, rotating, and changing shape.</p>
           </article>
           <article class="feature-card reveal">
-            <i class="fa-solid fa-plug" aria-hidden="true"></i>
-            <h3 data-i18n="featureSimpleTitle">More work for every answer</h3>
-            <p data-i18n="featureSimpleBody">A bot must examine many frames, follow four moving characters, and rebuild the answer. That costs more than reading one image.</p>
+            <i class="fa-solid fa-arrows-up-down-left-right" aria-hidden="true"></i>
+            <h3 data-i18n="featureMotionTitle">Independent movement</h3>
+            <p data-i18n="featureMotionBody">Every character moves in its own direction and at its own changing speed.</p>
+          </article>
+          <article class="feature-card reveal">
+            <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+            <h3 data-i18n="featureWindowTitle">An unpredictable window</h3>
+            <p data-i18n="featureWindowBody">The visible area speeds up, slows down, and moves backward without a simple rhythm.</p>
+          </article>
+          <article class="feature-card reveal">
+            <i class="fa-solid fa-fingerprint" aria-hidden="true"></i>
+            <h3 data-i18n="featureUniqueTitle">Different every time</h3>
+            <p data-i18n="featureUniqueBody">The motion, distortion, timing, and hidden character change with every CAPTCHA.</p>
+          </article>
+          <article class="feature-card reveal">
+            <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
+            <h3 data-i18n="featureCostTitle">Higher solving cost</h3>
+            <p data-i18n="featureCostBody">Bots must inspect many frames, track moving fragments, and rebuild the answer instead of reading one image.</p>
           </article>
         </div>
       </section>
