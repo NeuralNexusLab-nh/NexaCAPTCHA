@@ -97,7 +97,7 @@
     sendResult({ success: false, verificationId: null, responseToken: null });
 
     try {
-      var response = await fetch("/api/v1/verifications", {
+      var response = await fetch("/api/verifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: "{}",
@@ -146,7 +146,7 @@
     setMessage("Checking your answer…", "");
     try {
       var response = await fetch(
-        "/api/v1/verifications/" + encodeURIComponent(currentVerificationId) + "/answer",
+        "/api/verifications/" + encodeURIComponent(currentVerificationId) + "/answer",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

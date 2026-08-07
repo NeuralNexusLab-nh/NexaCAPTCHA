@@ -28,7 +28,7 @@ describe("NexaCAPTCHA HTTP API", () => {
   });
 
   it("runs the complete create, answer, and verify protocol", async () => {
-    const created = await request(app).post("/api/v1/verifications").send({}).expect(201);
+    const created = await request(app).post("/api/verifications").send({}).expect(201);
     expect(created.body.verificationId).toMatch(/^ver_[A-Za-z0-9_-]{22}$/);
 
     await request(app)
@@ -38,7 +38,7 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(200);
 
     const completed = await request(app)
-      .post(`/api/v1/verifications/${created.body.verificationId}/answer`)
+      .post(`/api/verifications/${created.body.verificationId}/answer`)
       .send({ answer: "NEXA" })
       .expect(200);
     expect(completed.body.success).toBe(true);
@@ -48,12 +48,12 @@ describe("NexaCAPTCHA HTTP API", () => {
       responseToken: completed.body.responseToken
     };
     await request(app)
-      .post("/api/v1/siteverify")
+      .post("/api/siteverify")
       .send(verification)
       .expect(200)
       .expect(({ body }) => expect(body.success).toBe(true));
     await request(app)
-      .post("/api/v1/siteverify")
+      .post("/api/siteverify")
       .send(verification)
       .expect(200)
       .expect(({ body }) => expect(body.success).toBe(false));
@@ -70,9 +70,18 @@ describe("NexaCAPTCHA HTTP API", () => {
     expect(widget.headers["cross-origin-opener-policy"]).toBe("unsafe-none");
   });
 
+  it("serves only the unversioned public loader and API routes", async () => {
+    await request(app)
+      .get("/captcha.js")
+      .expect("Content-Type", /javascript/)
+      .expect(200);
+    await request(app).get("/v1/captcha.js").expect(404);
+    await request(app).post("/api/v1/siteverify").send({}).expect(404);
+  });
+
   it("denies cross-origin browser API calls", async () => {
     await request(app)
-      .post("/api/v1/verifications")
+      .post("/api/verifications")
       .set("Origin", "https://attacker.example")
       .send({})
       .expect(403)
@@ -83,7 +92,7 @@ describe("NexaCAPTCHA HTTP API", () => {
 
   it("handles a strict same-origin OPTIONS preflight", async () => {
     const response = await request(app)
-      .options("/api/v1/verifications")
+      .options("/api/verifications")
       .set("Host", "nexacaptcha.zone.id")
       .set("Origin", "http://nexacaptcha.zone.id")
       .set("Access-Control-Request-Method", "POST")
@@ -98,7 +107,7 @@ describe("NexaCAPTCHA HTTP API", () => {
 
   it("rejects disallowed preflight headers", async () => {
     await request(app)
-      .options("/api/v1/verifications")
+      .options("/api/verifications")
       .set("Host", "nexacaptcha.zone.id")
       .set("Origin", "http://nexacaptcha.zone.id")
       .set("Access-Control-Request-Method", "POST")
@@ -108,7 +117,7 @@ describe("NexaCAPTCHA HTTP API", () => {
 
   it("rejects disallowed preflight methods", async () => {
     await request(app)
-      .options("/api/v1/verifications")
+      .options("/api/verifications")
       .set("Host", "nexacaptcha.zone.id")
       .set("Origin", "http://nexacaptcha.zone.id")
       .set("Access-Control-Request-Method", "DELETE")
@@ -118,15 +127,15 @@ describe("NexaCAPTCHA HTTP API", () => {
 
   it("rejects malformed and oversized inputs", async () => {
     await request(app)
-      .post("/api/v1/siteverify")
+      .post("/api/siteverify")
       .send({ verificationId: "bad", responseToken: "bad" })
       .expect(400);
     await request(app)
-      .post("/api/v1/verifications/not-real/answer")
+      .post("/api/verifications/not-real/answer")
       .send({ answer: "NEXA", extra: true })
       .expect(400);
     await request(app)
-      .post("/api/v1/verifications")
+      .post("/api/verifications")
       .send({ unexpected: true })
       .expect(400);
   });

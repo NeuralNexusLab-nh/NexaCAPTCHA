@@ -136,7 +136,7 @@ export class VerificationStore {
 
     return {
       verificationId,
-      animationUrl: `/api/v1/verifications/${encodeURIComponent(verificationId)}/animation`,
+      animationUrl: `/api/verifications/${encodeURIComponent(verificationId)}/animation`,
       expiresAt: new Date(now + config.verificationLifetimeMs).toISOString()
     };
   }

@@ -75,7 +75,7 @@ export function createApp(store: VerificationStore) {
   app.use("/api", express.json({ limit: "4kb", strict: true }));
 
   app.post(
-    "/api/v1/verifications",
+    "/api/verifications",
     limiter(60_000, 24),
     async (_request, response, next) => {
       try {
@@ -90,7 +90,7 @@ export function createApp(store: VerificationStore) {
   );
 
   app.get(
-    "/api/v1/verifications/:verificationId/animation",
+    "/api/verifications/:verificationId/animation",
     limiter(60_000, 120),
     (request, response, next) => {
       try {
@@ -108,7 +108,7 @@ export function createApp(store: VerificationStore) {
   );
 
   app.post(
-    "/api/v1/verifications/:verificationId/answer",
+    "/api/verifications/:verificationId/answer",
     limiter(60_000, 80),
     (request, response, next) => {
       try {
@@ -126,7 +126,7 @@ export function createApp(store: VerificationStore) {
   );
 
   app.post(
-    "/api/v1/siteverify",
+    "/api/siteverify",
     limiter(60_000, 120),
     (request, response, next) => {
       try {
@@ -140,7 +140,7 @@ export function createApp(store: VerificationStore) {
     }
   );
 
-  app.get("/v1/captcha.js", widgetHeaders, (_request, response) => {
+  app.get("/captcha.js", widgetHeaders, (_request, response) => {
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Cache-Control", "public, max-age=300");
     response.sendFile(path.join(config.publicDirectory, "captcha.js"));

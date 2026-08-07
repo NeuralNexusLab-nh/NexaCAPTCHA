@@ -3,40 +3,49 @@
 
   var translations = {
     en: {
-      skip: "Skip to content", languageLabel: "Language", navFeatures: "Features", navSetup: "Setup", navVerify: "Backend verification",
-      heroEyebrow: "HUMAN VERIFICATION", heroTitle: "Stronger verification. Built to resist automation.", heroLead: "NexaCAPTCHA shows four characters a little at a time. People follow the movement and read them naturally, while automated tools need to process the full animation.",
-      tryIt: "Try it", addToSite: "Add to your site", independentMotion: "Independent character motion", partialReveal: "Mostly partial reveal", stableV1: "Stable /v1/ endpoints",
+      skip: "Skip to content", languageLabel: "Language", navFeatures: "Features", navSetup: "Setup", navVerify: "Check the result",
+      heroEyebrow: "A HARDER CAPTCHA FOR BOTS", heroTitle: "Simple for people. Costly for bots.", heroLead: "People follow four moving characters and type what they see. Bots must inspect the full animation, track each character, undo changing distortions, and rebuild the answer every time.",
+      tryIt: "Try it", addToSite: "Add to your site", noCleanFrame: "No clean screenshot", changingMotion: "Changing motion and shape", higherCost: "More work per bot attempt",
       liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA", ready: "Ready", demoHelp: "Follow the moving window, then enter all four characters.", demoOutput: "Your result will appear here.",
-      featuresEyebrow: "FEATURES", featuresTitle: "Why NexaCAPTCHA?", featuresLead: "A normal text CAPTCHA can be read from one picture. NexaCAPTCHA spreads the useful parts across an animation.",
-      featureReadableTitle: "Four independent movements", featureReadableBody: "Each character changes direction, speed, rotation, and shape on its own 1.25–5 second cycle.", featureMotionTitle: "Only fragments stay visible", featureMotionBody: "The window changes speed and sometimes moves backward. A complete character appears only briefly.", featureSimpleTitle: "Simple to add", featureSimpleBody: "Load one script, add one element, then verify two values from your backend.",
-      setupEyebrow: "SETUP", setupTitle: "Add it in two small steps", setupLead: "The CAPTCHA handles its own display and answer checking.", loadTitle: "Load the widget", loadBody: "Add this script and place the CAPTCHA where you want it.", sendTitle: "Submit with your own function", sendBody: "Put this in your frontend JavaScript. Replace yourSubmitFunction with the function that submits your form to your backend.", htmlLocation: "HTML · page markup", frontendLocation: "JavaScript · frontend", backendLocation: "Node.js · backend",
-      valuesTitle: "The two values you need", idMeaning: "Identifies which completed CAPTCHA is being checked.", tokenMeaning: "A 32-character, one-time proof returned after the correct answer.",
-      verifyEyebrow: "BACKEND VERIFICATION", verifyTitle: "Confirm the result", verifyLead: "Your backend sends the two values to one endpoint before accepting the form, signup, or login.", versionNote: "The /v1/ paths are stable and will not be renamed.", request: "Request", successResponse: "Response · success", failureResponse: "Response · failure", important: "Only accept the protected action when siteverify returns success: true. Each responseToken works once and expires after five minutes.",
-      copy: "Copy", copied: "Copied", copySuccess: "Code copied.", copyFailure: "Could not copy. Select the code manually.", completed: "Completed", footerTagline: "Simple motion-based human verification."
+      featuresEyebrow: "FEATURES", featuresTitle: "Why is it harder to automate?", featuresLead: "A normal text CAPTCHA gives a bot one picture. NexaCAPTCHA makes it follow a changing sequence.",
+      featureReadableTitle: "No clean picture", featureReadableBody: "Most of the time, only part of a character is visible. A complete character appears only briefly.",
+      featureMotionTitle: "Nothing moves the same way", featureMotionBody: "Each character has its own speed, direction, rotation, and distortion. The viewing window also slows down and moves backward.",
+      featureSimpleTitle: "More work for every answer", featureSimpleBody: "A bot must examine many frames, follow four moving characters, and rebuild the answer. That costs more than reading one image.",
+      setupEyebrow: "SETUP", setupTitle: "Add NexaCAPTCHA to your site", setupLead: "Copy these two pieces. No frontend framework is required.",
+      loadTitle: "Paste this into your HTML", loadBody: "The Script loads NexaCAPTCHA. The Div chooses where it appears.", sendTitle: "Send the result with your form", sendBody: "Put this in your frontend JavaScript. Replace yourSubmitFunction with your existing submit function.",
+      htmlLocation: "HTML · page markup", frontendLocation: "JavaScript · frontend", backendLocation: "Node.js · backend", valuesTitle: "Two values come back", idMeaning: "The ID of the completed CAPTCHA.", tokenMeaning: "Proof that it was completed. It works once.",
+      verifyEyebrow: "SERVER CHECK", verifyTitle: "Check it on your server", verifyLead: "Before accepting the form, signup, or login, send both values to NexaCAPTCHA.", request: "Request", successResponse: "Response · success", failureResponse: "Response · failure", important: "Continue only when the response says success: true. A responseToken works once and expires after five minutes.",
+      copy: "Copy", copied: "Copied", copySuccess: "Code copied.", copyFailure: "Could not copy. Select the code manually.", completed: "Verification complete", footerTagline: "Human verification that makes bots work harder."
     },
     "zh-Hant": {
-      skip: "跳到主要內容", languageLabel: "語言", navFeatures: "特點", navSetup: "串接", navVerify: "後端驗證",
-      heroEyebrow: "人類驗證", heroTitle: "更強的驗證，為抵抗自動化而生。", heroLead: "NexaCAPTCHA 會逐步顯示四個字元。人類只要跟著移動閱讀，自動化工具則需要處理完整動畫。",
-      tryIt: "立即試用", addToSite: "加入你的網站", independentMotion: "每個字元獨立移動", partialReveal: "大部分時間只顯示局部", stableV1: "穩定的 /v1/ Endpoint",
-      liveDemo: "即時示範", tryNexa: "試用 NexaCAPTCHA", ready: "可以開始", demoHelp: "跟著移動範圍閱讀，然後輸入全部四個字元。", demoOutput: "驗證結果會顯示在這裡。",
-      featuresEyebrow: "特點", featuresTitle: "為什麼使用 NexaCAPTCHA？", featuresLead: "一般文字 CAPTCHA 可以從一張圖片讀取；NexaCAPTCHA 將有效資訊分散在動畫裡。",
-      featureReadableTitle: "四個獨立移動的字元", featureReadableBody: "每個字元會用各自 1.25–5 秒的週期改變方向、速度、旋轉與形狀。", featureMotionTitle: "大部分時間只看得到片段", featureMotionBody: "顯示窗口會變速並偶爾倒退，完整字元只會短暫出現。", featureSimpleTitle: "容易加入網站", featureSimpleBody: "載入一個 Script、加入一個元素，再由後端驗證兩個值。",
-      setupEyebrow: "串接", setupTitle: "兩個步驟即可加入", setupLead: "CAPTCHA 會自行處理顯示及答案檢查。", loadTitle: "載入元件", loadBody: "加入 Script，並將 CAPTCHA 放到你希望顯示的位置。", sendTitle: "使用你自己的提交函式", sendBody: "這段放在前端 JavaScript。將 yourSubmitFunction 換成你用來把表單送到後端的函式。", htmlLocation: "HTML · 頁面標記", frontendLocation: "JavaScript · 前端", backendLocation: "Node.js · 後端",
-      valuesTitle: "你需要的兩個值", idMeaning: "指出這次要檢查的是哪一筆已完成的 CAPTCHA。", tokenMeaning: "正確回答後產生的 32 字元一次性證明。",
-      verifyEyebrow: "後端驗證", verifyTitle: "確認驗證結果", verifyLead: "接受表單、註冊或登入前，由你的後端將兩個值傳到這個 Endpoint。", versionNote: "/v1/ 路徑保持穩定，不會重新命名。", request: "輸入", successResponse: "輸出 · 成功", failureResponse: "輸出 · 失敗", important: "只有 siteverify 回傳 success: true 時才能接受操作。每個 responseToken 只能使用一次，並在五分鐘後失效。",
-      copy: "複製", copied: "已複製", copySuccess: "程式碼已複製。", copyFailure: "無法複製，請手動選取程式碼。", completed: "已完成", footerTagline: "簡單的動態人類驗證。"
+      skip: "跳到主要內容", languageLabel: "語言", navFeatures: "特點", navSetup: "串接", navVerify: "檢查結果",
+      heroEyebrow: "讓 BOT 更難破解的 CAPTCHA", heroTitle: "人類容易完成，Bot 必須付出更高成本。", heroLead: "人只要跟著四個移動的字元閱讀並輸入答案。Bot 則必須分析整段動畫、追蹤每個字元、還原持續變化的扭曲，並在每次驗證重新組合答案。",
+      tryIt: "立即試用", addToSite: "加入你的網站", noCleanFrame: "沒有乾淨的完整畫面", changingMotion: "移動與形狀持續改變", higherCost: "每次破解都要更多處理",
+      liveDemo: "即時示範", tryNexa: "試用 NexaCAPTCHA", ready: "可以開始", demoHelp: "跟著移動窗口閱讀，然後輸入四個字元。", demoOutput: "驗證結果會顯示在這裡。",
+      featuresEyebrow: "特點", featuresTitle: "為什麼自動破解更困難？", featuresLead: "一般文字 CAPTCHA 只給 Bot 一張圖片；NexaCAPTCHA 要它追蹤一段持續變化的動畫。",
+      featureReadableTitle: "沒有乾淨的完整圖片", featureReadableBody: "大部分時間只看得到部分筆畫，完整字元只會短暫出現。",
+      featureMotionTitle: "每個字都用不同方式移動", featureMotionBody: "每個字元都有自己的速度、方向、旋轉與扭曲，顯示窗口也會減速和倒退。",
+      featureSimpleTitle: "每個答案都需要更多處理", featureSimpleBody: "Bot 必須檢查許多畫面、追蹤四個移動字元，再重組答案，成本比讀取一張圖片更高。",
+      setupEyebrow: "串接", setupTitle: "把 NexaCAPTCHA 加入你的網站", setupLead: "複製下面兩段即可，不需要前端框架。",
+      loadTitle: "貼到你的 HTML", loadBody: "Script 載入 NexaCAPTCHA，Div 決定顯示位置。", sendTitle: "和表單一起送出結果", sendBody: "這段放在前端 JavaScript。將 yourSubmitFunction 換成你現有的表單提交函式。",
+      htmlLocation: "HTML · 頁面", frontendLocation: "JavaScript · 前端", backendLocation: "Node.js · 後端", valuesTitle: "完成後會取得兩個值", idMeaning: "這次已完成 CAPTCHA 的 ID。", tokenMeaning: "完成驗證的證明，只能使用一次。",
+      verifyEyebrow: "伺服器檢查", verifyTitle: "在你的伺服器確認結果", verifyLead: "接受表單、註冊或登入前，把兩個值傳給 NexaCAPTCHA。", request: "輸入", successResponse: "輸出 · 成功", failureResponse: "輸出 · 失敗", important: "只有回傳 success: true 才能繼續。responseToken 只能使用一次，並在五分鐘後失效。",
+      copy: "複製", copied: "已複製", copySuccess: "程式碼已複製。", copyFailure: "無法複製，請手動選取。", completed: "驗證完成", footerTagline: "讓 Bot 必須付出更多成本的人類驗證。"
     },
     ja: {
-      skip: "メインコンテンツへ移動", languageLabel: "言語", navFeatures: "特徴", navSetup: "導入", navVerify: "バックエンド確認",
-      heroEyebrow: "人間認証", heroTitle: "より強い認証。自動化への抵抗を設計。", heroLead: "NexaCAPTCHA は4文字を少しずつ表示します。人は動きを追って読めますが、自動化ツールはアニメーション全体を処理する必要があります。",
-      tryIt: "試してみる", addToSite: "サイトに追加", independentMotion: "文字ごとの独立した動き", partialReveal: "ほとんどの時間は部分表示", stableV1: "安定した /v1/ エンドポイント",
-      liveDemo: "ライブデモ", tryNexa: "NexaCAPTCHA を試す", ready: "準備完了", demoHelp: "移動する表示を追い、4文字すべてを入力してください。", demoOutput: "認証結果がここに表示されます。",
-      featuresEyebrow: "特徴", featuresTitle: "NexaCAPTCHA の特徴", featuresLead: "通常の文字 CAPTCHA は一枚の画像で読めます。NexaCAPTCHA は必要な部分をアニメーションに分散します。",
-      featureReadableTitle: "四つの独立した動き", featureReadableBody: "各文字は1.25～5秒の独自周期で方向、速度、回転、形を変えます。", featureMotionTitle: "ほとんどの時間は断片だけ", featureMotionBody: "表示窓は速度を変え、時々後退します。完全な文字は短時間だけ現れます。", featureSimpleTitle: "簡単に追加", featureSimpleBody: "Script と要素を一つずつ追加し、バックエンドで二つの値を確認します。",
-      setupEyebrow: "導入", setupTitle: "二つの手順で追加", setupLead: "表示と回答確認は CAPTCHA が処理します。", loadTitle: "ウィジェットを読み込む", loadBody: "Script を追加し、表示したい場所に CAPTCHA を置きます。", sendTitle: "独自の送信関数を使う", sendBody: "これはフロントエンド JavaScript に置きます。yourSubmitFunction をフォームをバックエンドへ送る関数に置き換えてください。", htmlLocation: "HTML · ページマークアップ", frontendLocation: "JavaScript · フロントエンド", backendLocation: "Node.js · バックエンド",
-      valuesTitle: "必要な二つの値", idMeaning: "確認する完了済み CAPTCHA を識別します。", tokenMeaning: "正解後に返される32文字の一度だけ使える証明です。",
-      verifyEyebrow: "バックエンド確認", verifyTitle: "結果を確認する", verifyLead: "フォーム、登録、ログインを受け付ける前に、バックエンドから二つの値をこのエンドポイントへ送ります。", versionNote: "/v1/ パスは安定しており、名前は変更されません。", request: "リクエスト", successResponse: "レスポンス · 成功", failureResponse: "レスポンス · 失敗", important: "siteverify が success: true を返した場合のみ処理を許可してください。responseToken は一度だけ使用でき、5分で失効します。",
-      copy: "コピー", copied: "コピー済み", copySuccess: "コードをコピーしました。", copyFailure: "コピーできませんでした。手動で選択してください。", completed: "完了", footerTagline: "シンプルな動画式人間認証。"
+      skip: "メインコンテンツへ移動", languageLabel: "言語", navFeatures: "特徴", navSetup: "導入", navVerify: "結果を確認",
+      heroEyebrow: "BOT にとって難しい CAPTCHA", heroTitle: "人には簡単。Bot には高コスト。", heroLead: "人は動く4文字を追って入力するだけです。Bot はアニメーション全体を調べ、各文字を追跡し、変化する歪みを戻して、毎回答えを再構成する必要があります。",
+      tryIt: "試してみる", addToSite: "サイトに追加", noCleanFrame: "きれいな全体画像がない", changingMotion: "動きと形が変化", higherCost: "Bot の試行ごとに追加処理",
+      liveDemo: "ライブデモ", tryNexa: "NexaCAPTCHA を試す", ready: "準備完了", demoHelp: "移動する窓を追い、4文字すべてを入力してください。", demoOutput: "認証結果がここに表示されます。",
+      featuresEyebrow: "特徴", featuresTitle: "自動化が難しい理由", featuresLead: "通常の文字 CAPTCHA は一枚の画像です。NexaCAPTCHA は変化するアニメーションを追わせます。",
+      featureReadableTitle: "きれいな全体画像がない", featureReadableBody: "ほとんどの時間は文字の一部だけが見え、完全な文字は短時間しか現れません。",
+      featureMotionTitle: "すべての文字が違う動き", featureMotionBody: "文字ごとに速度、方向、回転、歪みが異なり、表示窓も減速や後退をします。",
+      featureSimpleTitle: "答えごとにより多くの処理", featureSimpleBody: "Bot は多数の画面を確認し、4文字を追跡して答えを再構成するため、一枚の画像より高コストです。",
+      setupEyebrow: "導入", setupTitle: "NexaCAPTCHA をサイトに追加", setupLead: "次の二つをコピーするだけです。フロントエンドフレームワークは不要です。",
+      loadTitle: "HTML に貼り付ける", loadBody: "Script が NexaCAPTCHA を読み込み、Div が表示位置を決めます。", sendTitle: "フォームと一緒に結果を送る", sendBody: "フロントエンド JavaScript に置き、yourSubmitFunction を既存の送信関数に置き換えます。",
+      htmlLocation: "HTML · ページ", frontendLocation: "JavaScript · フロントエンド", backendLocation: "Node.js · バックエンド", valuesTitle: "完了後に二つの値を取得", idMeaning: "完了した CAPTCHA の ID です。", tokenMeaning: "完了した証明で、一度だけ使えます。",
+      verifyEyebrow: "サーバー確認", verifyTitle: "サーバーで結果を確認", verifyLead: "フォーム、登録、ログインを受け付ける前に二つの値を NexaCAPTCHA へ送ります。", request: "リクエスト", successResponse: "レスポンス · 成功", failureResponse: "レスポンス · 失敗", important: "success: true の場合だけ続行してください。responseToken は一度だけ使用でき、5分で失効します。",
+      copy: "コピー", copied: "コピー済み", copySuccess: "コードをコピーしました。", copyFailure: "コピーできませんでした。手動で選択してください。", completed: "認証完了", footerTagline: "Bot により多くの処理を要求する人間認証。"
     }
   };
 
@@ -57,10 +66,10 @@
       if (key) element.textContent = text(key);
     });
     document.title = language === "zh-Hant"
-      ? "NexaCAPTCHA — 為抵抗自動化而生"
+      ? "NexaCAPTCHA — 人類容易，Bot 成本更高"
       : language === "ja"
-        ? "NexaCAPTCHA — 自動化への抵抗を設計"
-        : "NexaCAPTCHA — Stronger verification. Built to resist automation.";
+        ? "NexaCAPTCHA — 人には簡単、Bot には高コスト"
+        : "NexaCAPTCHA — Simple for people. Costly for bots.";
   }
 
   languageSelect.addEventListener("change", function () {
@@ -109,6 +118,6 @@
     if (!output || !result.success) return;
     output.classList.add("is-success");
     output.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i><span></span>';
-    output.querySelector("span").textContent = text("completed") + " · " + result.verificationId;
+    output.querySelector("span").textContent = text("completed");
   };
 })();

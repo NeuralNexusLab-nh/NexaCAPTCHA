@@ -13,7 +13,7 @@ NexaCAPTCHA is a cost-increasing human-verification mechanism, not an authentica
 Integrating applications must:
 
 1. Send `verificationId` and `responseToken` to their own backend.
-2. Call `/api/v1/siteverify` from that backend.
+2. Call `/api/siteverify` from that backend.
 3. Accept the protected action only when the server response contains `success: true`.
 4. Treat every response token as short-lived and single-use.
 

@@ -1,25 +1,28 @@
 # NexaCAPTCHA
 
-NexaCAPTCHA is a motion-based human verification service. It shows four uppercase letters or digits a little at a time. People follow the moving view, while automated tools need to process the complete animation.
+**Simple for people. Costly for bots.**
 
-Website and demo: [nexacaptcha.zone.id](https://nexacaptcha.zone.id)
+NexaCAPTCHA shows four moving characters through a small viewing window. A person can follow the animation and type the answer. A bot has to inspect many frames, track four characters moving in different ways, undo changing distortions, and rebuild the answer every time.
 
-## Features
+Try it at [nexacaptcha.zone.id](https://nexacaptcha.zone.id).
 
-- Four uppercase English letters or digits; ambiguous `I`, `O`, `0`, and `1` are excluded.
-- Each character changes direction, speed, rotation, and shape independently on a 1.25–5 second cycle.
-- The reveal window changes speed, sometimes moves backward, and normally shows only a fragment.
-- A complete character is visible only briefly.
-- Five minutes to complete the CAPTCHA and five attempts per CAPTCHA.
-- One-time verification results.
-- No account, site key, or authorization header.
+## Why it is harder to automate
 
-## Add NexaCAPTCHA
+- **No clean picture:** most frames show only part of a character. A complete character appears only briefly.
+- **Nothing moves the same way:** every character has its own speed, direction, rotation, and distortion.
+- **The window is unpredictable:** it changes speed and sometimes moves backward.
+- **More work for every answer:** reading one screenshot is not enough. Each attempt requires processing the animation.
 
-### 1. Load the widget — HTML page markup
+NexaCAPTCHA is designed to raise the cost of automated solving. It does not claim that automation is impossible.
+
+## Add it to your site
+
+### 1. Paste this into your HTML
+
+The Script loads NexaCAPTCHA. The Div chooses where it appears.
 
 ```html
-<script src="https://nexacaptcha.zone.id/v1/captcha.js" defer></script>
+<script src="https://nexacaptcha.zone.id/captcha.js" defer></script>
 
 <div
   class="nexa-captcha"
@@ -27,9 +30,9 @@ Website and demo: [nexacaptcha.zone.id](https://nexacaptcha.zone.id)
 ></div>
 ```
 
-### 2. Submit the result — frontend JavaScript
+### 2. Add this to your frontend JavaScript
 
-Replace `yourSubmitFunction` with the function that submits your form to your backend.
+Replace `yourSubmitFunction` with the function that already submits your form to your backend.
 
 ```js
 function onNexaComplete(result) {
@@ -42,20 +45,18 @@ function onNexaComplete(result) {
 }
 ```
 
-Only two values are needed:
+NexaCAPTCHA returns two values:
 
 | Value | Meaning |
 | --- | --- |
-| `verificationId` | Identifies which completed CAPTCHA is being checked. |
-| `responseToken` | A 32-character, one-time proof returned after the correct answer. |
+| `verificationId` | The ID of the completed CAPTCHA. |
+| `responseToken` | Proof that it was completed. It works once. |
 
-## Confirm from your backend
+## Check the result on your backend
 
-Send both values to:
+Before accepting the form, signup, or login, send both values to:
 
-`POST https://nexacaptcha.zone.id/api/v1/siteverify`
-
-The `/v1/` paths are stable and will not be renamed.
+`POST https://nexacaptcha.zone.id/api/siteverify`
 
 Request:
 
@@ -66,7 +67,7 @@ Request:
 }
 ```
 
-Successful response:
+Success:
 
 ```json
 {
@@ -75,7 +76,7 @@ Successful response:
 }
 ```
 
-Invalid, expired, or already used response:
+Failure:
 
 ```json
 {
@@ -88,7 +89,7 @@ Node.js backend example:
 
 ```js
 const response = await fetch(
-  "https://nexacaptcha.zone.id/api/v1/siteverify",
+  "https://nexacaptcha.zone.id/api/siteverify",
   {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -103,9 +104,9 @@ if (!result.success) {
 }
 ```
 
-Only accept the protected form, signup, or login when `siteverify` returns `success: true`. Each `responseToken` works once and expires after five minutes.
+Continue only when the response says `success: true`. A `responseToken` works once and expires after five minutes.
 
-## Run locally
+## Run it yourself
 
 Requires Node.js 20 or newer and npm.
 
@@ -114,26 +115,22 @@ npm install
 npm run dev
 ```
 
-Production build:
+Production:
 
 ```sh
 npm run build
 npm start
 ```
 
-## Deploy on Zeabur
+For Zeabur, create a service from this repository and choose the native Node.js runtime. `zbpack.json` supplies the build and start commands.
 
-Create a service from this GitHub repository and select the native Node.js runtime. The included `zbpack.json` supplies the build and start commands.
-
-## Checks and limits
+## Limits and checks
 
 ```sh
 npm run check
 ```
 
-The release budget is 0.25 vCPU, 100 MB RAM, and 10 GB storage. Rendering is queued, temporary animation storage is capped at 64 MB, and the production JavaScript heap is limited to 64 MB.
-
-The current in-memory store supports one application instance. Restarting the service invalidates unfinished CAPTCHA sessions.
+The release budget is 0.25 vCPU, 100 MB RAM, and 10 GB storage. The current store supports one application instance. Restarting the service invalidates unfinished CAPTCHA sessions.
 
 Read [SECURITY.md](SECURITY.md) before production use.
 
