@@ -1,9 +1,9 @@
 import { createServer } from "node:http";
 import { createApp } from "./app.js";
 import { config } from "./config.js";
-import { ChallengeStore } from "./store.js";
+import { VerificationStore } from "./store.js";
 
-const store = new ChallengeStore();
+const store = new VerificationStore();
 await store.start();
 
 const server = createServer(createApp(store));

@@ -1,7 +1,7 @@
 {
   "name": "NexaCAPTCHA",
   "short_name": "NexaCAPTCHA",
-  "description": "Open-source human verification in motion.",
+  "description": "Open-source temporal human verification.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",

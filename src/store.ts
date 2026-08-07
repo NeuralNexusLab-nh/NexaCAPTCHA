@@ -9,20 +9,20 @@ import path from "node:path";
 import { config } from "./config.js";
 import { PublicError } from "./errors.js";
 import { RenderQueue } from "./render-queue.js";
-import { renderChallenge } from "./renderer.js";
+import { renderVerificationAnimation } from "./renderer.js";
 
-export type ChallengeStatus =
+export type VerificationStatus =
   | "pending"
   | "failed"
   | "completed"
   | "consumed"
   | "expired";
 
-interface ChallengeRecord {
+interface VerificationRecord {
   id: string;
   answerDigest: Buffer;
   answerSalt: Buffer;
-  status: ChallengeStatus;
+  status: VerificationStatus;
   attemptsUsed: number;
   createdAt: number;
   expiresAt: number;
@@ -32,19 +32,19 @@ interface ChallengeRecord {
   verifiedAt?: number;
 }
 
-export interface PublicChallenge {
-  challengeId: string;
+export interface PublicVerification {
+  verificationId: string;
   animationUrl: string;
   expiresAt: string;
 }
 
-interface ChallengeStoreOptions {
+interface VerificationStoreOptions {
   answerFactory?: () => string;
   renderer?: (answer: string) => Buffer;
   mediaDirectory?: string;
 }
 
-const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 function randomBase64Url(byteLength: number): string {
   return randomBytes(byteLength).toString("base64url");
@@ -62,8 +62,8 @@ export function normalizeAnswer(value: string): string {
   return value.trim().toUpperCase().replaceAll(/\s+/g, "");
 }
 
-export class ChallengeStore {
-  private readonly records = new Map<string, ChallengeRecord>();
+export class VerificationStore {
+  private readonly records = new Map<string, VerificationRecord>();
   private readonly runtimeSecret = randomBytes(32);
   private readonly renderQueue = new RenderQueue(config.maxRenderQueue);
   private readonly answerFactory: () => string;
@@ -71,9 +71,9 @@ export class ChallengeStore {
   private readonly mediaDirectory: string;
   private cleanupTimer?: NodeJS.Timeout;
 
-  constructor(options: ChallengeStoreOptions = {}) {
+  constructor(options: VerificationStoreOptions = {}) {
     this.answerFactory = options.answerFactory ?? (() => this.generateAnswer());
-    this.renderer = options.renderer ?? renderChallenge;
+    this.renderer = options.renderer ?? renderVerificationAnimation;
     this.mediaDirectory = options.mediaDirectory ?? config.mediaDirectory;
   }
 
@@ -104,62 +104,62 @@ export class ChallengeStore {
       .join("");
   }
 
-  async create(): Promise<PublicChallenge> {
+  async create(): Promise<PublicVerification> {
     await this.cleanup();
-    if (this.records.size >= config.maxActiveChallenges) {
+    if (this.records.size >= config.maxActiveVerifications) {
       throw new PublicError(
         503,
         "service-unavailable",
-        "The service is at its active challenge limit. Please retry shortly."
+        "The service is at its active verification limit. Please retry shortly."
       );
     }
 
-    const challengeId = `chl_${randomBase64Url(16)}`;
+    const verificationId = `ver_${randomBase64Url(16)}`;
     const answer = this.answerFactory();
     const salt = randomBytes(16);
     const answerDigest = this.digestAnswer(answer, salt);
-    const mediaPath = path.join(this.mediaDirectory, `${challengeId}.gif`);
+    const mediaPath = path.join(this.mediaDirectory, `${verificationId}.gif`);
     const media = await this.renderQueue.run(() => this.renderer(answer));
 
     await writeFile(mediaPath, media, { flag: "wx" });
     const now = Date.now();
-    this.records.set(challengeId, {
-      id: challengeId,
+    this.records.set(verificationId, {
+      id: verificationId,
       answerDigest,
       answerSalt: salt,
       status: "pending",
       attemptsUsed: 0,
       createdAt: now,
-      expiresAt: now + config.challengeLifetimeMs,
+      expiresAt: now + config.verificationLifetimeMs,
       mediaPath
     });
 
     return {
-      challengeId,
-      animationUrl: `/api/v1/challenges/${encodeURIComponent(challengeId)}/media`,
-      expiresAt: new Date(now + config.challengeLifetimeMs).toISOString()
+      verificationId,
+      animationUrl: `/api/v1/verifications/${encodeURIComponent(verificationId)}/animation`,
+      expiresAt: new Date(now + config.verificationLifetimeMs).toISOString()
     };
   }
 
-  getMediaPath(challengeId: string): string {
-    const record = this.getActiveRecord(challengeId);
+  getMediaPath(verificationId: string): string {
+    const record = this.getActiveRecord(verificationId);
     return record.mediaPath;
   }
 
   submitAnswer(
-    challengeId: string,
+    verificationId: string,
     submittedAnswer: string
   ):
     | { success: false; status: "incorrect"; attemptsRemaining: number }
-    | { success: false; status: "challenge_failed"; attemptsRemaining: 0 }
+    | { success: false; status: "verification_failed"; attemptsRemaining: 0 }
     | {
         success: true;
         status: "completed";
-        challengeId: string;
+        verificationId: string;
         responseToken: string;
         expiresAt: string;
       } {
-    const record = this.getActiveRecord(challengeId);
+    const record = this.getActiveRecord(verificationId);
     if (record.status !== "pending") {
       throw this.statusError(record.status);
     }
@@ -171,7 +171,7 @@ export class ChallengeStore {
       const attemptsRemaining = config.maxAttempts - record.attemptsUsed;
       if (attemptsRemaining <= 0) {
         record.status = "failed";
-        return { success: false, status: "challenge_failed", attemptsRemaining: 0 };
+        return { success: false, status: "verification_failed", attemptsRemaining: 0 };
       }
       return { success: false, status: "incorrect", attemptsRemaining };
     }
@@ -185,19 +185,19 @@ export class ChallengeStore {
     return {
       success: true,
       status: "completed",
-      challengeId,
+      verificationId,
       responseToken,
       expiresAt: new Date(responseExpiresAt).toISOString()
     };
   }
 
   verify(
-    challengeId: string,
+    verificationId: string,
     responseToken: string
   ):
     | { success: true; verifiedAt: string }
     | { success: false; errorCode: "invalid-or-expired-verification" } {
-    const record = this.records.get(challengeId);
+    const record = this.records.get(verificationId);
     const now = Date.now();
     const tokenHash = sha256(responseToken);
     if (
@@ -216,17 +216,17 @@ export class ChallengeStore {
     return { success: true, verifiedAt: new Date(now).toISOString() };
   }
 
-  getStats(): { activeChallenges: number; renderQueueDepth: number } {
+  getStats(): { activeVerifications: number; renderQueueDepth: number } {
     return {
-      activeChallenges: this.records.size,
+      activeVerifications: this.records.size,
       renderQueueDepth: this.renderQueue.depth
     };
   }
 
-  private getActiveRecord(challengeId: string): ChallengeRecord {
-    const record = this.records.get(challengeId);
+  private getActiveRecord(verificationId: string): VerificationRecord {
+    const record = this.records.get(verificationId);
     if (!record) {
-      throw new PublicError(404, "challenge-not-found", "Challenge not found.");
+      throw new PublicError(404, "verification-not-found", "Verification not found.");
     }
     if (record.expiresAt <= Date.now() && record.status === "pending") {
       record.status = "expired";
@@ -235,14 +235,14 @@ export class ChallengeStore {
     return record;
   }
 
-  private statusError(status: ChallengeStatus): PublicError {
+  private statusError(status: VerificationStatus): PublicError {
     if (status === "expired") {
-      return new PublicError(410, "challenge-expired", "The challenge expired.");
+      return new PublicError(410, "verification-expired", "The verification expired.");
     }
     if (status === "failed") {
-      return new PublicError(410, "challenge-failed", "The challenge has failed.");
+      return new PublicError(410, "verification-failed", "The verification has failed.");
     }
-    return new PublicError(409, "challenge-completed", "The challenge is no longer pending.");
+    return new PublicError(409, "verification-completed", "The verification is no longer pending.");
   }
 
   async cleanup(removeAll = false): Promise<void> {
@@ -280,8 +280,8 @@ export class ChallengeStore {
       if (total <= config.maxTemporaryBytes) break;
       await rm(file.filePath, { force: true });
       total -= file.size;
-      const challengeId = path.basename(file.filePath, ".gif");
-      this.records.delete(challengeId);
+      const verificationId = path.basename(file.filePath, ".gif");
+      this.records.delete(verificationId);
     }
   }
 }

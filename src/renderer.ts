@@ -126,16 +126,16 @@ function transformPoint(
   const wave = Math.sin(
     normalizedY * 5.5 + frameProgress * Math.PI * 2 + randomPhase
   );
-  const scaleX = 0.91 + 0.09 * Math.sin(frameProgress * Math.PI * 2 + randomPhase);
-  const scaleY = 2.18 + 0.08 * Math.cos(frameProgress * Math.PI * 2.4 + randomPhase);
-  const localX = normalizedX * 31 * scaleX + wave * 2.4;
-  const localY = normalizedY * 35 * scaleY;
+  const scaleX = 1 + 0.035 * Math.sin(frameProgress * Math.PI * 2 + randomPhase);
+  const scaleY = 2.08 + 0.035 * Math.cos(frameProgress * Math.PI * 2.4 + randomPhase);
+  const localX = normalizedX * 34 * scaleX + wave * 1.1;
+  const localY = normalizedY * 38 * scaleY;
   const rotation =
-    (Math.PI / 180) * 8 * Math.sin(frameProgress * Math.PI * 1.7 + randomPhase);
+    (Math.PI / 180) * 3.5 * Math.sin(frameProgress * Math.PI * 1.7 + randomPhase);
   const cosine = Math.cos(rotation);
   const sine = Math.sin(rotation);
-  const floatX = 2.2 * Math.sin(frameProgress * Math.PI * 1.5 + randomPhase * 1.3);
-  const floatY = 5.2 * Math.sin(frameProgress * Math.PI * 2 + randomPhase + characterIndex);
+  const floatX = 1.2 * Math.sin(frameProgress * Math.PI * 1.5 + randomPhase * 1.3);
+  const floatY = 2.8 * Math.sin(frameProgress * Math.PI * 2 + randomPhase + characterIndex);
 
   return [
     baseX + localX * cosine - localY * sine + floatX,
@@ -144,7 +144,7 @@ function transformPoint(
 }
 
 function easedRevealProgress(progress: number, pullbackAt: number, pullbackSize: number): number {
-  const speedVariation = 0.018 * Math.sin(progress * Math.PI * 6.4);
+  const speedVariation = 0.01 * Math.sin(progress * Math.PI * 6.4);
   const distance = Math.abs(progress - pullbackAt);
   const pullbackWindow = 0.12;
   const pullback =
@@ -154,17 +154,17 @@ function easedRevealProgress(progress: number, pullbackAt: number, pullbackSize:
   return Math.max(0, Math.min(1, progress + speedVariation - pullback));
 }
 
-export function renderChallenge(answer: string): Buffer {
+export function renderVerificationAnimation(answer: string): Buffer {
   const { width, height, frames, delayMs } = config.animation;
   const seed = randomBytes(8);
   const random = createPrng(seed);
   const glyphs = answer.split("").map(glyphFor);
   const phases = glyphs.map(() => random() * Math.PI * 2);
   const pullbackAt = 0.43 + random() * 0.24;
-  const pullbackSize = 0.07 + random() * 0.055;
-  const revealWidth = 22 + random() * 7;
+  const pullbackSize = 0.035 + random() * 0.02;
+  const revealWidth = 78 + random() * 14;
   const textStart = 66;
-  const characterSpacing = 55;
+  const characterSpacing = 62;
   const textEnd = textStart + characterSpacing * (glyphs.length - 1);
   const gif = GIFEncoder({ initialCapacity: 192 * 1024 });
 
@@ -172,8 +172,8 @@ export function renderChallenge(answer: string): Buffer {
     const pixels = new Uint8Array(width * height);
     const progress = frame / Math.max(1, frames - 1);
     const revealProgress = easedRevealProgress(progress, pullbackAt, pullbackSize);
-    const revealCenter = textStart - 22 + revealProgress * (textEnd - textStart + 44);
-    const widthPulse = revealWidth * (0.92 + 0.08 * Math.sin(progress * Math.PI * 4.7));
+    const revealCenter = textStart - 40 + revealProgress * (textEnd - textStart + 80);
+    const widthPulse = revealWidth * (0.96 + 0.04 * Math.sin(progress * Math.PI * 4.7));
     const revealLeft = revealCenter - widthPulse / 2;
     const revealRight = revealCenter + widthPulse / 2;
 
@@ -212,7 +212,7 @@ export function renderChallenge(answer: string): Buffer {
             height,
             from,
             to,
-            1.75,
+            2.05,
             characterIndex % 2 === 0 ? 4 : 5,
             revealLeft,
             revealRight
@@ -220,11 +220,6 @@ export function renderChallenge(answer: string): Buffer {
         }
       });
     });
-
-    const scanY = Math.round(height * (0.22 + progress * 0.56));
-    for (let x = Math.max(0, Math.floor(revealLeft)); x <= Math.min(width - 1, Math.ceil(revealRight)); x += 1) {
-      if ((x + frame) % 5 === 0) pixels[scanY * width + x] = 1;
-    }
 
     gif.writeFrame(pixels, width, height, {
       palette: frame === 0 ? PALETTE : undefined,

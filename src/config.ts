@@ -2,19 +2,19 @@ import path from "node:path";
 
 export const config = Object.freeze({
   port: Number.parseInt(process.env.PORT ?? "3000", 10),
-  challengeLifetimeMs: 60_000,
-  responseLifetimeMs: 120_000,
+  verificationLifetimeMs: 180_000,
+  responseLifetimeMs: 300_000,
   maxAttempts: 5,
-  maxActiveChallenges: 160,
+  maxActiveVerifications: 160,
   maxRenderQueue: 6,
   maxTemporaryBytes: 64 * 1024 * 1024,
   cleanupIntervalMs: 15_000,
   mediaDirectory: path.resolve("tmp", "media"),
   publicDirectory: path.resolve("public"),
   animation: {
-    width: 300,
-    height: 108,
-    frames: 40,
+    width: 320,
+    height: 116,
+    frames: 50,
     delayMs: 100
   }
 });

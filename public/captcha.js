@@ -25,7 +25,7 @@
     options = options || {};
     sequence += 1;
     var widgetId = "nexa_" + Date.now().toString(36) + "_" + sequence.toString(36);
-    var result = { success: false, challengeId: null, responseToken: null };
+    var result = { success: false, verificationId: null, responseToken: null };
     var listeners = [];
     var iframe = document.createElement("iframe");
     iframe.src =
@@ -85,7 +85,7 @@
         };
       },
       reset: function () {
-        result = { success: false, challengeId: null, responseToken: null };
+        result = { success: false, verificationId: null, responseToken: null };
         iframe.contentWindow.postMessage(
           { namespace: "NexaCAPTCHA", widgetId: widgetId, type: "reset" },
           serviceOrigin

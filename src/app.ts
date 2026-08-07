@@ -12,7 +12,7 @@ import {
   websiteHeaders,
   widgetHeaders
 } from "./security.js";
-import { ChallengeStore } from "./store.js";
+import { VerificationStore } from "./store.js";
 
 const answerSchema = z
   .object({
@@ -20,11 +20,11 @@ const answerSchema = z
   })
   .strict();
 
-const createChallengeSchema = z.object({}).strict();
+const createVerificationSchema = z.object({}).strict();
 
 const verificationSchema = z
   .object({
-    challengeId: z.string().regex(/^chl_[A-Za-z0-9_-]{22}$/),
+    verificationId: z.string().regex(/^ver_[A-Za-z0-9_-]{22}$/),
     responseToken: z.string().regex(/^[A-Za-z0-9_-]{32}$/)
   })
   .strict();
@@ -46,7 +46,7 @@ function limiter(windowMs: number, limit: number) {
   });
 }
 
-export function createApp(store: ChallengeStore) {
+export function createApp(store: VerificationStore) {
   const app = express();
   app.disable("x-powered-by");
   app.set("trust proxy", 1);
@@ -75,14 +75,14 @@ export function createApp(store: ChallengeStore) {
   app.use("/api", express.json({ limit: "4kb", strict: true }));
 
   app.post(
-    "/api/v1/challenges",
+    "/api/v1/verifications",
     limiter(60_000, 24),
     async (_request, response, next) => {
       try {
-        createChallengeSchema.parse(_request.body);
-        const challenge = await store.create();
+        createVerificationSchema.parse(_request.body);
+        const verification = await store.create();
         response.setHeader("Cache-Control", "no-store");
-        response.status(201).json(challenge);
+        response.status(201).json(verification);
       } catch (error) {
         next(error);
       }
@@ -90,11 +90,11 @@ export function createApp(store: ChallengeStore) {
   );
 
   app.get(
-    "/api/v1/challenges/:challengeId/media",
+    "/api/v1/verifications/:verificationId/animation",
     limiter(60_000, 120),
     (request, response, next) => {
       try {
-        const mediaPath = store.getMediaPath(routeParameter(request.params.challengeId));
+        const mediaPath = store.getMediaPath(routeParameter(request.params.verificationId));
         response.setHeader("Cache-Control", "no-store, max-age=0");
         response.setHeader("Content-Type", "image/gif");
         response.setHeader("Cross-Origin-Resource-Policy", "same-origin");
@@ -108,13 +108,13 @@ export function createApp(store: ChallengeStore) {
   );
 
   app.post(
-    "/api/v1/challenges/:challengeId/answer",
+    "/api/v1/verifications/:verificationId/answer",
     limiter(60_000, 80),
     (request, response, next) => {
       try {
         const input = answerSchema.parse(request.body);
         const result = store.submitAnswer(
-          routeParameter(request.params.challengeId),
+          routeParameter(request.params.verificationId),
           input.answer
         );
         response.setHeader("Cache-Control", "no-store");
@@ -131,7 +131,7 @@ export function createApp(store: ChallengeStore) {
     (request, response, next) => {
       try {
         const input = verificationSchema.parse(request.body);
-        const result = store.verify(input.challengeId, input.responseToken);
+        const result = store.verify(input.verificationId, input.responseToken);
         response.setHeader("Cache-Control", "no-store");
         response.json(result);
       } catch (error) {

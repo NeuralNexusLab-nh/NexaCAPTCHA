@@ -18,12 +18,12 @@
   var input = document.getElementById("captcha-answer");
   var verifyButton = document.getElementById("verify-button");
   var newButton = document.getElementById("new-button");
-  var image = document.getElementById("challenge-image");
+  var image = document.getElementById("verification-image");
   var placeholder = document.getElementById("stage-placeholder");
-  var stage = document.getElementById("challenge-stage");
+  var stage = document.getElementById("verification-stage");
   var message = document.getElementById("status-message");
   var pill = document.getElementById("status-pill");
-  var currentChallengeId = null;
+  var currentVerificationId = null;
   var expiryTimer = null;
   var busy = false;
   var completed = false;
@@ -57,8 +57,8 @@
   function setBusy(value) {
     busy = value;
     stage.setAttribute("aria-busy", String(value));
-    verifyButton.disabled = value || completed || !currentChallengeId;
-    input.disabled = value || completed || !currentChallengeId;
+    verifyButton.disabled = value || completed || !currentVerificationId;
+    input.disabled = value || completed || !currentVerificationId;
     newButton.disabled = value;
   }
 
@@ -77,36 +77,36 @@
     if (expiryTimer) window.clearTimeout(expiryTimer);
     var delay = Math.max(0, new Date(expiresAt).getTime() - Date.now());
     expiryTimer = window.setTimeout(function () {
-      currentChallengeId = null;
+      currentVerificationId = null;
       completed = false;
       setBusy(false);
       setPill("Expired", "fa-clock", "is-error");
-      setMessage("This challenge expired. Request a new one.", "is-error");
-      sendResult({ success: false, challengeId: null, responseToken: null });
+      setMessage("This verification expired. Request a new one.", "is-error");
+      sendResult({ success: false, verificationId: null, responseToken: null });
     }, delay);
   }
 
-  async function createChallenge() {
+  async function createVerification() {
     completed = false;
-    currentChallengeId = null;
+    currentVerificationId = null;
     input.value = "";
-    showPlaceholder("Preparing challenge…");
+    showPlaceholder("Preparing verification…");
     setPill("Loading", "fa-circle-notch fa-spin", "");
-    setMessage("Loading a new challenge…", "");
+    setMessage("Loading a new verification…", "");
     setBusy(true);
-    sendResult({ success: false, challengeId: null, responseToken: null });
+    sendResult({ success: false, verificationId: null, responseToken: null });
 
     try {
-      var response = await fetch("/api/v1/challenges", {
+      var response = await fetch("/api/v1/verifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: "{}",
         cache: "no-store"
       });
       var result = await response.json();
-      if (!response.ok) throw new Error(result.message || "Unable to create challenge.");
+      if (!response.ok) throw new Error(result.message || "Unable to create verification.");
 
-      currentChallengeId = result.challengeId;
+      currentVerificationId = result.verificationId;
       image.onload = function () {
         placeholder.hidden = true;
         image.classList.add("is-visible");
@@ -115,15 +115,15 @@
         setBusy(false);
       };
       image.onerror = function () {
-        currentChallengeId = null;
+        currentVerificationId = null;
         setPill("Error", "fa-circle-exclamation", "is-error");
-        setMessage("The challenge image could not be loaded. Try again.", "is-error");
+        setMessage("The verification animation could not be loaded. Try again.", "is-error");
         setBusy(false);
       };
       image.src = result.animationUrl;
       armExpiry(result.expiresAt);
     } catch (_) {
-      currentChallengeId = null;
+      currentVerificationId = null;
       setPill("Offline", "fa-triangle-exclamation", "is-error");
       setMessage("Unable to reach NexaCAPTCHA. Try again.", "is-error");
       setBusy(false);
@@ -132,7 +132,7 @@
 
   async function submitAnswer(event) {
     event.preventDefault();
-    if (busy || completed || !currentChallengeId) return;
+    if (busy || completed || !currentVerificationId) return;
     var answer = input.value.trim().toUpperCase();
     input.value = answer;
     if (answer.length !== 4) {
@@ -146,7 +146,7 @@
     setMessage("Checking your answer…", "");
     try {
       var response = await fetch(
-        "/api/v1/challenges/" + encodeURIComponent(currentChallengeId) + "/answer",
+        "/api/v1/verifications/" + encodeURIComponent(currentVerificationId) + "/answer",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -165,18 +165,18 @@
         setBusy(false);
         sendResult({
           success: true,
-          challengeId: result.challengeId,
+          verificationId: result.verificationId,
           responseToken: result.responseToken
         });
         return;
       }
 
       input.value = "";
-      if (result.status === "challenge_failed") {
+      if (result.status === "verification_failed") {
         if (expiryTimer) window.clearTimeout(expiryTimer);
-        currentChallengeId = null;
+        currentVerificationId = null;
         setPill("Failed", "fa-circle-exclamation", "is-error");
-        setMessage("Verification failed. Request a new challenge to try again.", "is-error");
+        setMessage("Verification failed. Request a new verification to try again.", "is-error");
       } else {
         setPill("Try again", "fa-circle-exclamation", "is-error");
         setMessage(
@@ -185,12 +185,12 @@
         );
       }
       setBusy(false);
-      if (currentChallengeId) input.focus();
+      if (currentVerificationId) input.focus();
     } catch (error) {
-      if (String(error.message).includes("challenge-expired")) {
-        currentChallengeId = null;
+      if (String(error.message).includes("verification-expired")) {
+        currentVerificationId = null;
         setPill("Expired", "fa-clock", "is-error");
-        setMessage("This challenge expired. Request a new one.", "is-error");
+        setMessage("This verification expired. Request a new one.", "is-error");
       } else {
         setPill("Error", "fa-circle-exclamation", "is-error");
         setMessage("Verification could not be completed. Try again.", "is-error");
@@ -200,15 +200,15 @@
   }
 
   input.addEventListener("input", function () {
-    input.value = input.value.replace(/[^a-z]/gi, "").toUpperCase();
+    input.value = input.value.replace(/[^a-z0-9]/gi, "").toUpperCase();
   });
   form.addEventListener("submit", submitAnswer);
-  newButton.addEventListener("click", createChallenge);
+  newButton.addEventListener("click", createVerification);
   window.addEventListener("message", function (event) {
     if (event.origin !== parentOrigin) return;
     var data = event.data;
     if (!data || data.namespace !== "NexaCAPTCHA" || data.widgetId !== widgetId) return;
-    if (data.type === "reset") createChallenge();
+    if (data.type === "reset") createVerification();
   });
 
   if (window.ResizeObserver) {
@@ -216,5 +216,5 @@
       send("resize", { height: document.documentElement.scrollHeight + 12 });
     }).observe(document.body);
   }
-  createChallenge();
+  createVerification();
 })();

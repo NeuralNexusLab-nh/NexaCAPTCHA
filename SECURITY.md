@@ -12,7 +12,7 @@ NexaCAPTCHA is a cost-increasing human-verification mechanism, not an authentica
 
 Integrating applications must:
 
-1. Send `challengeId` and `responseToken` to their own backend.
+1. Send `verificationId` and `responseToken` to their own backend.
 2. Call `/api/v1/siteverify` from that backend.
 3. Accept the protected action only when the server response contains `success: true`.
 4. Treat every response token as short-lived and single-use.
@@ -22,7 +22,7 @@ Frontend completion alone is never authoritative.
 ## Browser policy
 
 - The public loader may be loaded cross-origin as a classic script.
-- The challenge runs in an isolated iframe.
+- The verification interface runs in an isolated iframe.
 - The widget validates the exact parent and service origins for `postMessage`.
 - The main website cannot be framed by external origins.
 - The widget route is the only page with `frame-ancestors *`.
@@ -33,7 +33,7 @@ Frontend completion alone is never authoritative.
 ## Operational limits
 
 - Run behind HTTPS.
-- Keep the render queue and active challenge count bounded.
+- Keep the render queue and active verification count bounded.
 - Keep temporary media below the configured cap and verify cleanup.
 - Do not log answers or full tokens.
 - Treat IP signals as temporary abuse-control data, not permanent identity.

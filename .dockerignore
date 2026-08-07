@@ -1,9 +1,0 @@
-.git
-.github
-node_modules
-dist
-coverage
-tmp
-*.log
-work
-outputs

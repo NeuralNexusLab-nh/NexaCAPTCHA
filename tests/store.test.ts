@@ -3,15 +3,15 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PublicError } from "../src/errors.js";
-import { ChallengeStore, normalizeAnswer } from "../src/store.js";
+import { VerificationStore, normalizeAnswer } from "../src/store.js";
 
-describe("ChallengeStore", () => {
+describe("VerificationStore", () => {
   let directory: string;
-  let store: ChallengeStore;
+  let store: VerificationStore;
 
   beforeEach(async () => {
     directory = await mkdtemp(path.join(tmpdir(), "nexacaptcha-test-"));
-    store = new ChallengeStore({
+    store = new VerificationStore({
       answerFactory: () => "NEXA",
       renderer: () => Buffer.from("GIF89a", "ascii"),
       mediaDirectory: directory
@@ -29,43 +29,43 @@ describe("ChallengeStore", () => {
   });
 
   it("allows five incorrect attempts and then fails permanently", async () => {
-    const challenge = await store.create();
+    const verification = await store.create();
     for (let attempt = 1; attempt <= 4; attempt += 1) {
-      expect(store.submitAnswer(challenge.challengeId, "WRNG")).toEqual({
+      expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
         success: false,
         status: "incorrect",
         attemptsRemaining: 5 - attempt
       });
     }
-    expect(store.submitAnswer(challenge.challengeId, "WRNG")).toEqual({
+    expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
       success: false,
-      status: "challenge_failed",
+      status: "verification_failed",
       attemptsRemaining: 0
     });
-    expect(() => store.submitAnswer(challenge.challengeId, "NEXA")).toThrowError(
+    expect(() => store.submitAnswer(verification.verificationId, "NEXA")).toThrowError(
       PublicError
     );
   });
 
   it("returns a 32-character token and consumes it once", async () => {
-    const challenge = await store.create();
-    const completion = store.submitAnswer(challenge.challengeId, "nexa");
+    const verification = await store.create();
+    const completion = store.submitAnswer(verification.verificationId, "nexa");
     expect(completion.success).toBe(true);
     if (!completion.success) throw new Error("Expected successful completion.");
     expect(completion.responseToken).toMatch(/^[A-Za-z0-9_-]{32}$/);
 
-    expect(store.verify(challenge.challengeId, completion.responseToken).success).toBe(true);
-    expect(store.verify(challenge.challengeId, completion.responseToken)).toEqual({
+    expect(store.verify(verification.verificationId, completion.responseToken).success).toBe(true);
+    expect(store.verify(verification.verificationId, completion.responseToken)).toEqual({
       success: false,
       errorCode: "invalid-or-expired-verification"
     });
   });
 
-  it("rejects a token belonging to a different challenge", async () => {
+  it("rejects a token belonging to a different verification", async () => {
     const first = await store.create();
     const second = await store.create();
-    const completion = store.submitAnswer(first.challengeId, "NEXA");
+    const completion = store.submitAnswer(first.verificationId, "NEXA");
     if (!completion.success) throw new Error("Expected successful completion.");
-    expect(store.verify(second.challengeId, completion.responseToken).success).toBe(false);
+    expect(store.verify(second.verificationId, completion.responseToken).success).toBe(false);
   });
 });

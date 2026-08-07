@@ -54,7 +54,7 @@ body { padding: 6px; }
 .status-pill.is-complete { border-color: #7fee64; color: #7fee64; }
 .status-pill.is-error { border-color: #b66a66; color: #e7aaa5; }
 
-.challenge-stage {
+.verification-stage {
   position: relative;
   display: grid;
   min-height: 116px;
@@ -66,7 +66,7 @@ body { padding: 6px; }
   background: #050706;
 }
 
-.challenge-stage::before {
+.verification-stage::before {
   position: absolute;
   inset: 0;
   content: "";
@@ -74,7 +74,7 @@ body { padding: 6px; }
   background: radial-gradient(circle at center, transparent 20%, rgba(0, 0, 0, .38));
 }
 
-#challenge-image {
+#verification-image {
   display: none;
   width: 100%;
   height: auto;
@@ -83,7 +83,7 @@ body { padding: 6px; }
   image-rendering: auto;
 }
 
-#challenge-image.is-visible { display: block; }
+#verification-image.is-visible { display: block; }
 
 .stage-placeholder {
   display: flex;

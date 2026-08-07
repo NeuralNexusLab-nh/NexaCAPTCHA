@@ -1,42 +1,27 @@
-<p align="center">
-  <img src="public/assets/logo.svg" width="88" height="88" alt="NexaCAPTCHA logo">
-</p>
+# NexaCAPTCHA
 
-<h1 align="center">NexaCAPTCHA</h1>
+NexaCAPTCHA is an open-source, motion-based human verification service. Instead of placing the complete answer in one stable image, it reveals readable portions of four distorted characters over time. A person follows the motion and combines what they see; an automated solver must sample and align frames, track changing fragments, compensate for deformation, reconstruct the characters, and then recognize them.
 
-<p align="center"><strong>Open-source human verification in motion.</strong></p>
+It is not presented as AI-proof. Its goal is to make reliable automated recognition less direct and more computationally expensive while keeping the interaction understandable for people.
 
-<p align="center">
-  <a href="https://nexacaptcha.zone.id">Website</a> ·
-  <a href="#integration">Integration</a> ·
-  <a href="#http-api">API</a> ·
-  <a href="LICENSE">Apache-2.0</a>
-</p>
+Website and documentation: [nexacaptcha.zone.id](https://nexacaptcha.zone.id)
 
-NexaCAPTCHA is a lightweight motion CAPTCHA designed to increase the cost of automated visual solving. It reveals continuously distorted characters through a narrow moving region, asks the user to enter all four characters, and returns a short-lived one-time token after a correct answer.
+## What is different
 
-No account, site key, Bearer credential, `.env` file, or client framework is required.
+- Only four uppercase English letters or digits are used. Ambiguous `I`, `O`, `0`, and `1` are excluded.
+- Roughly 1.3 to 1.6 characters remain visible, making the text easier to follow than a narrow slit.
+- Reveal position, direction, speed, floating motion, and distortion vary over time.
+- The answer never appears as one clean, stable frame.
+- Each verification permits five incorrect answers and stays open for three minutes.
+- A correct answer returns a 32-character, single-use token valid for five minutes.
+- No account, site key, authorization header, or client framework is required.
 
-> [!IMPORTANT]
-> NexaCAPTCHA does not claim to be AI-proof. Always verify its response token from your backend, and treat automated solver evaluation as ongoing work.
+## Quick start
 
-## How it works
-
-1. **Load** — Add one hosted script and one mount point.
-2. **Verify** — The user enters the characters revealed through motion.
-3. **Confirm** — Your backend verifies and consumes the short-lived response token.
-
-Each challenge allows five incorrect answers. The fifth incorrect answer terminally fails the challenge. A correct answer returns a 32-character token with 192 bits of randomness. The token expires quickly and can be verified only once.
-
-## Integration
-
-Add the loader and a mount point:
+Add the hosted loader and a mount point:
 
 ```html
-<script
-  src="https://nexacaptcha.zone.id/v1/captcha.js"
-  defer
-></script>
+<script src="https://nexacaptcha.zone.id/v1/captcha.js" defer></script>
 
 <div
   class="nexa-captcha"
@@ -44,64 +29,39 @@ Add the loader and a mount point:
 ></div>
 ```
 
-Receive the completed browser output:
+Receive the successful browser result:
 
-```html
-<script>
-  function onNexaComplete(result) {
-    if (!result.success) return;
+```js
+function onNexaComplete(result) {
+  if (!result.success) return;
 
-    console.log(result.challengeId);
-    console.log(result.responseToken);
-  }
-</script>
+  console.log(result.verificationId);
+  console.log(result.responseToken);
+}
 ```
 
-Successful output:
+Browser output:
 
 ```json
 {
   "success": true,
-  "challengeId": "chl_G5uQkATY0vYfXxWSMEuT6w",
+  "verificationId": "ver_G5uQkATY0vYfXxWSMEuT6w",
   "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV"
 }
 ```
 
-Programmatic mounting is also available:
+Send both fields to your own backend. Browser completion alone must never authorize a protected action.
 
-```js
-const widget = NexaCAPTCHA.render("#captcha", {
-  onComplete(result) {
-    console.log(result);
-  }
-});
-
-widget.getResult();
-widget.reset();
-widget.destroy();
-```
-
-The loader inserts an isolated iframe. If the integrating website uses CSP, allow NexaCAPTCHA in both `script-src` and `frame-src`:
-
-```text
-script-src 'self' https://nexacaptcha.zone.id;
-frame-src 'self' https://nexacaptcha.zone.id;
-```
-
-## Verify from your backend
-
-Send both browser values to your own backend, then call NexaCAPTCHA:
+## Backend confirmation
 
 ```js
 const response = await fetch(
   "https://nexacaptcha.zone.id/api/v1/siteverify",
   {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      challengeId: req.body.challengeId,
+      verificationId: req.body.verificationId,
       responseToken: req.body.responseToken
     })
   }
@@ -110,61 +70,63 @@ const response = await fetch(
 const verification = await response.json();
 
 if (!verification.success) {
-  return res.status(403).json({
-    error: "CAPTCHA verification failed"
-  });
+  return res.status(403).json({ error: "CAPTCHA verification failed" });
 }
 ```
 
-Request input:
+The token is consumed by the first successful confirmation. Reusing it returns `success: false`.
+
+## HTTP API
+
+All request and response bodies below are JSON. The animation endpoint returns `image/gif`.
+
+### Create a verification
+
+`POST /api/v1/verifications`
+
+Input:
+
+```json
+{}
+```
+
+Output — `201 Created`:
 
 ```json
 {
-  "challengeId": "chl_G5uQkATY0vYfXxWSMEuT6w",
-  "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV"
+  "verificationId": "ver_G5uQkATY0vYfXxWSMEuT6w",
+  "animationUrl": "/api/v1/verifications/ver_G5uQkATY0vYfXxWSMEuT6w/animation",
+  "expiresAt": "2026-08-07T12:33:00.000Z"
 }
 ```
 
-Successful output:
+Retrieve the animation with `GET <animationUrl>`.
+
+### Submit the answer
+
+`POST /api/v1/verifications/:verificationId/answer`
+
+Input:
+
+```json
+{
+  "answer": "A7K3"
+}
+```
+
+Output — correct:
 
 ```json
 {
   "success": true,
-  "verifiedAt": "2026-08-07T12:30:00.000Z"
+  "status": "completed",
+  "verificationId": "ver_G5uQkATY0vYfXxWSMEuT6w",
+  "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV",
+  "expiresAt": "2026-08-07T12:35:00.000Z"
 }
 ```
 
-Failed output:
-
-```json
-{
-  "success": false,
-  "errorCode": "invalid-or-expired-verification"
-}
-```
-
-Frontend completion is informational only. Never grant access based on the callback without server verification.
-
-## HTTP API
-
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `POST` | `/api/v1/challenges` | Create and render a challenge |
-| `GET` | `/api/v1/challenges/:challengeId/media` | Retrieve flattened animated media |
-| `POST` | `/api/v1/challenges/:challengeId/answer` | Submit the human answer |
-| `POST` | `/api/v1/siteverify` | Verify and consume a response token |
-| `GET` | `/health/live` | Process liveness |
-| `GET` | `/health/ready` | Service readiness and bounded queue state |
-
-### Answer input
-
-```json
-{
-  "answer": "NEXA"
-}
-```
-
-### Incorrect answer output
+Output — incorrect:
 
 ```json
 {
@@ -174,125 +136,88 @@ Frontend completion is informational only. Never grant access based on the callb
 }
 ```
 
-### Fifth incorrect answer output
+The fifth incorrect answer returns `status: "verification_failed"` with zero attempts remaining.
+
+### Confirm from your backend
+
+`POST /api/v1/siteverify`
+
+Input:
 
 ```json
 {
-  "success": false,
-  "status": "challenge_failed",
-  "attemptsRemaining": 0
+  "verificationId": "ver_G5uQkATY0vYfXxWSMEuT6w",
+  "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV"
 }
 ```
 
-### Correct answer output
+Output — accepted:
 
 ```json
 {
   "success": true,
-  "status": "completed",
-  "challengeId": "chl_G5uQkATY0vYfXxWSMEuT6w",
-  "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV",
-  "expiresAt": "2026-08-07T12:32:00.000Z"
+  "verifiedAt": "2026-08-07T12:30:00.000Z"
 }
 ```
 
-## Security boundaries
+Output — invalid, expired, or already used:
 
-- The browser receives flattened GIF media, never the answer or generation parameters.
-- Answers are normalized and stored only as runtime-keyed HMAC digests after rendering.
-- Response tokens are stored only as SHA-256 hashes.
-- Attempt changes and token consumption occur synchronously in the single Node.js process.
-- Challenge and token responses use `Cache-Control: no-store`.
-- The widget is isolated in an iframe and validates exact `postMessage` origins.
-- The main website and widget have separate CSP policies.
-- Only the widget may be framed by external websites.
-- Browser API requests are same-origin. Unknown cross-origin requests and disallowed `OPTIONS` headers are rejected.
-- Server-to-server `/siteverify` calls omit the browser `Origin` header and require no credential in anonymous v1.
-- Request bodies, active challenges, queue length, temporary storage, and request rates are bounded.
-- Answers and full response tokens must never be logged.
+```json
+{
+  "success": false,
+  "errorCode": "invalid-or-expired-verification"
+}
+```
 
-See [SECURITY.md](SECURITY.md) for reporting and operational details.
+## Run locally
 
-## Zero-configuration limitations
+Requirements: Node.js 20 or newer and npm.
 
-Anonymous v1 intentionally has no per-site identity. It therefore cannot provide per-site quotas, a private dashboard, reliable customer attribution, or individual-site revocation. Optional project keys and shared storage may be added later without removing the simple anonymous mode.
-
-## Local development
-
-Requirements:
-
-- Node.js 20 or newer
-- npm
-
-```bash
+```sh
 npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Production build:
 
-Production:
-
-```bash
+```sh
 npm run build
 npm start
 ```
 
-The server reads only `process.env.PORT`, with a default of `3000`. It does not install `dotenv` or require a `.env` file.
+## Deploy on Zeabur
 
-Container deployment with the project resource limits:
+Create a service from this GitHub repository and select the native Node.js runtime. The included `zbpack.json` defines the build and start commands, so no Docker image is used.
 
-```bash
-docker compose up --build
-```
+After deployment, attach `nexacaptcha.zone.id` in the Zeabur networking settings and enable HTTPS.
 
-`compose.yaml` applies `0.25` CPU, `100m` memory, a read-only root filesystem, a PID limit, and a dedicated temporary-media volume. NexaCAPTCHA additionally caps its own temporary media at 64 MB and removes expired files. The complete deployment must still be monitored because a Node heap ceiling is not the same as total process RSS.
+## Security boundaries
 
-## Tests
+- Answers are stored only as keyed digests with per-record salts.
+- Response tokens are stored only as SHA-256 hashes and are single-use.
+- Verification media and API responses use `Cache-Control: no-store`.
+- The widget runs in an isolated iframe and validates message origins.
+- Content Security Policy, same-origin API enforcement, strict `OPTIONS` handling, request size limits, and rate limits are enabled.
+- Answers and full tokens are never logged by the application.
 
-```bash
+Read [SECURITY.md](SECURITY.md) before production use.
+
+## Resource limits
+
+The service is designed for a maximum release budget of 0.25 vCPU, 100 MB RAM, and 10 GB storage. Rendering is queued and duty-cycle limited, active records are bounded, temporary animation storage is capped at 64 MB, and the production process uses a 64 MB JavaScript heap limit.
+
+Run all validation, including the resource probe:
+
+```sh
 npm run check
 ```
 
-The suite covers challenge lifecycle, five-attempt failure, token binding, single-use verification, malformed requests, route CSP, cross-origin denial, and strict `OPTIONS` handling.
-
-## Architecture
-
-```text
-src/
-  app.ts            Express routes and middleware
-  renderer.ts       Bounded vector-to-indexed-GIF renderer
-  store.ts          Short-lived challenge and token state
-  security.ts       CSP, Origin, CORS, and OPTIONS policy
-  server.ts         Runtime entrypoint and shutdown
-public/
-  captcha.js        Embeddable loader
-  widget.html       Isolated CAPTCHA document
-  widget/           Widget behavior and styles
-  index.html        English homepage and live demo
-tests/              Protocol and security tests
-```
-
-The default service uses one Node.js process, in-memory metadata, and short-lived temporary GIF files. Restarting the process invalidates active challenges. A future Redis adapter is required for horizontal multi-instance deployment.
-
-## Resource budget
-
-The production release is designed for a hard ceiling of:
-
-- 0.25 vCPU
-- 100 MB RAM
-- 10 GB storage
-
-Rendering is serialized through a bounded queue with a 25% work/cooldown duty-cycle target. Frames are encoded incrementally into a compact indexed-color GIF, and media files are deleted after expiry. Production starts Node with a 64 MB JavaScript heap ceiling, but release checks must measure total RSS rather than treating the heap limit as total memory. Container CPU quotas remain the authoritative hard limit.
+The current store is in-memory and intended for a single application instance. Restarting the service invalidates open verifications. Horizontal scaling requires a shared state adapter while preserving token atomicity and resource bounds.
 
 ## Accessibility
 
-The surrounding UI supports keyboard operation, visible focus, labels, live status announcements, and reduced decorative motion. The challenge itself depends on motion; NexaCAPTCHA documents that limitation and must add a non-motion alternative before claiming broad accessibility compliance.
-
-## Prior work
-
-NexaCAPTCHA does not claim to have invented motion CAPTCHA as a category. Ghost Font and CHAMSIN are relevant prior work. NexaCAPTCHA’s code, interface, branding, renderer, and protocol are independently implemented.
+The surrounding interface supports keyboard input, visible focus, labels, live status announcements, and reduced decorative motion. The verification itself depends on motion. A non-motion alternative is required before claiming broad accessibility compliance.
 
 ## License
 
-Licensed under the [Apache License 2.0](LICENSE). Third-party packages, fonts, and icon assets retain their own licenses and notices.
+Licensed under the [Apache License 2.0](LICENSE). See [NOTICE](NOTICE) for attribution and project-origin notes.
