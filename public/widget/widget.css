@@ -1,0 +1,181 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #ddffdc;
+  background: transparent;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; min-width: 260px; background: transparent; }
+
+body { padding: 6px; }
+
+.captcha-shell {
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 15px;
+  overflow: hidden;
+  border: 1px solid #485346;
+  border-radius: 8px;
+  background: #181818;
+}
+
+.captcha-brand,
+.captcha-footer,
+.input-row {
+  display: flex;
+  align-items: center;
+}
+
+.captcha-brand {
+  gap: 9px;
+  min-height: 30px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+
+.captcha-brand img { display: block; }
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 4px 8px;
+  border: 1px solid #485346;
+  border-radius: 999px;
+  color: #8cab87;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-pill.is-complete { border-color: #7fee64; color: #7fee64; }
+.status-pill.is-error { border-color: #b66a66; color: #e7aaa5; }
+
+.challenge-stage {
+  position: relative;
+  display: grid;
+  min-height: 116px;
+  margin: 14px 0;
+  overflow: hidden;
+  place-items: center;
+  border: 1px solid #303830;
+  border-radius: 7px;
+  background: #050706;
+}
+
+.challenge-stage::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 20%, rgba(0, 0, 0, .38));
+}
+
+#challenge-image {
+  display: none;
+  width: 100%;
+  height: auto;
+  min-height: 108px;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+#challenge-image.is-visible { display: block; }
+
+.stage-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #8cab87;
+  font-size: 13px;
+}
+
+.stage-placeholder[hidden] { display: none !important; }
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+  color: #bcd5b9;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.input-row { gap: 9px; }
+
+input {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  padding: 0 13px;
+  border: 1px solid #485346;
+  border-radius: 10px;
+  outline: none;
+  background: #0c0f0d;
+  color: #ddffdc;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+input:focus { border-color: #7fee64; background: #111511; }
+input:disabled { cursor: not-allowed; opacity: .58; }
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid #485346;
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 120ms ease, border-color 150ms ease, background-color 150ms ease;
+}
+
+.button:hover:not(:disabled) { transform: translateY(-1px); }
+.button:active:not(:disabled) { transform: translateY(0); }
+.button:focus-visible { outline: 2px solid #7fee64; outline-offset: 2px; }
+.button:disabled { cursor: not-allowed; opacity: .48; }
+.button-primary { border-color: #7fee64; background: #7fee64; color: #071007; }
+.button-quiet { padding: 0 9px; border-color: transparent; background: transparent; color: #8cab87; }
+.button-quiet:hover:not(:disabled) { border-color: #485346; color: #ddffdc; }
+
+.captcha-footer {
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.captcha-footer p {
+  margin: 0;
+  color: #8cab87;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.captcha-footer p.is-error { color: #e7aaa5; }
+.captcha-footer p.is-success { color: #7fee64; }
+
+@media (max-width: 370px) {
+  .input-row { align-items: stretch; flex-direction: column; }
+  .button-primary { width: 100%; }
+  .captcha-footer { align-items: flex-start; flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button, input { transition: none; }
+  .button:hover:not(:disabled) { transform: none; }
+}

@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="NexaCAPTCHA is open-source human verification in motion.">
+    <meta name="theme-color" content="#000000">
+    <meta property="og:title" content="NexaCAPTCHA — Verification in motion">
+    <meta property="og:description" content="Open-source human verification in motion.">
+    <title>NexaCAPTCHA — Verification in motion</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="/vendor/fonts/inter/index.css">
+    <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+    <script src="/v1/captcha.js?v=1" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <nav class="nav shell" aria-label="Main navigation">
+        <a class="brand" href="#top" aria-label="NexaCAPTCHA home">
+          <img src="/assets/logo.svg" alt="" width="32" height="32">
+          <span>NexaCAPTCHA</span>
+        </a>
+        <div class="nav-links">
+          <a href="#demo"><i class="fa-solid fa-play" aria-hidden="true"></i>Demo</a>
+          <a href="#integration"><i class="fa-solid fa-code" aria-hidden="true"></i>Integration</a>
+          <a href="#api"><i class="fa-solid fa-server" aria-hidden="true"></i>API</a>
+          <a href="https://github.com/NeuralNexusLab-nh/NexaCAPTCHA">
+            <i class="fa-brands fa-github" aria-hidden="true"></i>GitHub
+          </a>
+        </div>
+        <a class="button button-primary nav-cta" href="#demo">
+          <i class="fa-solid fa-play" aria-hidden="true"></i>
+          Try the demo
+        </a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero shell" id="top">
+        <div class="hero-copy reveal">
+          <p class="eyebrow"><i class="fa-solid fa-code-branch" aria-hidden="true"></i>OPEN SOURCE · APACHE 2.0</p>
+          <h1><i class="fa-solid fa-shield-halved title-icon" aria-hidden="true"></i>Verification in motion.</h1>
+          <p class="hero-lead">
+            A lightweight motion CAPTCHA designed to increase the cost of automated visual solving.
+            No account, site key, or private API credential required.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#demo">
+              <i class="fa-solid fa-play" aria-hidden="true"></i>Try the demo
+            </a>
+            <a class="button button-secondary" href="#integration">
+              <i class="fa-solid fa-code" aria-hidden="true"></i>View integration
+            </a>
+          </div>
+          <ul class="hero-notes" aria-label="Product highlights">
+            <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i>One script</li>
+            <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i>One div</li>
+            <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i>One-time verification</li>
+          </ul>
+        </div>
+        <div class="hero-demo reveal reveal-delay" id="demo">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-kicker"><i class="fa-solid fa-play" aria-hidden="true"></i>LIVE DEMO</p>
+              <h2><i class="fa-solid fa-eye title-icon" aria-hidden="true"></i>Try NexaCAPTCHA</h2>
+            </div>
+            <span class="live-pill"><span aria-hidden="true"></span>Live API</span>
+          </div>
+          <p class="panel-description">Follow the moving reveal, then enter all four characters.</p>
+          <div class="nexa-captcha" data-callback="onNexaComplete"></div>
+          <output class="demo-output" id="demo-output" aria-live="polite">
+            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+            Complete the challenge to see the browser result.
+          </output>
+        </div>
+      </section>
+
+      <section class="section shell" aria-labelledby="how-title">
+        <div class="section-heading reveal">
+          <p class="eyebrow"><i class="fa-solid fa-route" aria-hidden="true"></i>THREE STEPS</p>
+          <h2 id="how-title"><i class="fa-solid fa-list-ol title-icon" aria-hidden="true"></i>How it works</h2>
+        </div>
+        <div class="steps">
+          <article class="step reveal">
+            <span class="step-number">01</span>
+            <h3><i class="fa-solid fa-download" aria-hidden="true"></i>Load</h3>
+            <p>Add one hosted script and one mount point.</p>
+          </article>
+          <article class="step reveal reveal-delay">
+            <span class="step-number">02</span>
+            <h3><i class="fa-solid fa-keyboard" aria-hidden="true"></i>Verify</h3>
+            <p>The user enters the characters revealed through motion.</p>
+          </article>
+          <article class="step reveal reveal-delay-2">
+            <span class="step-number">03</span>
+            <h3><i class="fa-solid fa-server" aria-hidden="true"></i>Confirm</h3>
+            <p>Your backend verifies the short-lived response token.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section shell docs-section" id="integration" aria-labelledby="integration-title">
+        <div class="section-heading reveal">
+          <p class="eyebrow"><i class="fa-solid fa-code" aria-hidden="true"></i>INTEGRATION</p>
+          <h2 id="integration-title"><i class="fa-solid fa-plug title-icon" aria-hidden="true"></i>Add NexaCAPTCHA</h2>
+          <p>Add one script and one mount point. NexaCAPTCHA renders the complete interface.</p>
+        </div>
+
+        <article class="doc-block reveal">
+          <div class="doc-copy">
+            <span class="doc-step">1</span>
+            <h3><i class="fa-solid fa-code" aria-hidden="true"></i>Embed the widget</h3>
+            <p>Place this where the verification interface should appear.</p>
+          </div>
+          <div class="code-window">
+            <div class="code-toolbar">
+              <span><i class="fa-brands fa-html5" aria-hidden="true"></i>HTML</span>
+              <button class="copy-button" type="button" data-copy="embed-code">
+                <i class="fa-solid fa-copy" aria-hidden="true"></i><span>Copy</span>
+              </button>
+            </div>
+            <pre><code id="embed-code">&lt;script
+  src="https://nexacaptcha.zone.id/v1/captcha.js"
+  defer
+&gt;&lt;/script&gt;
+
+&lt;div
+  class="nexa-captcha"
+  data-callback="onNexaComplete"
+&gt;&lt;/div&gt;</code></pre>
+          </div>
+        </article>
+
+        <article class="doc-block reveal">
+          <div class="doc-copy">
+            <span class="doc-step">2</span>
+            <h3><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Receive the output</h3>
+            <p>The callback receives JSON after the user completes the challenge.</p>
+          </div>
+          <div class="code-window">
+            <div class="code-toolbar">
+              <span><i class="fa-brands fa-js" aria-hidden="true"></i>JavaScript</span>
+              <button class="copy-button" type="button" data-copy="callback-code">
+                <i class="fa-solid fa-copy" aria-hidden="true"></i><span>Copy</span>
+              </button>
+            </div>
+            <pre><code id="callback-code">function onNexaComplete(result) {
+  if (!result.success) return;
+
+  console.log(result.challengeId);
+  console.log(result.responseToken);
+}</code></pre>
+          </div>
+        </article>
+
+        <div class="io-grid reveal" aria-label="Browser output fields">
+          <article class="io-card">
+            <h3><i class="fa-solid fa-keyboard" aria-hidden="true"></i>Input</h3>
+            <p>The user enters the four characters shown through the moving reveal.</p>
+            <code>{ "answer": "NEXA" }</code>
+          </article>
+          <article class="io-card">
+            <h3><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Output</h3>
+            <p>A completed challenge returns its public ID and one-time response token.</p>
+            <code>{ "success": true, "challengeId": "chl_…", "responseToken": "…" }</code>
+          </article>
+        </div>
+      </section>
+
+      <section class="section shell docs-section" id="api" aria-labelledby="api-title">
+        <div class="section-heading reveal">
+          <p class="eyebrow"><i class="fa-solid fa-server" aria-hidden="true"></i>SERVER VERIFICATION</p>
+          <h2 id="api-title"><i class="fa-solid fa-shield-halved title-icon" aria-hidden="true"></i>Verify from your backend</h2>
+          <p>Send both values to NexaCAPTCHA before accepting the protected action.</p>
+        </div>
+
+        <div class="api-layout reveal">
+          <div class="code-window code-window-large">
+            <div class="code-toolbar">
+              <span><i class="fa-brands fa-node-js" aria-hidden="true"></i>Node.js</span>
+              <button class="copy-button" type="button" data-copy="verify-code">
+                <i class="fa-solid fa-copy" aria-hidden="true"></i><span>Copy</span>
+              </button>
+            </div>
+            <pre><code id="verify-code">const response = await fetch(
+  "https://nexacaptcha.zone.id/api/v1/siteverify",
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      challengeId: req.body.challengeId,
+      responseToken: req.body.responseToken
+    })
+  }
+);
+
+const verification = await response.json();
+
+if (!verification.success) {
+  return res.status(403).json({
+    error: "CAPTCHA verification failed"
+  });
+}</code></pre>
+          </div>
+
+          <div class="api-details">
+            <article>
+              <h3><i class="fa-solid fa-keyboard" aria-hidden="true"></i>Request input</h3>
+              <dl>
+                <div><dt>challengeId</dt><dd>Public challenge identifier.</dd></div>
+                <div><dt>responseToken</dt><dd>32-character, short-lived, one-time token.</dd></div>
+              </dl>
+            </article>
+            <article>
+              <h3><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Response output</h3>
+              <dl>
+                <div><dt>success</dt><dd>True only when the token is valid and consumed.</dd></div>
+                <div><dt>verifiedAt</dt><dd>UTC verification timestamp on success.</dd></div>
+              </dl>
+            </article>
+          </div>
+        </div>
+
+        <aside class="security-note reveal">
+          <i class="fa-solid fa-lock" aria-hidden="true"></i>
+          <div>
+            <h3><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>Backend verification is required</h3>
+            <p>Never trust frontend completion alone. Always verify the response token from your backend.</p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section shell open-section reveal" aria-labelledby="open-title">
+        <img src="/assets/logo.svg" alt="" width="74" height="74">
+        <div>
+          <p class="eyebrow"><i class="fa-solid fa-code-branch" aria-hidden="true"></i>OPEN BY DESIGN</p>
+          <h2 id="open-title"><i class="fa-brands fa-github title-icon" aria-hidden="true"></i>Inspect it. Run it. Improve it.</h2>
+          <p>NexaCAPTCHA is developed in public and released under the Apache License 2.0.</p>
+        </div>
+        <a class="button button-secondary" href="https://github.com/NeuralNexusLab-nh/NexaCAPTCHA">
+          <i class="fa-brands fa-github" aria-hidden="true"></i>View on GitHub
+        </a>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell footer-grid">
+        <div class="footer-brand">
+          <img src="/assets/logo.svg" alt="" width="30" height="30">
+          <div><strong>NexaCAPTCHA</strong><span>Open-source human verification in motion.</span></div>
+        </div>
+        <nav aria-label="Footer navigation">
+          <a href="#integration"><i class="fa-solid fa-code" aria-hidden="true"></i>Integration</a>
+          <a href="#api"><i class="fa-solid fa-server" aria-hidden="true"></i>API</a>
+          <a href="https://github.com/NeuralNexusLab-nh/NexaCAPTCHA"><i class="fa-brands fa-github" aria-hidden="true"></i>GitHub</a>
+        </nav>
+        <p><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>Apache-2.0</p>
+      </div>
+    </footer>
+    <div class="sr-only" id="copy-status" aria-live="polite"></div>
+  </body>
+</html>

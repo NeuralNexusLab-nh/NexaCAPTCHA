@@ -1,0 +1,50 @@
+{
+  "name": "nexacaptcha",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open-source human verification in motion.",
+  "homepage": "https://nexacaptcha.zone.id",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NeuralNexusLab-nh/NexaCAPTCHA.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NeuralNexusLab-nh/NexaCAPTCHA/issues"
+  },
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node --max-old-space-size=64 dist/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:resource": "node --max-old-space-size=64 scripts/resource-check.mjs",
+    "check": "npm run build && npm test && npm run test:resource"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/space-grotesk": "^5.3.0",
+    "@fortawesome/fontawesome-free": "^7.3.1",
+    "compression": "^1.8.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
+    "gifenc": "^1.0.3",
+    "helmet": "^8.1.0",
+    "hershey": "^2.1.7",
+    "zod": "^4.0.17"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.8.1",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.3.0",
+    "@types/supertest": "^6.0.3",
+    "supertest": "^7.1.4",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

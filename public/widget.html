@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>NexaCAPTCHA verification</title>
+    <link rel="stylesheet" href="/vendor/fonts/inter/index.css">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/widget-assets/widget.css?v=1">
+  </head>
+  <body>
+    <main class="captcha-shell" aria-labelledby="captcha-title">
+      <header class="captcha-brand">
+        <img src="/assets/logo.svg" alt="" width="26" height="26">
+        <span id="captcha-title">NexaCAPTCHA</span>
+        <span class="status-pill" id="status-pill">
+          <i class="fa-solid fa-circle-notch" aria-hidden="true"></i>
+          Loading
+        </span>
+      </header>
+
+      <div class="challenge-stage" aria-busy="true" id="challenge-stage">
+        <img id="challenge-image" alt="Animated character challenge" draggable="false">
+        <div class="stage-placeholder" id="stage-placeholder">
+          <i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i>
+          Preparing challenge…
+        </div>
+      </div>
+
+      <form id="captcha-form" novalidate>
+        <label for="captcha-answer">
+          <i class="fa-solid fa-keyboard" aria-hidden="true"></i>
+          Enter the characters you see
+        </label>
+        <div class="input-row">
+          <input
+            id="captcha-answer"
+            name="answer"
+            type="text"
+            inputmode="text"
+            minlength="4"
+            maxlength="4"
+            autocomplete="off"
+            autocapitalize="characters"
+            autocorrect="off"
+            spellcheck="false"
+            disabled
+            required
+          >
+          <button class="button button-primary" id="verify-button" type="submit" disabled>
+            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+            Verify
+          </button>
+        </div>
+      </form>
+
+      <footer class="captcha-footer">
+        <p id="status-message" role="status" aria-live="polite">Loading a new challenge…</p>
+        <button class="button button-quiet" id="new-button" type="button">
+          <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+          New challenge
+        </button>
+      </footer>
+    </main>
+    <script src="/widget-assets/widget.js?v=1" defer></script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+services:
+  nexacaptcha:
+    build: .
+    ports:
+      - "3000:3000"
+    cpus: 0.25
+    mem_limit: 100m
+    pids_limit: 64
+    read_only: true
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=8m,noexec,nosuid
+    volumes:
+      - nexacaptcha-media:/app/tmp
+
+volumes:
+  nexacaptcha-media:

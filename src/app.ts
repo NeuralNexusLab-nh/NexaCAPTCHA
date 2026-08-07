@@ -1,0 +1,223 @@
+import path from "node:path";
+import compression from "compression";
+import express, { type ErrorRequestHandler } from "express";
+import { rateLimit } from "express-rate-limit";
+import helmet from "helmet";
+import { z } from "zod";
+import { config } from "./config.js";
+import { PublicError } from "./errors.js";
+import {
+  apiPreflight,
+  sameOriginApi,
+  websiteHeaders,
+  widgetHeaders
+} from "./security.js";
+import { ChallengeStore } from "./store.js";
+
+const answerSchema = z
+  .object({
+    answer: z.string().min(1).max(12)
+  })
+  .strict();
+
+const createChallengeSchema = z.object({}).strict();
+
+const verificationSchema = z
+  .object({
+    challengeId: z.string().regex(/^chl_[A-Za-z0-9_-]{22}$/),
+    responseToken: z.string().regex(/^[A-Za-z0-9_-]{32}$/)
+  })
+  .strict();
+
+function routeParameter(value: string | string[] | undefined): string {
+  return typeof value === "string" ? value : "";
+}
+
+function limiter(windowMs: number, limit: number) {
+  return rateLimit({
+    windowMs,
+    limit,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    message: {
+      errorCode: "rate-limited",
+      message: "Too many requests. Please retry later."
+    }
+  });
+}
+
+export function createApp(store: ChallengeStore) {
+  const app = express();
+  app.disable("x-powered-by");
+  app.set("trust proxy", 1);
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginOpenerPolicy: false,
+      crossOriginResourcePolicy: false,
+      frameguard: false
+    })
+  );
+  app.use(compression({ threshold: 1024 }));
+
+  app.get("/health/live", (_request, response) => {
+    response.setHeader("Cache-Control", "no-store");
+    response.json({ status: "ok" });
+  });
+
+  app.get("/health/ready", (_request, response) => {
+    response.setHeader("Cache-Control", "no-store");
+    response.json({ status: "ready", ...store.getStats() });
+  });
+
+  app.options(/^\/api\//, apiPreflight);
+  app.use("/api", sameOriginApi);
+  app.use("/api", express.json({ limit: "4kb", strict: true }));
+
+  app.post(
+    "/api/v1/challenges",
+    limiter(60_000, 24),
+    async (_request, response, next) => {
+      try {
+        createChallengeSchema.parse(_request.body);
+        const challenge = await store.create();
+        response.setHeader("Cache-Control", "no-store");
+        response.status(201).json(challenge);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  app.get(
+    "/api/v1/challenges/:challengeId/media",
+    limiter(60_000, 120),
+    (request, response, next) => {
+      try {
+        const mediaPath = store.getMediaPath(routeParameter(request.params.challengeId));
+        response.setHeader("Cache-Control", "no-store, max-age=0");
+        response.setHeader("Content-Type", "image/gif");
+        response.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+        response.sendFile(mediaPath, (error) => {
+          if (error) next(error);
+        });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  app.post(
+    "/api/v1/challenges/:challengeId/answer",
+    limiter(60_000, 80),
+    (request, response, next) => {
+      try {
+        const input = answerSchema.parse(request.body);
+        const result = store.submitAnswer(
+          routeParameter(request.params.challengeId),
+          input.answer
+        );
+        response.setHeader("Cache-Control", "no-store");
+        response.json(result);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  app.post(
+    "/api/v1/siteverify",
+    limiter(60_000, 120),
+    (request, response, next) => {
+      try {
+        const input = verificationSchema.parse(request.body);
+        const result = store.verify(input.challengeId, input.responseToken);
+        response.setHeader("Cache-Control", "no-store");
+        response.json(result);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  app.get("/v1/captcha.js", widgetHeaders, (_request, response) => {
+    response.setHeader("Access-Control-Allow-Origin", "*");
+    response.setHeader("Cache-Control", "public, max-age=300");
+    response.sendFile(path.join(config.publicDirectory, "captcha.js"));
+  });
+
+  app.get("/widget", widgetHeaders, (_request, response) => {
+    response.setHeader("Cache-Control", "public, max-age=300");
+    response.sendFile(path.join(config.publicDirectory, "widget.html"));
+  });
+
+  app.use("/widget-assets", widgetHeaders, express.static(
+    path.join(config.publicDirectory, "widget"),
+    { fallthrough: false, maxAge: "5m" }
+  ));
+
+  app.use(
+    "/vendor/fontawesome",
+    websiteHeaders,
+    express.static(path.resolve("node_modules", "@fortawesome", "fontawesome-free"), {
+      fallthrough: false,
+      maxAge: "1d"
+    })
+  );
+
+  app.use(
+    "/vendor/fonts/inter",
+    websiteHeaders,
+    express.static(path.resolve("node_modules", "@fontsource-variable", "inter"), {
+      fallthrough: false,
+      maxAge: "1d"
+    })
+  );
+
+  app.use(
+    "/vendor/fonts/space-grotesk",
+    websiteHeaders,
+    express.static(
+      path.resolve("node_modules", "@fontsource-variable", "space-grotesk"),
+      { fallthrough: false, maxAge: "1d" }
+    )
+  );
+
+  app.use(websiteHeaders);
+  app.use(express.static(config.publicDirectory, { extensions: ["html"], maxAge: "5m" }));
+  app.get("/", (_request, response) => {
+    response.sendFile(path.join(config.publicDirectory, "index.html"));
+  });
+
+  app.use((_request, response) => {
+    response.status(404).json({
+      errorCode: "not-found",
+      message: "The requested resource was not found."
+    });
+  });
+
+  const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
+    if (error instanceof z.ZodError) {
+      response.status(400).json({
+        errorCode: "invalid-request",
+        message: "The request body is invalid."
+      });
+      return;
+    }
+    if (error instanceof PublicError) {
+      response.status(error.statusCode).json({
+        errorCode: error.code,
+        message: error.message
+      });
+      return;
+    }
+    console.error("Unhandled request error", error);
+    response.status(500).json({
+      errorCode: "internal-error",
+      message: "An unexpected error occurred."
+    });
+  };
+  app.use(errorHandler);
+
+  return app;
+}
