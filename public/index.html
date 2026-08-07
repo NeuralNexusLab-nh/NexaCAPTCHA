@@ -3,19 +3,19 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="NexaCAPTCHA uses changing visual context to make automated recognition more expensive while keeping verification understandable for people.">
-    <meta name="theme-color" content="#000000">
-    <meta property="og:title" content="NexaCAPTCHA — Built for human perception">
-    <meta property="og:description" content="Open-source temporal human verification.">
-    <title>NexaCAPTCHA — Built for human perception</title>
+    <meta name="description" content="NexaCAPTCHA reveals text over time for simple human verification.">
+    <meta name="theme-color" content="#050706">
+    <meta property="og:title" content="NexaCAPTCHA — Easy for people. More work for bots.">
+    <meta property="og:description" content="A motion-based CAPTCHA with a simple integration.">
+    <title>NexaCAPTCHA — Easy for people. More work for bots.</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="/site.webmanifest">
     <link rel="stylesheet" href="/vendor/fonts/inter/index.css">
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=2">
-    <script src="/app.js?v=2" defer></script>
-    <script src="/v1/captcha.js?v=2" defer></script>
+    <link rel="stylesheet" href="/styles.css?v=3">
+    <script src="/app.js?v=3" defer></script>
+    <script src="/v1/captcha.js?v=3" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -26,10 +26,9 @@
           <span>NexaCAPTCHA</span>
         </a>
         <div class="nav-links">
-          <a href="#difference"><i class="fa-solid fa-wave-square" aria-hidden="true"></i><span data-i18n="navDifference">Difference</span></a>
-          <a href="#demo"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="navDemo">Demo</span></a>
-          <a href="#integration"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="navIntegration">Integration</span></a>
-          <a href="#api"><i class="fa-solid fa-server" aria-hidden="true"></i><span data-i18n="navApi">API</span></a>
+          <a href="#features"><i class="fa-solid fa-star" aria-hidden="true"></i><span data-i18n="navFeatures">Features</span></a>
+          <a href="#setup"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="navSetup">Setup</span></a>
+          <a href="#verify"><i class="fa-solid fa-server" aria-hidden="true"></i><span data-i18n="navVerify">Backend verification</span></a>
           <a href="https://github.com/NeuralNexusLab-nh/NexaCAPTCHA"><i class="fa-brands fa-github" aria-hidden="true"></i><span>GitHub</span></a>
         </div>
         <div class="language-control">
@@ -40,7 +39,6 @@
             <option value="zh-Hant">繁體中文</option>
             <option value="ja">日本語</option>
           </select>
-          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
         </div>
       </nav>
     </header>
@@ -48,269 +46,163 @@
     <main id="main">
       <section class="hero shell" id="top">
         <div class="hero-copy reveal">
-          <p class="eyebrow eyebrow-cyan"><i class="fa-solid fa-wave-square" aria-hidden="true"></i><span data-i18n="heroEyebrow">TEMPORAL HUMAN VERIFICATION</span></p>
-          <h1 data-i18n="heroTitle">Built for human perception.</h1>
-          <p class="hero-lead" data-i18n="heroLead">
-            NexaCAPTCHA reveals readable fragments over time. People combine them naturally; automated systems must extract, align, track, and reconstruct the sequence before recognition.
-          </p>
+          <p class="eyebrow"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span data-i18n="heroEyebrow">HUMAN VERIFICATION</span></p>
+          <h1 data-i18n="heroTitle">Easy for people.<br>More work for bots.</h1>
+          <p class="hero-lead" data-i18n="heroLead">NexaCAPTCHA shows four characters a little at a time. People follow the movement and read them naturally, while automated tools need to process the full animation.</p>
           <div class="hero-actions">
-            <a class="button button-primary" href="#demo"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="tryDemo">Try the demo</span></a>
-            <a class="button button-secondary" href="#integration"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="viewIntegration">View integration</span></a>
+            <a class="button button-primary" href="#demo"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="tryIt">Try it</span></a>
+            <a class="button button-secondary" href="#setup"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="addToSite">Add to your site</span></a>
           </div>
           <ul class="hero-notes" aria-label="Product highlights">
-            <li><i class="fa-solid fa-eye" aria-hidden="true"></i><span data-i18n="highlightReadable">Human-readable reveal</span></li>
-            <li><i class="fa-solid fa-clock" aria-hidden="true"></i><span data-i18n="highlightExpiry">3-minute verification window</span></li>
-            <li><i class="fa-solid fa-key" aria-hidden="true"></i><span data-i18n="highlightToken">Single-use token</span></li>
+            <li><i class="fa-solid fa-font" aria-hidden="true"></i><span data-i18n="fourChars">4 uppercase letters or digits</span></li>
+            <li><i class="fa-solid fa-clock" aria-hidden="true"></i><span data-i18n="fiveMinutes">5 minutes to complete</span></li>
+            <li><i class="fa-solid fa-key" aria-hidden="true"></i><span data-i18n="oneTime">One-time result</span></li>
           </ul>
         </div>
 
-        <div class="hero-demo reveal reveal-delay" id="demo">
-          <div class="panel-heading">
+        <div class="demo-card reveal" id="demo">
+          <div class="card-heading">
             <div>
-              <p class="panel-kicker"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="liveDemo">LIVE DEMO</span></p>
-              <h2><i class="fa-solid fa-eye title-icon" aria-hidden="true"></i><span data-i18n="tryNexa">Try NexaCAPTCHA</span></h2>
+              <p class="eyebrow"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="liveDemo">LIVE DEMO</span></p>
+              <h2 data-i18n="tryNexa">Try NexaCAPTCHA</h2>
             </div>
-            <span class="live-pill"><span aria-hidden="true"></span><span data-i18n="liveApi">Live API</span></span>
+            <span class="live-pill"><span aria-hidden="true"></span><span data-i18n="ready">Ready</span></span>
           </div>
-          <p class="panel-description" data-i18n="demoHelp">Watch the wider moving reveal, then enter all four uppercase letters or digits.</p>
+          <p class="card-help" data-i18n="demoHelp">Follow the moving window, then enter all four characters.</p>
           <div class="nexa-captcha" data-callback="onNexaComplete"></div>
           <output class="demo-output" id="demo-output" aria-live="polite">
             <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-            <span data-i18n="demoOutput">Complete the verification to see the browser output.</span>
+            <span data-i18n="demoOutput">Your result will appear here.</span>
           </output>
         </div>
       </section>
 
-      <section class="section shell" id="difference" aria-labelledby="difference-title">
+      <section class="section shell" id="features" aria-labelledby="features-title">
         <div class="section-heading reveal">
-          <p class="eyebrow eyebrow-purple"><i class="fa-solid fa-code-compare" aria-hidden="true"></i><span data-i18n="differenceEyebrow">WHY IT IS DIFFERENT</span></p>
-          <h2 id="difference-title"><i class="fa-solid fa-layer-group title-icon title-icon-purple" aria-hidden="true"></i><span data-i18n="differenceTitle">Recognition requires time, not one screenshot.</span></h2>
-          <p data-i18n="differenceLead">Traditional image CAPTCHAs expose the complete text at once. NexaCAPTCHA distributes useful visual context across a changing sequence.</p>
+          <p class="eyebrow eyebrow-purple"><i class="fa-solid fa-star" aria-hidden="true"></i><span data-i18n="featuresEyebrow">FEATURES</span></p>
+          <h2 id="features-title" data-i18n="featuresTitle">Why NexaCAPTCHA?</h2>
+          <p data-i18n="featuresLead">A normal text CAPTCHA can be read from one picture. NexaCAPTCHA spreads the useful parts across an animation.</p>
         </div>
-
-        <div class="comparison-grid">
-          <article class="comparison-card comparison-static reveal">
-            <div class="comparison-label"><i class="fa-solid fa-image" aria-hidden="true"></i><span data-i18n="staticLabel">Static CAPTCHA</span></div>
-            <h3 data-i18n="staticTitle">One image contains the answer.</h3>
-            <p data-i18n="staticBody">An OCR pipeline can crop, denoise, segment, and recognize a single stable frame.</p>
-            <div class="process-row" aria-hidden="true"><span>AB7K</span><i class="fa-solid fa-arrow-right"></i><span>OCR</span></div>
+        <div class="feature-grid">
+          <article class="feature-card reveal">
+            <i class="fa-solid fa-eye" aria-hidden="true"></i>
+            <h3 data-i18n="featureReadableTitle">Clearer for people</h3>
+            <p data-i18n="featureReadableBody">Characters stay centered, do not move up and down, and a wider area remains visible.</p>
           </article>
-          <article class="comparison-card comparison-nexa reveal reveal-delay">
-            <div class="comparison-label"><i class="fa-solid fa-wave-square" aria-hidden="true"></i><span>NexaCAPTCHA</span></div>
-            <h3 data-i18n="nexaTitle">Meaning is distributed over time.</h3>
-            <p data-i18n="nexaBody">Automation must sample frames, align motion, track changing glyph fragments, undo deformation, reconstruct characters, and only then run recognition.</p>
-            <div class="process-row process-temporal" aria-hidden="true"><span>A▏</span><span>▕B</span><span>7▏</span><span>▕K</span></div>
+          <article class="feature-card reveal">
+            <i class="fa-solid fa-film" aria-hidden="true"></i>
+            <h3 data-i18n="featureMotionTitle">The full animation matters</h3>
+            <p data-i18n="featureMotionBody">No single moment shows the complete answer. Automated tools must inspect more than one image.</p>
           </article>
-        </div>
-
-        <aside class="explanation-note reveal">
-          <i class="fa-solid fa-microchip" aria-hidden="true"></i>
-          <div>
-            <h3 data-i18n="costTitle">Why automated solving costs more</h3>
-            <p data-i18n="costBody">A model cannot rely on one clean input. It needs a temporal pipeline and more inference work per verification. NexaCAPTCHA is not “AI-proof”; it is designed to make reliable automation less direct and more expensive.</p>
-          </div>
-        </aside>
-      </section>
-
-      <section class="section shell" aria-labelledby="how-title">
-        <div class="section-heading reveal">
-          <p class="eyebrow"><i class="fa-solid fa-route" aria-hidden="true"></i><span data-i18n="threeSteps">THREE STEPS</span></p>
-          <h2 id="how-title"><i class="fa-solid fa-list-ol title-icon" aria-hidden="true"></i><span data-i18n="howTitle">A short integration path</span></h2>
-        </div>
-        <div class="steps">
-          <article class="step reveal">
-            <span class="step-number">01</span>
-            <h3><i class="fa-solid fa-download" aria-hidden="true"></i><span data-i18n="stepLoad">Load</span></h3>
-            <p data-i18n="stepLoadBody">Add one hosted script and one mount point.</p>
-          </article>
-          <article class="step reveal reveal-delay">
-            <span class="step-number">02</span>
-            <h3><i class="fa-solid fa-keyboard" aria-hidden="true"></i><span data-i18n="stepVerify">Verify</span></h3>
-            <p data-i18n="stepVerifyBody">The user reads four uppercase letters or digits over time.</p>
-          </article>
-          <article class="step reveal reveal-delay-2">
-            <span class="step-number">03</span>
-            <h3><i class="fa-solid fa-server" aria-hidden="true"></i><span data-i18n="stepConfirm">Confirm</span></h3>
-            <p data-i18n="stepConfirmBody">Your backend confirms and consumes the response token.</p>
+          <article class="feature-card reveal">
+            <i class="fa-solid fa-plug" aria-hidden="true"></i>
+            <h3 data-i18n="featureSimpleTitle">Simple to add</h3>
+            <p data-i18n="featureSimpleBody">Load one script, add one element, then verify two values from your backend.</p>
           </article>
         </div>
       </section>
 
-      <section class="section shell docs-section" id="integration" aria-labelledby="integration-title">
-        <div class="section-heading reveal">
-          <p class="eyebrow eyebrow-cyan"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="integrationEyebrow">INTEGRATION</span></p>
-          <h2 id="integration-title"><i class="fa-solid fa-plug title-icon" aria-hidden="true"></i><span data-i18n="integrationTitle">Add NexaCAPTCHA</span></h2>
-          <p data-i18n="integrationLead">The loader creates the complete isolated interface inside your mount point.</p>
-        </div>
-
-        <article class="doc-block reveal">
-          <div class="doc-copy">
-            <span class="doc-step">1</span>
-            <h3><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="embedTitle">Embed the widget</span></h3>
-            <p data-i18n="embedBody">Place this markup where verification should appear.</p>
+      <section class="section docs-section" id="setup" aria-labelledby="setup-title">
+        <div class="shell">
+          <div class="section-heading reveal">
+            <p class="eyebrow"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="setupEyebrow">SETUP</span></p>
+            <h2 id="setup-title" data-i18n="setupTitle">Add it in two small steps</h2>
+            <p data-i18n="setupLead">The CAPTCHA handles its own display and answer checking.</p>
           </div>
-          <div class="code-window">
-            <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i>HTML</span><button class="copy-button" type="button" data-copy="embed-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
-            <pre><code id="embed-code">&lt;script
-  src="https://nexacaptcha.zone.id/v1/captcha.js"
-  defer
-&gt;&lt;/script&gt;
 
-&lt;div
-  class="nexa-captcha"
-  data-callback="onNexaComplete"
-&gt;&lt;/div&gt;</code></pre>
-          </div>
-        </article>
+          <article class="setup-row reveal">
+            <div class="setup-copy">
+              <span class="step-number">1</span>
+              <div><h3><i class="fa-solid fa-download" aria-hidden="true"></i><span data-i18n="loadTitle">Load the widget</span></h3><p data-i18n="loadBody">Add this script and place the CAPTCHA where you want it.</p></div>
+            </div>
+            <div class="code-window">
+              <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i>HTML</span><button class="copy-button" type="button" data-copy="embed-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
+              <pre><code id="embed-code">&lt;script src="https://nexacaptcha.zone.id/v1/captcha.js" defer&gt;&lt;/script&gt;
 
-        <article class="doc-block reveal">
-          <div class="doc-copy">
-            <span class="doc-step">2</span>
-            <h3><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i><span data-i18n="receiveTitle">Receive browser output</span></h3>
-            <p data-i18n="receiveBody">The callback returns a verification ID and one-time token after success.</p>
-          </div>
-          <div class="code-window">
-            <div class="code-toolbar"><span><i class="fa-brands fa-js" aria-hidden="true"></i>JavaScript</span><button class="copy-button" type="button" data-copy="callback-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
-            <pre><code id="callback-code">function onNexaComplete(result) {
+&lt;div class="nexa-captcha" data-callback="onNexaComplete"&gt;&lt;/div&gt;</code></pre>
+            </div>
+          </article>
+
+          <article class="setup-row reveal">
+            <div class="setup-copy">
+              <span class="step-number">2</span>
+              <div><h3><i class="fa-solid fa-arrow-right" aria-hidden="true"></i><span data-i18n="sendTitle">Send the result to your backend</span></h3><p data-i18n="sendBody">After success, send only verificationId and responseToken to your server.</p></div>
+            </div>
+            <div class="code-window">
+              <div class="code-toolbar"><span><i class="fa-brands fa-js" aria-hidden="true"></i>JavaScript</span><button class="copy-button" type="button" data-copy="callback-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
+              <pre><code id="callback-code">function onNexaComplete(result) {
   if (!result.success) return;
 
-  console.log(result.verificationId);
-  console.log(result.responseToken);
+  sendToYourBackend({
+    verificationId: result.verificationId,
+    responseToken: result.responseToken
+  });
 }</code></pre>
-          </div>
-        </article>
+            </div>
+          </article>
 
-        <div class="schema-grid reveal">
-          <article class="schema-card">
-            <h3><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i><span data-i18n="browserOutput">Browser output</span></h3>
-            <pre><code id="browser-output-code">{
-  "success": true,
-  "verificationId": "ver_G5uQkATY0vYfXxWSMEuT6w",
-  "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV"
-}</code></pre>
-          </article>
-          <article class="schema-card schema-explain">
-            <h3><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span data-i18n="fieldMeaning">Field meaning</span></h3>
+          <div class="parameter-card reveal">
+            <h3><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span data-i18n="valuesTitle">The two values you need</span></h3>
             <dl>
-              <div><dt>success</dt><dd data-i18n="fieldSuccess">True only after the text was entered correctly.</dd></div>
-              <div><dt>verificationId</dt><dd data-i18n="fieldId">Public identifier passed to your backend.</dd></div>
-              <div><dt>responseToken</dt><dd data-i18n="fieldToken">32-character token that expires after five minutes and works once.</dd></div>
+              <div><dt>verificationId</dt><dd data-i18n="idMeaning">Identifies which completed CAPTCHA is being checked.</dd></div>
+              <div><dt>responseToken</dt><dd data-i18n="tokenMeaning">A 32-character, one-time proof returned after the correct answer.</dd></div>
             </dl>
-          </article>
+          </div>
         </div>
       </section>
 
-      <section class="section shell docs-section" id="api" aria-labelledby="api-title">
+      <section class="section shell" id="verify" aria-labelledby="verify-title">
         <div class="section-heading reveal">
-          <p class="eyebrow eyebrow-purple"><i class="fa-solid fa-server" aria-hidden="true"></i><span data-i18n="apiEyebrow">HTTP API</span></p>
-          <h2 id="api-title"><i class="fa-solid fa-code title-icon title-icon-purple" aria-hidden="true"></i><span data-i18n="apiTitle">Every request and response, explicitly defined.</span></h2>
-          <p data-i18n="apiLead">All endpoints use JSON except the animation response. No site key or authorization header is required.</p>
+          <p class="eyebrow eyebrow-purple"><i class="fa-solid fa-server" aria-hidden="true"></i><span data-i18n="verifyEyebrow">BACKEND VERIFICATION</span></p>
+          <h2 id="verify-title" data-i18n="verifyTitle">Confirm the result</h2>
+          <p data-i18n="verifyLead">Your backend sends the two values to one endpoint before accepting the form, signup, or login.</p>
         </div>
 
-        <div class="endpoint-list">
+        <div class="verify-layout">
           <article class="endpoint-card reveal">
-            <header><span class="method method-post">POST</span><code>/api/v1/verifications</code><span data-i18n="createVerification">Create verification</span></header>
-            <div class="endpoint-io">
-              <section><h3><i class="fa-solid fa-keyboard" aria-hidden="true"></i><span data-i18n="input">Input</span></h3><pre><code id="create-input">{}</code></pre></section>
-              <section><h3><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i><span data-i18n="output">Output</span></h3><pre><code id="create-output">{
-  "verificationId": "ver_G5uQkATY0vYfXxWSMEuT6w",
-  "animationUrl": "/api/v1/verifications/ver_G5uQkATY0vYfXxWSMEuT6w/animation",
-  "expiresAt": "2026-08-07T12:33:00.000Z"
-}</code></pre></section>
-            </div>
-          </article>
-
-          <article class="endpoint-card reveal">
-            <header><span class="method method-post">POST</span><code>/api/v1/verifications/:verificationId/answer</code><span data-i18n="submitAnswer">Submit answer</span></header>
-            <div class="endpoint-io">
-              <section><h3><i class="fa-solid fa-keyboard" aria-hidden="true"></i><span data-i18n="input">Input</span></h3><pre><code id="answer-input">{
-  "answer": "A7K3"
-}</code></pre></section>
-              <section><h3><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i><span data-i18n="outputSuccess">Output · success</span></h3><pre><code id="answer-output">{
+            <header><span class="method">POST</span><code>/api/v1/siteverify</code></header>
+            <div class="endpoint-part"><h3><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i><span data-i18n="request">Request</span></h3><pre><code id="verify-input">{
+  "verificationId": "ver_...",
+  "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV"
+}</code></pre></div>
+            <div class="endpoint-part"><h3><i class="fa-solid fa-arrow-down" aria-hidden="true"></i><span data-i18n="response">Response</span></h3><pre><code>{
   "success": true,
-  "status": "completed",
-  "verificationId": "ver_G5uQkATY0vYfXxWSMEuT6w",
-  "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV",
-  "expiresAt": "2026-08-07T12:35:00.000Z"
-}</code></pre></section>
-            </div>
-            <div class="compact-output"><h3><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i><span data-i18n="outputIncorrect">Output · incorrect</span></h3><pre><code>{
-  "success": false,
-  "status": "incorrect",
-  "attemptsRemaining": 4
+  "verifiedAt": "2026-08-07T12:30:00.000Z"
 }</code></pre></div>
           </article>
 
-          <article class="endpoint-card reveal">
-            <header><span class="method method-post">POST</span><code>/api/v1/siteverify</code><span data-i18n="confirmBackend">Confirm from your backend</span></header>
-            <div class="endpoint-io">
-              <section><h3><i class="fa-solid fa-keyboard" aria-hidden="true"></i><span data-i18n="input">Input</span></h3><pre><code id="verify-input">{
-  "verificationId": "ver_G5uQkATY0vYfXxWSMEuT6w",
-  "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV"
-}</code></pre></section>
-              <section><h3><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i><span data-i18n="output">Output</span></h3><pre><code id="verify-output">{
-  "success": true,
-  "verifiedAt": "2026-08-07T12:30:00.000Z"
-}</code></pre></section>
-            </div>
-          </article>
-        </div>
-
-        <article class="server-example reveal">
-          <div class="doc-copy">
-            <h3><i class="fa-brands fa-node-js" aria-hidden="true"></i><span data-i18n="nodeExample">Node.js verification example</span></h3>
-            <p data-i18n="nodeExampleBody">Call the public confirmation endpoint before accepting signup, login, or form submission.</p>
-          </div>
-          <div class="code-window">
-            <div class="code-toolbar"><span><i class="fa-brands fa-node-js" aria-hidden="true"></i>Node.js</span><button class="copy-button" type="button" data-copy="verify-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
-            <pre><code id="verify-code">const response = await fetch(
+          <article class="backend-card reveal">
+            <div class="code-toolbar"><span><i class="fa-brands fa-node-js" aria-hidden="true"></i>Node.js</span><button class="copy-button" type="button" data-copy="backend-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
+            <pre><code id="backend-code">const response = await fetch(
   "https://nexacaptcha.zone.id/api/v1/siteverify",
   {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      verificationId: req.body.verificationId,
-      responseToken: req.body.responseToken
+      verificationId,
+      responseToken
     })
   }
 );
 
-const verification = await response.json();
-
-if (!verification.success) {
-  return res.status(403).json({
-    error: "CAPTCHA verification failed"
-  });
+const result = await response.json();
+if (!result.success) {
+  return res.status(403).send("Verification failed");
 }</code></pre>
-          </div>
-        </article>
-
-        <aside class="security-note reveal">
-          <i class="fa-solid fa-lock" aria-hidden="true"></i>
-          <div><h3><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><span data-i18n="backendRequired">Backend confirmation is required</span></h3><p data-i18n="backendRequiredBody">Never trust browser completion alone. Accept the protected action only after siteverify returns success.</p></div>
-        </aside>
-      </section>
-
-      <section class="section shell open-section reveal" aria-labelledby="open-title">
-        <img src="/assets/logo.svg" alt="" width="74" height="74">
-        <div>
-          <p class="eyebrow eyebrow-cyan"><i class="fa-solid fa-code-branch" aria-hidden="true"></i><span data-i18n="openEyebrow">OPEN BY DESIGN</span></p>
-          <h2 id="open-title"><i class="fa-brands fa-github title-icon" aria-hidden="true"></i><span data-i18n="openTitle">Inspect it. Run it. Improve it.</span></h2>
-          <p data-i18n="openBody">NexaCAPTCHA is developed in public with transparent protocol, security, and resource limits.</p>
+          </article>
         </div>
-        <a class="button button-secondary" href="https://github.com/NeuralNexusLab-nh/NexaCAPTCHA"><i class="fa-brands fa-github" aria-hidden="true"></i><span data-i18n="viewGithub">View on GitHub</span></a>
+
+        <aside class="important-note reveal">
+          <i class="fa-solid fa-lock" aria-hidden="true"></i>
+          <p data-i18n="important">Only accept the protected action when siteverify returns success: true. Each responseToken works once and expires after five minutes.</p>
+        </aside>
       </section>
     </main>
 
     <footer class="site-footer">
       <div class="shell footer-grid">
-        <div class="footer-brand"><img src="/assets/logo.svg" alt="" width="30" height="30"><div><strong>NexaCAPTCHA</strong><span data-i18n="footerTagline">Temporal verification designed for human perception.</span></div></div>
-        <nav aria-label="Footer navigation">
-          <a href="#difference"><i class="fa-solid fa-wave-square" aria-hidden="true"></i><span data-i18n="navDifference">Difference</span></a>
-          <a href="#integration"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="navIntegration">Integration</span></a>
-          <a href="#api"><i class="fa-solid fa-server" aria-hidden="true"></i><span data-i18n="navApi">API</span></a>
-          <a href="https://github.com/NeuralNexusLab-nh/NexaCAPTCHA"><i class="fa-brands fa-github" aria-hidden="true"></i>GitHub</a>
-        </nav>
+        <div class="footer-brand"><img src="/assets/logo.svg" alt="" width="30" height="30"><div><strong>NexaCAPTCHA</strong><span data-i18n="footerTagline">Simple motion-based human verification.</span></div></div>
+        <a class="github-link" href="https://github.com/NeuralNexusLab-nh/NexaCAPTCHA"><i class="fa-brands fa-github" aria-hidden="true"></i>GitHub</a>
       </div>
     </footer>
     <div class="sr-only" id="copy-status" aria-live="polite"></div>

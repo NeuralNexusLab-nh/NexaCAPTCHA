@@ -1,24 +1,21 @@
 # NexaCAPTCHA
 
-NexaCAPTCHA is an open-source, motion-based human verification service. Instead of placing the complete answer in one stable image, it reveals readable portions of four distorted characters over time. A person follows the motion and combines what they see; an automated solver must sample and align frames, track changing fragments, compensate for deformation, reconstruct the characters, and then recognize them.
+NexaCAPTCHA is a motion-based human verification service. It shows four uppercase letters or digits a little at a time. People follow the moving view, while automated tools need to process the complete animation.
 
-It is not presented as AI-proof. Its goal is to make reliable automated recognition less direct and more computationally expensive while keeping the interaction understandable for people.
+Website and demo: [nexacaptcha.zone.id](https://nexacaptcha.zone.id)
 
-Website and documentation: [nexacaptcha.zone.id](https://nexacaptcha.zone.id)
+## Features
 
-## What is different
+- Four uppercase English letters or digits; ambiguous `I`, `O`, `0`, and `1` are excluded.
+- Characters remain centered without moving up and down.
+- A wider view keeps the text readable.
+- Five minutes to complete the CAPTCHA and five attempts per CAPTCHA.
+- One-time verification results.
+- No account, site key, or authorization header.
 
-- Only four uppercase English letters or digits are used. Ambiguous `I`, `O`, `0`, and `1` are excluded.
-- Roughly 1.3 to 1.6 characters remain visible, making the text easier to follow than a narrow slit.
-- Reveal position, direction, speed, floating motion, and distortion vary over time.
-- The answer never appears as one clean, stable frame.
-- Each verification permits five incorrect answers and stays open for three minutes.
-- A correct answer returns a 32-character, single-use token valid for five minutes.
-- No account, site key, authorization header, or client framework is required.
+## Add NexaCAPTCHA
 
-## Quick start
-
-Add the hosted loader and a mount point:
+### 1. Load the widget
 
 ```html
 <script src="https://nexacaptcha.zone.id/v1/captcha.js" defer></script>
@@ -29,129 +26,42 @@ Add the hosted loader and a mount point:
 ></div>
 ```
 
-Receive the successful browser result:
+### 2. Send the result to your backend
 
 ```js
 function onNexaComplete(result) {
   if (!result.success) return;
 
-  console.log(result.verificationId);
-  console.log(result.responseToken);
+  sendToYourBackend({
+    verificationId: result.verificationId,
+    responseToken: result.responseToken
+  });
 }
 ```
 
-Browser output:
+Only two values are needed:
+
+| Value | Meaning |
+| --- | --- |
+| `verificationId` | Identifies which completed CAPTCHA is being checked. |
+| `responseToken` | A 32-character, one-time proof returned after the correct answer. |
+
+## Confirm from your backend
+
+Send both values to:
+
+`POST https://nexacaptcha.zone.id/api/v1/siteverify`
+
+Request:
 
 ```json
 {
-  "success": true,
-  "verificationId": "ver_G5uQkATY0vYfXxWSMEuT6w",
+  "verificationId": "ver_...",
   "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV"
 }
 ```
 
-Send both fields to your own backend. Browser completion alone must never authorize a protected action.
-
-## Backend confirmation
-
-```js
-const response = await fetch(
-  "https://nexacaptcha.zone.id/api/v1/siteverify",
-  {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      verificationId: req.body.verificationId,
-      responseToken: req.body.responseToken
-    })
-  }
-);
-
-const verification = await response.json();
-
-if (!verification.success) {
-  return res.status(403).json({ error: "CAPTCHA verification failed" });
-}
-```
-
-The token is consumed by the first successful confirmation. Reusing it returns `success: false`.
-
-## HTTP API
-
-All request and response bodies below are JSON. The animation endpoint returns `image/gif`.
-
-### Create a verification
-
-`POST /api/v1/verifications`
-
-Input:
-
-```json
-{}
-```
-
-Output — `201 Created`:
-
-```json
-{
-  "verificationId": "ver_G5uQkATY0vYfXxWSMEuT6w",
-  "animationUrl": "/api/v1/verifications/ver_G5uQkATY0vYfXxWSMEuT6w/animation",
-  "expiresAt": "2026-08-07T12:33:00.000Z"
-}
-```
-
-Retrieve the animation with `GET <animationUrl>`.
-
-### Submit the answer
-
-`POST /api/v1/verifications/:verificationId/answer`
-
-Input:
-
-```json
-{
-  "answer": "A7K3"
-}
-```
-
-Output — correct:
-
-```json
-{
-  "success": true,
-  "status": "completed",
-  "verificationId": "ver_G5uQkATY0vYfXxWSMEuT6w",
-  "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV",
-  "expiresAt": "2026-08-07T12:35:00.000Z"
-}
-```
-
-Output — incorrect:
-
-```json
-{
-  "success": false,
-  "status": "incorrect",
-  "attemptsRemaining": 4
-}
-```
-
-The fifth incorrect answer returns `status: "verification_failed"` with zero attempts remaining.
-
-### Confirm from your backend
-
-`POST /api/v1/siteverify`
-
-Input:
-
-```json
-{
-  "verificationId": "ver_G5uQkATY0vYfXxWSMEuT6w",
-  "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV"
-}
-```
-
-Output — accepted:
+Successful response:
 
 ```json
 {
@@ -160,7 +70,7 @@ Output — accepted:
 }
 ```
 
-Output — invalid, expired, or already used:
+Invalid, expired, or already used response:
 
 ```json
 {
@@ -169,9 +79,30 @@ Output — invalid, expired, or already used:
 }
 ```
 
+Node.js example:
+
+```js
+const response = await fetch(
+  "https://nexacaptcha.zone.id/api/v1/siteverify",
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ verificationId, responseToken })
+  }
+);
+
+const result = await response.json();
+
+if (!result.success) {
+  return res.status(403).send("Verification failed");
+}
+```
+
+Only accept the protected form, signup, or login when `siteverify` returns `success: true`. Each `responseToken` works once and expires after five minutes.
+
 ## Run locally
 
-Requirements: Node.js 20 or newer and npm.
+Requires Node.js 20 or newer and npm.
 
 ```sh
 npm install
@@ -187,37 +118,20 @@ npm start
 
 ## Deploy on Zeabur
 
-Create a service from this GitHub repository and select the native Node.js runtime. The included `zbpack.json` defines the build and start commands, so no Docker image is used.
+Create a service from this GitHub repository and select the native Node.js runtime. The included `zbpack.json` supplies the build and start commands.
 
-After deployment, attach `nexacaptcha.zone.id` in the Zeabur networking settings and enable HTTPS.
-
-## Security boundaries
-
-- Answers are stored only as keyed digests with per-record salts.
-- Response tokens are stored only as SHA-256 hashes and are single-use.
-- Verification media and API responses use `Cache-Control: no-store`.
-- The widget runs in an isolated iframe and validates message origins.
-- Content Security Policy, same-origin API enforcement, strict `OPTIONS` handling, request size limits, and rate limits are enabled.
-- Answers and full tokens are never logged by the application.
-
-Read [SECURITY.md](SECURITY.md) before production use.
-
-## Resource limits
-
-The service is designed for a maximum release budget of 0.25 vCPU, 100 MB RAM, and 10 GB storage. Rendering is queued and duty-cycle limited, active records are bounded, temporary animation storage is capped at 64 MB, and the production process uses a 64 MB JavaScript heap limit.
-
-Run all validation, including the resource probe:
+## Checks and limits
 
 ```sh
 npm run check
 ```
 
-The current store is in-memory and intended for a single application instance. Restarting the service invalidates open verifications. Horizontal scaling requires a shared state adapter while preserving token atomicity and resource bounds.
+The release budget is 0.25 vCPU, 100 MB RAM, and 10 GB storage. Rendering is queued, temporary animation storage is capped at 64 MB, and the production JavaScript heap is limited to 64 MB.
 
-## Accessibility
+The current in-memory store supports one application instance. Restarting the service invalidates unfinished CAPTCHA sessions.
 
-The surrounding interface supports keyboard input, visible focus, labels, live status announcements, and reduced decorative motion. The verification itself depends on motion. A non-motion alternative is required before claiming broad accessibility compliance.
+Read [SECURITY.md](SECURITY.md) before production use.
 
 ## License
 
-Licensed under the [Apache License 2.0](LICENSE). See [NOTICE](NOTICE) for attribution and project-origin notes.
+Licensed under the [Apache License 2.0](LICENSE). See [NOTICE](NOTICE).

@@ -126,20 +126,15 @@ function transformPoint(
   const wave = Math.sin(
     normalizedY * 5.5 + frameProgress * Math.PI * 2 + randomPhase
   );
-  const scaleX = 1 + 0.035 * Math.sin(frameProgress * Math.PI * 2 + randomPhase);
-  const scaleY = 2.08 + 0.035 * Math.cos(frameProgress * Math.PI * 2.4 + randomPhase);
-  const localX = normalizedX * 34 * scaleX + wave * 1.1;
+  const scaleX = 1 + 0.025 * Math.sin(frameProgress * Math.PI * 2 + randomPhase);
+  const scaleY = 1.14 + 0.02 * Math.cos(randomPhase);
+  const localX = normalizedX * 40 * scaleX + wave * 0.8;
   const localY = normalizedY * 38 * scaleY;
-  const rotation =
-    (Math.PI / 180) * 3.5 * Math.sin(frameProgress * Math.PI * 1.7 + randomPhase);
-  const cosine = Math.cos(rotation);
-  const sine = Math.sin(rotation);
   const floatX = 1.2 * Math.sin(frameProgress * Math.PI * 1.5 + randomPhase * 1.3);
-  const floatY = 2.8 * Math.sin(frameProgress * Math.PI * 2 + randomPhase + characterIndex);
 
   return [
-    baseX + localX * cosine - localY * sine + floatX,
-    config.animation.height / 2 + localX * sine + localY * cosine + floatY
+    baseX + localX + floatX,
+    config.animation.height / 2 + localY
   ];
 }
 
@@ -162,7 +157,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
   const phases = glyphs.map(() => random() * Math.PI * 2);
   const pullbackAt = 0.43 + random() * 0.24;
   const pullbackSize = 0.035 + random() * 0.02;
-  const revealWidth = 78 + random() * 14;
+  const revealWidth = 148 + random() * 12;
   const textStart = 66;
   const characterSpacing = 62;
   const textEnd = textStart + characterSpacing * (glyphs.length - 1);
