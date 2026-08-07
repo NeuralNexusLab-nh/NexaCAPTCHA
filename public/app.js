@@ -75,9 +75,10 @@
 
   languageSelect.addEventListener("change", function () {
     applyLanguage(languageSelect.value);
+    localStorage.setItem("language", languageSelect.value);
   });
 
-  applyLanguage("en");
+  applyLanguage(localStorage.getItem("language") || "en");
 
   document.querySelectorAll("[data-copy]").forEach(function (button) {
     button.addEventListener("click", async function () {
