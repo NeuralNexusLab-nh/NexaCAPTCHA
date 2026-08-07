@@ -7,15 +7,16 @@ Website and demo: [nexacaptcha.zone.id](https://nexacaptcha.zone.id)
 ## Features
 
 - Four uppercase English letters or digits; ambiguous `I`, `O`, `0`, and `1` are excluded.
-- Characters stay upright while drifting smoothly up, down, left, and right.
-- A moving partial view keeps the complete answer out of any single frame.
+- Each character changes direction, speed, rotation, and shape independently on a 1.25–5 second cycle.
+- The reveal window changes speed, sometimes moves backward, and normally shows only a fragment.
+- A complete character is visible only briefly.
 - Five minutes to complete the CAPTCHA and five attempts per CAPTCHA.
 - One-time verification results.
 - No account, site key, or authorization header.
 
 ## Add NexaCAPTCHA
 
-### 1. Load the widget
+### 1. Load the widget — HTML page markup
 
 ```html
 <script src="https://nexacaptcha.zone.id/v1/captcha.js" defer></script>
@@ -26,13 +27,15 @@ Website and demo: [nexacaptcha.zone.id](https://nexacaptcha.zone.id)
 ></div>
 ```
 
-### 2. Send the result to your backend
+### 2. Submit the result — frontend JavaScript
+
+Replace `yourSubmitFunction` with the function that submits your form to your backend.
 
 ```js
 function onNexaComplete(result) {
   if (!result.success) return;
 
-  sendToYourBackend({
+  yourSubmitFunction({
     verificationId: result.verificationId,
     responseToken: result.responseToken
   });
@@ -52,12 +55,14 @@ Send both values to:
 
 `POST https://nexacaptcha.zone.id/api/v1/siteverify`
 
+The `/v1/` paths are stable and will not be renamed.
+
 Request:
 
 ```json
 {
-  "verificationId": "ver_...",
-  "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV"
+  "verificationId": "<verificationId>",
+  "responseToken": "<responseToken>"
 }
 ```
 
@@ -79,7 +84,7 @@ Invalid, expired, or already used response:
 }
 ```
 
-Node.js example:
+Node.js backend example:
 
 ```js
 const response = await fetch(

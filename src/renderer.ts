@@ -24,6 +24,17 @@ interface Glyph {
   maxY: number;
 }
 
+interface MotionProfile {
+  phaseX: number;
+  phaseY: number;
+  phaseDistortion: number;
+  horizontalCycles: number;
+  verticalCycles: number;
+  distortionCycles: number;
+  driftX: number;
+  driftY: number;
+}
+
 function createPrng(seedBytes: Uint8Array): () => number {
   let state = new DataView(
     seedBytes.buffer,
@@ -117,31 +128,36 @@ function transformPoint(
   characterIndex: number,
   frameProgress: number,
   baseX: number,
-  randomPhase: number
+  motionProfile: MotionProfile
 ): Point {
   const glyphWidth = Math.max(1, glyph.maxX - glyph.minX);
   const glyphHeight = Math.max(1, glyph.maxY - glyph.minY);
   const normalizedX = (point[0] - (glyph.minX + glyph.maxX) / 2) / glyphWidth;
   const normalizedY = (point[1] - (glyph.minY + glyph.maxY) / 2) / glyphHeight;
   const motion = frameProgress * Math.PI * 2;
-  const wave = Math.sin(
-    normalizedY * 5.5 + motion * 2 + randomPhase
-  );
-  const scaleX = 1 + 0.1 * Math.sin(motion * 2 + randomPhase);
-  const scaleY = 1.14 + 0.08 * Math.cos(motion * 2 + randomPhase * 0.8);
-  const localX = normalizedX * 40 * scaleX + wave * 2.4;
+  const horizontalMotion = motion * motionProfile.horizontalCycles + motionProfile.phaseX;
+  const verticalMotion = motion * motionProfile.verticalCycles + motionProfile.phaseY;
+  const distortionMotion =
+    motion * motionProfile.distortionCycles + motionProfile.phaseDistortion;
+  const wave = Math.sin(normalizedY * 7 + distortionMotion);
+  const scaleX = 1 + 0.24 * Math.sin(distortionMotion);
+  const scaleY = 1.08 + 0.2 * Math.cos(distortionMotion);
+  const shear = normalizedY * 11 * Math.sin(distortionMotion * 2 + characterIndex);
+  const localX = normalizedX * 40 * scaleX + wave * 5.5 + shear;
   // Hershey paths use an upward Y axis; browser pixels use a downward Y axis.
-  const localY = -normalizedY * 38 * scaleY;
+  const localY =
+    -normalizedY * 38 * scaleY +
+    Math.sin(normalizedX * 6 + distortionMotion) * 3;
   const rotation =
-    (Math.PI / 180) * 6 * Math.sin(motion + randomPhase + characterIndex * 0.7);
+    (Math.PI / 180) * 14 * Math.sin(distortionMotion + characterIndex * 0.7);
   const cosine = Math.cos(rotation);
   const sine = Math.sin(rotation);
   const floatX =
-    4.5 * Math.sin(motion + randomPhase * 1.3) +
-    1.5 * Math.sin(motion * 2 + randomPhase);
+    motionProfile.driftX * Math.sin(horizontalMotion) +
+    2 * Math.sin(horizontalMotion * 2 + motionProfile.phaseY);
   const floatY =
-    4 * Math.sin(motion + randomPhase + characterIndex) +
-    1.2 * Math.sin(motion * 3 + randomPhase * 0.6);
+    motionProfile.driftY * Math.sin(verticalMotion) +
+    1.8 * Math.sin(verticalMotion * 2 + motionProfile.phaseX);
 
   return [
     baseX + localX * cosine - localY * sine + floatX,
@@ -149,15 +165,22 @@ function transformPoint(
   ];
 }
 
-function easedRevealProgress(progress: number, pullbackAt: number, pullbackSize: number): number {
-  const speedVariation = 0.01 * Math.sin(progress * Math.PI * 6.4);
+function easedRevealProgress(
+  progress: number,
+  phaseA: number,
+  phaseB: number,
+  pullbackAt: number,
+  pullbackSize: number
+): number {
+  const unevenSpeed =
+    0.055 * Math.sin(progress * Math.PI * 4 + phaseA) +
+    0.028 * Math.sin(progress * Math.PI * 10 + phaseB);
   const distance = Math.abs(progress - pullbackAt);
-  const pullbackWindow = 0.12;
-  const pullback =
-    distance < pullbackWindow
-      ? pullbackSize * Math.sin((1 - distance / pullbackWindow) * Math.PI)
-      : 0;
-  return Math.max(0, Math.min(1, progress + speedVariation - pullback));
+  const pullbackWindow = 0.085;
+  const pullback = distance < pullbackWindow
+    ? pullbackSize * Math.sin((1 - distance / pullbackWindow) * Math.PI)
+    : 0;
+  return Math.max(0, Math.min(1, progress + unevenSpeed - pullback));
 }
 
 export function renderVerificationAnimation(answer: string): Buffer {
@@ -165,10 +188,22 @@ export function renderVerificationAnimation(answer: string): Buffer {
   const seed = randomBytes(8);
   const random = createPrng(seed);
   const glyphs = answer.split("").map(glyphFor);
-  const phases = glyphs.map(() => random() * Math.PI * 2);
+  const motionCycles = [2, 3, 4, 5, 6, 7, 8];
+  const motionProfiles: MotionProfile[] = glyphs.map(() => ({
+    phaseX: random() * Math.PI * 2,
+    phaseY: random() * Math.PI * 2,
+    phaseDistortion: random() * Math.PI * 2,
+    horizontalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 4,
+    verticalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 5,
+    distortionCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 3,
+    driftX: 5 + random() * 6,
+    driftY: 4 + random() * 5
+  }));
+  const revealPhaseA = random() * Math.PI * 2;
+  const revealPhaseB = random() * Math.PI * 2;
   const pullbackAt = 0.43 + random() * 0.24;
-  const pullbackSize = 0.035 + random() * 0.02;
-  const revealWidth = 96 + random() * 8;
+  const pullbackSize = 0.055 + random() * 0.045;
+  const partialRevealWidth = 32 + random() * 8;
   const textStart = 66;
   const characterSpacing = 62;
   const textEnd = textStart + characterSpacing * (glyphs.length - 1);
@@ -176,10 +211,22 @@ export function renderVerificationAnimation(answer: string): Buffer {
 
   for (let frame = 0; frame < frames; frame += 1) {
     const pixels = new Uint8Array(width * height);
-    const progress = frame / Math.max(1, frames - 1);
-    const revealProgress = easedRevealProgress(progress, pullbackAt, pullbackSize);
+    const progress = frame / Math.max(1, frames);
+    const revealProgress = easedRevealProgress(
+      progress,
+      revealPhaseA,
+      revealPhaseB,
+      pullbackAt,
+      pullbackSize
+    );
     const revealCenter = textStart - 40 + revealProgress * (textEnd - textStart + 80);
-    const widthPulse = revealWidth * (0.96 + 0.04 * Math.sin(progress * Math.PI * 4.7));
+    const nearestCharacterDistance = glyphs.reduce((nearest, _glyph, index) => {
+      const characterCenter = textStart + index * characterSpacing;
+      return Math.min(nearest, Math.abs(revealCenter - characterCenter));
+    }, Number.POSITIVE_INFINITY);
+    const briefFullReveal =
+      43 * Math.exp(-(nearestCharacterDistance ** 2) / (2 * 4.5 ** 2));
+    const widthPulse = partialRevealWidth + briefFullReveal;
     const revealLeft = revealCenter - widthPulse / 2;
     const revealRight = revealCenter + widthPulse / 2;
 
@@ -190,7 +237,8 @@ export function renderVerificationAnimation(answer: string): Buffer {
 
     glyphs.forEach((glyph, characterIndex) => {
       const baseX = textStart + characterIndex * characterSpacing;
-      const phase = phases[characterIndex] ?? 0;
+      const motionProfile = motionProfiles[characterIndex];
+      if (!motionProfile) return;
       glyph.paths.forEach((path) => {
         for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
           const previous = path[pointIndex - 1];
@@ -202,7 +250,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
             characterIndex,
             progress,
             baseX,
-            phase
+            motionProfile
           );
           const to = transformPoint(
             current,
@@ -210,7 +258,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
             characterIndex,
             progress,
             baseX,
-            phase
+            motionProfile
           );
           drawLine(
             pixels,

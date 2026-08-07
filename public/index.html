@@ -13,8 +13,8 @@
     <link rel="stylesheet" href="/vendor/fonts/inter/index.css">
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=3">
-    <script src="/app.js?v=3" defer></script>
+    <link rel="stylesheet" href="/styles.css?v=4">
+    <script src="/app.js?v=4" defer></script>
     <script src="/v1/captcha.js?v=3" defer></script>
   </head>
   <body>
@@ -54,9 +54,9 @@
             <a class="button button-secondary" href="#setup"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="addToSite">Add to your site</span></a>
           </div>
           <ul class="hero-notes" aria-label="Product highlights">
-            <li><i class="fa-solid fa-font" aria-hidden="true"></i><span data-i18n="fourChars">4 uppercase letters or digits</span></li>
-            <li><i class="fa-solid fa-clock" aria-hidden="true"></i><span data-i18n="fiveMinutes">5 minutes to complete</span></li>
-            <li><i class="fa-solid fa-key" aria-hidden="true"></i><span data-i18n="oneTime">One-time result</span></li>
+            <li><i class="fa-solid fa-arrows-up-down-left-right" aria-hidden="true"></i><span data-i18n="independentMotion">Independent character motion</span></li>
+            <li><i class="fa-solid fa-eye-slash" aria-hidden="true"></i><span data-i18n="partialReveal">Mostly partial reveal</span></li>
+            <li><i class="fa-solid fa-code-branch" aria-hidden="true"></i><span data-i18n="stableV1">Stable /v1/ endpoints</span></li>
           </ul>
         </div>
 
@@ -86,13 +86,13 @@
         <div class="feature-grid">
           <article class="feature-card reveal">
             <i class="fa-solid fa-eye" aria-hidden="true"></i>
-            <h3 data-i18n="featureReadableTitle">Clearer for people</h3>
-            <p data-i18n="featureReadableBody">Characters stay upright while drifting smoothly in different directions.</p>
+            <h3 data-i18n="featureReadableTitle">Four independent movements</h3>
+            <p data-i18n="featureReadableBody">Each character changes direction, speed, rotation, and shape on its own 1.25–5 second cycle.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-film" aria-hidden="true"></i>
-            <h3 data-i18n="featureMotionTitle">The full animation matters</h3>
-            <p data-i18n="featureMotionBody">No single moment shows the complete answer. Automated tools must inspect more than one image.</p>
+            <h3 data-i18n="featureMotionTitle">Only fragments stay visible</h3>
+            <p data-i18n="featureMotionBody">The window changes speed and sometimes moves backward. A complete character appears only briefly.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-plug" aria-hidden="true"></i>
@@ -116,7 +116,7 @@
               <div><h3><i class="fa-solid fa-download" aria-hidden="true"></i><span data-i18n="loadTitle">Load the widget</span></h3><p data-i18n="loadBody">Add this script and place the CAPTCHA where you want it.</p></div>
             </div>
             <div class="code-window">
-              <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i>HTML</span><button class="copy-button" type="button" data-copy="embed-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
+              <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span><button class="copy-button" type="button" data-copy="embed-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
               <pre><code id="embed-code">&lt;script src="https://nexacaptcha.zone.id/v1/captcha.js" defer&gt;&lt;/script&gt;
 
 &lt;div class="nexa-captcha" data-callback="onNexaComplete"&gt;&lt;/div&gt;</code></pre>
@@ -126,14 +126,14 @@
           <article class="setup-row reveal">
             <div class="setup-copy">
               <span class="step-number">2</span>
-              <div><h3><i class="fa-solid fa-arrow-right" aria-hidden="true"></i><span data-i18n="sendTitle">Send the result to your backend</span></h3><p data-i18n="sendBody">After success, send only verificationId and responseToken to your server.</p></div>
+              <div><h3><i class="fa-solid fa-arrow-right" aria-hidden="true"></i><span data-i18n="sendTitle">Submit with your own function</span></h3><p data-i18n="sendBody">Put this in your frontend JavaScript. Replace yourSubmitFunction with the function that submits your form to your backend.</p></div>
             </div>
             <div class="code-window">
-              <div class="code-toolbar"><span><i class="fa-brands fa-js" aria-hidden="true"></i>JavaScript</span><button class="copy-button" type="button" data-copy="callback-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
+              <div class="code-toolbar"><span><i class="fa-brands fa-js" aria-hidden="true"></i><span data-i18n="frontendLocation">JavaScript · frontend</span></span><button class="copy-button" type="button" data-copy="callback-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
               <pre><code id="callback-code">function onNexaComplete(result) {
   if (!result.success) return;
 
-  sendToYourBackend({
+  yourSubmitFunction({
     verificationId: result.verificationId,
     responseToken: result.responseToken
   });
@@ -156,23 +156,28 @@
           <p class="eyebrow eyebrow-purple"><i class="fa-solid fa-server" aria-hidden="true"></i><span data-i18n="verifyEyebrow">BACKEND VERIFICATION</span></p>
           <h2 id="verify-title" data-i18n="verifyTitle">Confirm the result</h2>
           <p data-i18n="verifyLead">Your backend sends the two values to one endpoint before accepting the form, signup, or login.</p>
+          <p class="version-note"><i class="fa-solid fa-code-branch" aria-hidden="true"></i><span data-i18n="versionNote">The /v1/ paths are stable and will not be renamed.</span></p>
         </div>
 
         <div class="verify-layout">
           <article class="endpoint-card reveal">
             <header><span class="method">POST</span><code>/api/v1/siteverify</code></header>
             <div class="endpoint-part"><h3><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i><span data-i18n="request">Request</span></h3><pre><code id="verify-input">{
-  "verificationId": "ver_...",
-  "responseToken": "GD8dR4qbKj7s0LmPWz2YxT5eU9nAcFhV"
+  "verificationId": "&lt;verificationId&gt;",
+  "responseToken": "&lt;responseToken&gt;"
 }</code></pre></div>
-            <div class="endpoint-part"><h3><i class="fa-solid fa-arrow-down" aria-hidden="true"></i><span data-i18n="response">Response</span></h3><pre><code>{
+            <div class="endpoint-part"><h3><i class="fa-solid fa-arrow-down" aria-hidden="true"></i><span data-i18n="successResponse">Response · success</span></h3><pre><code>{
   "success": true,
   "verifiedAt": "2026-08-07T12:30:00.000Z"
+}</code></pre></div>
+            <div class="endpoint-part"><h3><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i><span data-i18n="failureResponse">Response · failure</span></h3><pre><code>{
+  "success": false,
+  "errorCode": "invalid-or-expired-verification"
 }</code></pre></div>
           </article>
 
           <article class="backend-card reveal">
-            <div class="code-toolbar"><span><i class="fa-brands fa-node-js" aria-hidden="true"></i>Node.js</span><button class="copy-button" type="button" data-copy="backend-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
+            <div class="code-toolbar"><span><i class="fa-brands fa-node-js" aria-hidden="true"></i><span data-i18n="backendLocation">Node.js · backend</span></span><button class="copy-button" type="button" data-copy="backend-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
             <pre><code id="backend-code">const response = await fetch(
   "https://nexacaptcha.zone.id/api/v1/siteverify",
   {
