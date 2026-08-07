@@ -13,8 +13,8 @@
     <link rel="stylesheet" href="/vendor/fonts/inter/index.css">
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=5">
-    <script src="/app.js?v=5" defer></script>
+    <link rel="stylesheet" href="/styles.css?v=6">
+    <script src="/app.js?v=6" defer></script>
     <script src="/captcha.js?v=4" defer></script>
   </head>
   <body>
@@ -117,6 +117,29 @@
             <p data-i18n="featureCostBody">Bots must inspect many frames, track moving fragments, and rebuild the answer instead of reading one image.</p>
           </article>
         </div>
+
+        <aside class="experiment-panel reveal" aria-labelledby="experiment-title">
+          <div class="experiment-heading">
+            <div>
+              <p class="eyebrow"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="experimentEyebrow">SMALL EXPERIMENT</span></p>
+              <h3 id="experiment-title" data-i18n="experimentTitle">Humans finished. GPT timed out.</h3>
+            </div>
+            <span class="experiment-version"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span data-i18n="experimentVersion">Current CAPTCHA</span></span>
+          </div>
+          <div class="experiment-results">
+            <article class="experiment-result experiment-human">
+              <div class="experiment-label"><i class="fa-solid fa-user" aria-hidden="true"></i><span data-i18n="experimentHumanLabel">Human</span></div>
+              <strong>10.4<span data-i18n="experimentSeconds">s average</span></strong>
+              <p data-i18n="experimentHumanMeta">5 trials · 8–15 seconds</p>
+            </article>
+            <article class="experiment-result experiment-gpt">
+              <div class="experiment-label"><i class="fa-solid fa-robot" aria-hidden="true"></i><span>GPT-5.6-Sol · Medium</span></div>
+              <strong data-i18n="experimentExpired">Expired</strong>
+              <p data-i18n="experimentGptMeta">1 trial · 4 incorrect attempts · timed out after 5 minutes</p>
+            </article>
+          </div>
+          <p class="experiment-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span data-i18n="experimentNote">A small informal test of the current version, not a security guarantee. More trials will be added.</span></p>
+        </aside>
       </section>
 
       <section class="section docs-section" id="setup" aria-labelledby="setup-title">
