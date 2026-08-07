@@ -13,8 +13,8 @@
     <link rel="stylesheet" href="/vendor/fonts/inter/index.css">
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=6">
-    <script src="/app.js?v=6" defer></script>
+    <link rel="stylesheet" href="/styles.css?v=8">
+    <script src="/app.js?v=8" defer></script>
     <script src="/captcha.js?v=4" defer></script>
   </head>
   <body>
@@ -29,6 +29,7 @@
           <a href="#top"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i><span data-i18n="navTop">Top</span></a>
           <a href="#demo"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="navDemo">Demo</span></a>
           <a href="#features"><i class="fa-solid fa-star" aria-hidden="true"></i><span data-i18n="navFeatures">Features</span></a>
+          <a href="#experiment"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="navExperiment">Experiment</span></a>
           <a href="#setup"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="navSetup">Setup</span></a>
           <a href="#verify"><i class="fa-solid fa-server" aria-hidden="true"></i><span data-i18n="navVerify">Backend verification</span></a>
           <a href="https://github.com/NeuralNexusLab-nh/NexaCAPTCHA" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github" aria-hidden="true"></i><span>GitHub</span></a>
@@ -118,11 +119,12 @@
           </article>
         </div>
 
-        <aside class="experiment-panel reveal" aria-labelledby="experiment-title">
+        <aside class="experiment-panel reveal" id="experiment" aria-labelledby="experiment-title">
           <div class="experiment-heading">
             <div>
-              <p class="eyebrow"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="experimentEyebrow">SMALL EXPERIMENT</span></p>
-              <h3 id="experiment-title" data-i18n="experimentTitle">Humans finished. GPT timed out.</h3>
+              <p class="eyebrow"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="experimentEyebrow">SMALL-SCALE TEST</span></p>
+              <h3 id="experiment-title" data-i18n="experimentTitle">Fast for people. Expensive for AI.</h3>
+              <p class="experiment-lead" data-i18n="experimentLead">The same model was tested with and without a strategy learned from earlier attempts.</p>
             </div>
             <span class="experiment-version"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span data-i18n="experimentVersion">Current CAPTCHA</span></span>
           </div>
@@ -130,15 +132,40 @@
             <article class="experiment-result experiment-human">
               <div class="experiment-label"><i class="fa-solid fa-user" aria-hidden="true"></i><span data-i18n="experimentHumanLabel">Human</span></div>
               <strong>10.4<span data-i18n="experimentSeconds">s average</span></strong>
-              <p data-i18n="experimentHumanMeta">5 trials · 8–15 seconds</p>
+              <p data-i18n="experimentHumanMeta">Average completion time</p>
             </article>
-            <article class="experiment-result experiment-gpt">
-              <div class="experiment-label"><i class="fa-solid fa-robot" aria-hidden="true"></i><span>GPT-5.6-Sol · Medium</span></div>
-              <strong data-i18n="experimentExpired">Expired</strong>
-              <p data-i18n="experimentGptMeta">1 trial · 4 incorrect attempts · timed out after 5 minutes</p>
+            <article class="experiment-result experiment-gpt-cold">
+              <div class="experiment-label"><i class="fa-solid fa-robot" aria-hidden="true"></i><span data-i18n="experimentColdLabel">GPT 5.6 Sol - Medium · No experience</span></div>
+              <strong>0%<span data-i18n="experimentSuccess">success</span></strong>
+              <p data-i18n="experimentColdMeta">No prior solving strategy · 4 of 4 expired after 5 minutes</p>
+            </article>
+            <article class="experiment-result experiment-gpt-warm">
+              <div class="experiment-label"><i class="fa-solid fa-brain" aria-hidden="true"></i><span data-i18n="experimentWarmLabel">GPT 5.6 Sol - Medium · Experienced</span></div>
+              <strong>2:40<span data-i18n="experimentAverage">average</span></strong>
+              <p data-i18n="experimentWarmMeta">Used a strategy learned from earlier solves · 3 of 3 succeeded · 2 incorrect attempts on average</p>
             </article>
           </div>
-          <p class="experiment-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span data-i18n="experimentNote">A small informal test of the current version, not a security guarantee. More trials will be added.</span></p>
+
+          <section class="google-comparison" aria-labelledby="google-comparison-title">
+            <div class="comparison-heading">
+              <div>
+                <p class="eyebrow"><i class="fa-brands fa-google" aria-hidden="true"></i><span data-i18n="comparisonEyebrow">SAME MODEL · GOOGLE RECAPTCHA</span></p>
+                <h4 id="google-comparison-title" data-i18n="comparisonTitle">A familiar image test was faster. The checkbox asked nothing.</h4>
+              </div>
+              <span data-i18n="comparisonModel">GPT 5.6 Sol - Medium</span>
+            </div>
+            <div class="comparison-results">
+              <article>
+                <i class="fa-solid fa-images" aria-hidden="true"></i>
+                <div><strong data-i18n="comparisonImageTitle">Image challenge</strong><p data-i18n="comparisonImageMeta">About 1:30 · passed on the first answer</p></div>
+              </article>
+              <article>
+                <i class="fa-solid fa-check" aria-hidden="true"></i>
+                <div><strong data-i18n="comparisonCheckboxTitle">Checkbox</strong><p data-i18n="comparisonCheckboxMeta">Passed directly · no image challenge shown</p></div>
+              </article>
+            </div>
+          </section>
+          <p class="experiment-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span data-i18n="experimentNote">A documented small-scale test of the current version. Results describe these runs and are not a security guarantee.</span></p>
         </aside>
       </section>
 
