@@ -113,16 +113,16 @@ function isInsideRevealMask(x: number, y: number, mask: RevealMask): boolean {
   const roundedEnvelope = Math.sqrt(Math.max(0, 1 - vertical * vertical));
   const pinchFactor = 1 - mask.pinch * (1 - roundedEnvelope);
   const rippledEdge =
-    1 + 0.16 * Math.sin(vertical * mask.edgeWaves + mask.animatedPhase);
+    1 + 0.08 * Math.sin(vertical * mask.edgeWaves + mask.animatedPhase);
   const halfWidth =
     (mask.width / 2) *
-    (0.5 + 0.5 * roundedEnvelope) *
+    (0.65 + 0.35 * roundedEnvelope) *
     pinchFactor *
     rippledEdge;
   const curvedCenter =
     mask.centerX +
     mask.bend * Math.sin(vertical * 4.5 + mask.animatedPhase) +
-    mask.bend * 0.35 * Math.cos(vertical * 8 + mask.animatedPhase * 0.7);
+    mask.bend * 0.2 * Math.cos(vertical * 8 + mask.animatedPhase * 0.7);
   return Math.abs(x - curvedCenter) <= Math.max(2, halfWidth);
 }
 
@@ -338,7 +338,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
   const random = createPrng(seed);
   const glyphs = answer.split("").map(glyphFor);
   const motionCycles = [2, 3, 4, 5, 6, 7, 8];
-  const questionDistortion = 0.65 + random() * 0.9;
+  const questionDistortion = 0.82 + random() * 0.34;
   const motionProfiles: MotionProfile[] = glyphs.map(() => ({
     phaseX: random() * Math.PI * 2,
     phaseY: random() * Math.PI * 2,
@@ -348,17 +348,17 @@ export function renderVerificationAnimation(answer: string): Buffer {
     distortionCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 3,
     driftX: 5 + random() * 6,
     driftY: 4 + random() * 5,
-    stretchX: (0.15 + random() * 0.2) * questionDistortion,
-    stretchY: (0.12 + random() * 0.18) * questionDistortion,
-    waveAmplitude: (3.5 + random() * 4.5) * questionDistortion,
-    shearAmplitude: (7 + random() * 10) * questionDistortion,
-    rotationDegrees: (8 + random() * 13) * questionDistortion,
-    jitterAmplitude: (0.7 + random() * 2.1) * questionDistortion,
+    stretchX: (0.13 + random() * 0.12) * questionDistortion,
+    stretchY: (0.1 + random() * 0.12) * questionDistortion,
+    waveAmplitude: (2.8 + random() * 2.4) * questionDistortion,
+    shearAmplitude: (5 + random() * 6) * questionDistortion,
+    rotationDegrees: (6 + random() * 8) * questionDistortion,
+    jitterAmplitude: (0.5 + random() * 1.1) * questionDistortion,
     jitterCyclesX: 18 + Math.floor(random() * 15),
     jitterCyclesY: 18 + Math.floor(random() * 15),
     jitterPhase: random() * Math.PI * 2
   }));
-  const partialRevealWidth = 24 + random() * 4;
+  const partialRevealWidth = 30 + random() * 4;
   const protectedCharacterCount = Math.min(
     glyphs.length,
     2 + Math.floor(random() * 3)
@@ -378,10 +378,10 @@ export function renderVerificationAnimation(answer: string): Buffer {
   const revealShapeProfile: RevealShapeProfile = {
     phase: random() * Math.PI * 2,
     cycles: 2 + Math.floor(random() * 5),
-    height: 84 + random() * 28,
-    bend: 2 + random() * 7,
-    pinch: 0.08 + random() * 0.38,
-    edgeWaves: 4 + random() * 7
+    height: 94 + random() * 14,
+    bend: 1.5 + random() * 3.5,
+    pinch: 0.05 + random() * 0.14,
+    edgeWaves: 4 + random() * 4
   };
   const textStart = 66;
   const characterSpacing = 62;
@@ -439,8 +439,8 @@ export function renderVerificationAnimation(answer: string): Buffer {
         const protectedSlicePhase = protectedSlicePhases[characterIndex] ?? 0;
         const sliceCenter =
           baseX + protectedDrift + 14 * Math.sin(progress * Math.PI * 6 + protectedSlicePhase);
-        characterRevealLeft = Math.max(characterRevealLeft, sliceCenter - 9);
-        characterRevealRight = Math.min(characterRevealRight, sliceCenter + 9);
+        characterRevealLeft = Math.max(characterRevealLeft, sliceCenter - 12);
+        characterRevealRight = Math.min(characterRevealRight, sliceCenter + 12);
       }
       glyph.paths.forEach((path) => {
         for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
