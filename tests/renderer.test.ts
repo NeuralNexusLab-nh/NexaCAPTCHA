@@ -33,14 +33,14 @@ describe("verification animation", () => {
     expect(colors.every((color) => color >= 2 && color <= 6)).toBe(true);
   });
 
-  it("randomizes playback between 13 and 20 seconds", () => {
+  it("randomizes playback between 13 and 18 seconds", () => {
     const delays = frameDelays(renderVerificationAnimation("N3XA"));
     expect(delays.length).toBeGreaterThanOrEqual(130);
-    expect(delays.length).toBeLessThanOrEqual(200);
+    expect(delays.length).toBeLessThanOrEqual(180);
     expect(delays.every((delay) => delay === 10)).toBe(true);
     const totalCentiseconds = delays.reduce((total, delay) => total + delay, 0);
     expect(totalCentiseconds).toBeGreaterThanOrEqual(1300);
-    expect(totalCentiseconds).toBeLessThanOrEqual(2000);
+    expect(totalCentiseconds).toBeLessThanOrEqual(1800);
   });
 
   it("limits a frame to one small stroke or corner", () => {
@@ -53,10 +53,10 @@ describe("verification animation", () => {
       fullCharacter,
       10,
       5,
-      0.32
+      0.4
     );
     const visibleCount = [...target].filter((pixel) => pixel !== 0).length;
-    expect(visibleCount).toBe(32);
+    expect(visibleCount).toBe(40);
   });
 
   it("scans every character fully with uneven per-character timing", () => {
@@ -79,9 +79,8 @@ describe("verification animation", () => {
       true
     );
     const dwellDurations = dwellSegments.map((segment) => segment.frames);
-    expect(Math.max(...dwellDurations) - Math.min(...dwellDurations)).toBeGreaterThanOrEqual(
-      5
-    );
+    expect(Math.max(...dwellDurations)).toBeLessThanOrEqual(18);
+    expect(new Set(dwellDurations).size).toBeGreaterThan(1);
   });
 
   it("covers the full character scan without gaps at minimum dwell time", () => {

@@ -274,18 +274,24 @@ export function createRevealSegments(
     { length: transitionCount },
     () => minimumTransitionFrames
   );
-  const dwellWeights = dwellFrames.map(() => 0.2 + Math.pow(random(), 2) * 3.2);
-  const transitionWeights = transitionFrames.map(() => 0.05 + random() * 0.12);
+  const dwellWeights = dwellFrames.map(() => 0.85 + random() * 0.3);
+  const transitionWeights = transitionFrames.map(() => 0.08 + random() * 0.06);
   const weights = [...dwellWeights, ...transitionWeights];
+  const maximumDwellFrames = 18;
   const minimumFrames =
     visitCount * minimumDwellFrames + transitionCount * minimumTransitionFrames;
   const extraFrames = Math.max(0, frames - minimumFrames);
-  const totalWeight = weights.reduce((total, weight) => total + weight, 0);
   for (let extra = 0; extra < extraFrames; extra += 1) {
+    const eligibleWeights = weights.map((weight, index) =>
+      index < visitCount && (dwellFrames[index] ?? 0) >= maximumDwellFrames
+        ? 0
+        : weight
+    );
+    const totalWeight = eligibleWeights.reduce((total, weight) => total + weight, 0);
     let selection = random() * totalWeight;
-    let selectedIndex = weights.length - 1;
-    for (let index = 0; index < weights.length; index += 1) {
-      selection -= weights[index] ?? 0;
+    let selectedIndex = eligibleWeights.length - 1;
+    for (let index = 0; index < eligibleWeights.length; index += 1) {
+      selection -= eligibleWeights[index] ?? 0;
       if (selection <= 0) {
         selectedIndex = index;
         break;
@@ -345,7 +351,7 @@ export function compositeCharacterWithinAreaLimit(
   fullCharacter: Uint8Array,
   width: number,
   revealCenter: number,
-  maximumVisibleRatio = 0.34
+  maximumVisibleRatio = 0.4
 ): void {
   let fullPixelCount = 0;
   const visibleIndices: number[] = [];
@@ -355,7 +361,7 @@ export function compositeCharacterWithinAreaLimit(
   }
 
   const visiblePixelLimit = Math.floor(
-    fullPixelCount * Math.min(0.34, Math.max(0.24, maximumVisibleRatio))
+    fullPixelCount * Math.min(0.42, Math.max(0.3, maximumVisibleRatio))
   );
   if (visibleIndices.length > visiblePixelLimit) {
     visibleIndices.sort((left, right) => {
@@ -430,7 +436,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
   const frames = minFrames + Math.floor(random() * (maxFrames - minFrames + 1));
   const glyphs = answer.split("").map(glyphFor);
   const motionCycles = [2, 3, 4, 5, 6, 7, 8];
-  const questionDistortion = (0.95 + random() * 0.35) * 0.84;
+  const questionDistortion = (0.95 + random() * 0.35) * 0.68;
   const colorIndices = createDistinctColorIndices(glyphs.length, random);
   const motionProfiles: MotionProfile[] = glyphs.map((_glyph, characterIndex) => ({
     phaseX: random() * Math.PI * 2,
@@ -452,8 +458,8 @@ export function renderVerificationAnimation(answer: string): Buffer {
     jitterPhase: random() * Math.PI * 2,
     colorIndex: colorIndices[characterIndex] ?? 4
   }));
-  const partialRevealWidth = 24 + random() * 5;
-  const maximumVisibleRatio = 0.28 + random() * 0.06;
+  const partialRevealWidth = 29 + random() * 6;
+  const maximumVisibleRatio = 0.36 + random() * 0.06;
   const revealShapeProfile: RevealShapeProfile = {
     phase: random() * Math.PI * 2,
     cycles: 2 + Math.floor(random() * 5),
