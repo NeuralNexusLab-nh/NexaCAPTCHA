@@ -50,6 +50,10 @@ interface VerificationStoreOptions {
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const REQUIRED_CONFUSABLE = "B836";
 const REQUIRED_COMPLEX = "KXADR26GVWYJT7";
+const DUPLICATE_ACCEPT_PERCENT = 30;
+const MAX_DUPLICATE_RESELECTIONS = 5;
+
+type RandomInteger = (maxExclusive: number) => number;
 
 function randomBase64Url(byteLength: number): string {
   return randomBytes(byteLength).toString("base64url");
@@ -67,23 +71,34 @@ export function normalizeAnswer(value: string): string {
   return value.trim().toUpperCase().replaceAll(/\s+/g, "");
 }
 
-function randomCharacter(characters: string): string {
-  return characters[randomInt(characters.length)]!;
+function randomCharacter(characters: string, randomInteger: RandomInteger): string {
+  return characters[randomInteger(characters.length)]!;
 }
 
-export function generateAnswer(): string {
+function generateCandidate(randomInteger: RandomInteger): string {
   const characters = [
-    randomCharacter(REQUIRED_CONFUSABLE),
-    randomCharacter(REQUIRED_COMPLEX),
-    randomCharacter(ALPHABET),
-    randomCharacter(ALPHABET)
+    randomCharacter(REQUIRED_CONFUSABLE, randomInteger),
+    randomCharacter(REQUIRED_COMPLEX, randomInteger),
+    randomCharacter(ALPHABET, randomInteger),
+    randomCharacter(ALPHABET, randomInteger)
   ];
 
   for (let index = characters.length - 1; index > 0; index -= 1) {
-    const swapIndex = randomInt(index + 1);
+    const swapIndex = randomInteger(index + 1);
     [characters[index], characters[swapIndex]] = [characters[swapIndex]!, characters[index]!];
   }
   return characters.join("");
+}
+
+export function generateAnswer(randomInteger: RandomInteger = randomInt): string {
+  let reselections = 0;
+  while (true) {
+    const candidate = generateCandidate(randomInteger);
+    const hasDuplicate = new Set(candidate).size < candidate.length;
+    if (!hasDuplicate || reselections >= MAX_DUPLICATE_RESELECTIONS) return candidate;
+    if (randomInteger(100) < DUPLICATE_ACCEPT_PERCENT) return candidate;
+    reselections += 1;
+  }
 }
 
 export class VerificationStore {

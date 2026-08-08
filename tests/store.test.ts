@@ -51,6 +51,34 @@ describe("VerificationStore", () => {
     }
   });
 
+  it("accepts 30-percent duplicate candidates without reselection", () => {
+    let duplicateDecisionCalls = 0;
+    const answer = generateAnswer((maximum) => {
+      if (maximum === 100) duplicateDecisionCalls += 1;
+      return 0;
+    });
+
+    expect(new Set(answer).size).toBeLessThan(answer.length);
+    expect(duplicateDecisionCalls).toBe(1);
+  });
+
+  it("stops after five duplicate reselections", () => {
+    let duplicateDecisionCalls = 0;
+    let candidateCalls = 0;
+    const answer = generateAnswer((maximum) => {
+      if (maximum === 14) candidateCalls += 1;
+      if (maximum === 100) {
+        duplicateDecisionCalls += 1;
+        return 99;
+      }
+      return 0;
+    });
+
+    expect(new Set(answer).size).toBeLessThan(answer.length);
+    expect(duplicateDecisionCalls).toBe(5);
+    expect(candidateCalls).toBe(6);
+  });
+
   it("enforces three attempts with a ten-second cooldown", async () => {
     const verification = await store.create();
     store.getMediaPath(verification.verificationId);
