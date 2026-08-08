@@ -2,6 +2,7 @@ import {
   createHash,
   createHmac,
   randomBytes,
+  randomInt,
   timingSafeEqual
 } from "node:crypto";
 import { mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
@@ -47,6 +48,8 @@ interface VerificationStoreOptions {
 }
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const REQUIRED_CONFUSABLE = "B836";
+const REQUIRED_COMPLEX = "KXADR26GVWYJT7";
 
 function randomBase64Url(byteLength: number): string {
   return randomBytes(byteLength).toString("base64url");
@@ -64,6 +67,25 @@ export function normalizeAnswer(value: string): string {
   return value.trim().toUpperCase().replaceAll(/\s+/g, "");
 }
 
+function randomCharacter(characters: string): string {
+  return characters[randomInt(characters.length)]!;
+}
+
+export function generateAnswer(): string {
+  const characters = [
+    randomCharacter(REQUIRED_CONFUSABLE),
+    randomCharacter(REQUIRED_COMPLEX),
+    randomCharacter(ALPHABET),
+    randomCharacter(ALPHABET)
+  ];
+
+  for (let index = characters.length - 1; index > 0; index -= 1) {
+    const swapIndex = randomInt(index + 1);
+    [characters[index], characters[swapIndex]] = [characters[swapIndex]!, characters[index]!];
+  }
+  return characters.join("");
+}
+
 export class VerificationStore {
   private readonly records = new Map<string, VerificationRecord>();
   private readonly runtimeSecret = randomBytes(32);
@@ -75,7 +97,7 @@ export class VerificationStore {
   private cleanupTimer?: NodeJS.Timeout;
 
   constructor(options: VerificationStoreOptions = {}) {
-    this.answerFactory = options.answerFactory ?? (() => this.generateAnswer());
+    this.answerFactory = options.answerFactory ?? generateAnswer;
     this.renderer = options.renderer ?? renderVerificationAnimation;
     this.mediaDirectory = options.mediaDirectory ?? config.mediaDirectory;
     this.clock = options.clock ?? Date.now;
@@ -99,13 +121,6 @@ export class VerificationStore {
       .update(salt)
       .update(answer)
       .digest();
-  }
-
-  private generateAnswer(): string {
-    const bytes = randomBytes(4);
-    return [...bytes]
-      .map((value) => ALPHABET[value % ALPHABET.length])
-      .join("");
   }
 
   async create(): Promise<PublicVerification> {

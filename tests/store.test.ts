@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PublicError } from "../src/errors.js";
-import { VerificationStore, normalizeAnswer } from "../src/store.js";
+import { VerificationStore, generateAnswer, normalizeAnswer } from "../src/store.js";
 
 function publicErrorCode(run: () => unknown): string {
   try {
@@ -39,6 +39,16 @@ describe("VerificationStore", () => {
 
   it("normalizes human input", () => {
     expect(normalizeAnswer("  ne xa ")).toBe("NEXA");
+  });
+
+  it("always includes characters from both required groups", () => {
+    for (let sample = 0; sample < 1_000; sample += 1) {
+      const answer = generateAnswer();
+      expect(answer).toMatch(/^[A-HJ-NP-Z2-9]{4}$/);
+      expect(answer).toMatch(/[B836]/);
+      expect(answer).toMatch(/[KXADR26GVWYJT7]/);
+      expect(answer).not.toMatch(/[IO01]/);
+    }
   });
 
   it("enforces three attempts with a ten-second cooldown", async () => {
