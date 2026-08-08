@@ -92,7 +92,7 @@ describe("NexaCAPTCHA HTTP API", () => {
       .send({ answer: "WRNG" })
       .expect(200)
       .expect(({ body }) => {
-        expect(body.attemptsRemaining).toBe(2);
+        expect(body.attemptsRemaining).toBe(1);
         expect(body.retryAfterSeconds).toBe(10);
       });
 
@@ -107,14 +107,10 @@ describe("NexaCAPTCHA HTTP API", () => {
       .post(answerUrl)
       .send({ answer: "WRNG" })
       .expect(200)
-      .expect(({ body }) => expect(body.attemptsRemaining).toBe(1));
-
-    now += 10_000;
-    await request(app)
-      .post(answerUrl)
-      .send({ answer: "WRNG" })
-      .expect(200)
-      .expect(({ body }) => expect(body.status).toBe("verification_failed"));
+      .expect(({ body }) => {
+        expect(body.status).toBe("verification_failed");
+        expect(body.attemptsRemaining).toBe(0);
+      });
 
     await request(app)
       .post(answerUrl)

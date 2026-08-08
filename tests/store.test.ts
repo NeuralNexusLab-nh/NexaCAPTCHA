@@ -76,25 +76,18 @@ describe("VerificationStore", () => {
     expect(new Set(answer).size).toBe(4);
   });
 
-  it("enforces three attempts with a ten-second cooldown", async () => {
+  it("expires after two incorrect attempts with a ten-second cooldown", async () => {
     const verification = await store.create();
     store.getMediaPath(verification.verificationId);
-    expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
-      success: false,
-      status: "incorrect",
-      attemptsRemaining: 2,
-      retryAfterSeconds: 10
-    });
-    expect(
-      publicErrorCode(() => store.submitAnswer(verification.verificationId, "WRNG"))
-    ).toBe("answer-cooldown");
-    now += 10_000;
     expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
       success: false,
       status: "incorrect",
       attemptsRemaining: 1,
       retryAfterSeconds: 10
     });
+    expect(
+      publicErrorCode(() => store.submitAnswer(verification.verificationId, "WRNG"))
+    ).toBe("answer-cooldown");
     now += 10_000;
     expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
       success: false,

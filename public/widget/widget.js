@@ -251,7 +251,7 @@
         clearTimers();
         currentVerificationId = null;
         setPill("Failed", "fa-circle-exclamation", "is-error");
-        setMessage("Three incorrect answers ended this verification.", "is-error");
+        setMessage("Two incorrect answers ended this verification.", "is-error");
         updateControls();
       } else {
         startCooldown(result.retryAfterSeconds || 10);

@@ -5,7 +5,7 @@ export const config = Object.freeze({
   verificationLifetimeMs: 120_000,
   responseLifetimeMs: 300_000,
   retryCooldownMs: 10_000,
-  maxAttempts: 3,
+  maxAttempts: 2,
   maxActiveVerifications: 160,
   maxRenderQueue: 6,
   maxTemporaryBytes: 64 * 1024 * 1024,
