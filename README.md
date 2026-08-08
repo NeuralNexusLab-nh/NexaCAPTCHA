@@ -17,7 +17,7 @@ Try it at [nexacaptcha.zone.id](https://nexacaptcha.zone.id).
 
 NexaCAPTCHA is designed to raise the cost of automated solving. It does not claim that automation is impossible.
 
-The animation starts automatically after a one-second preparation delay. A verification then remains open for one minute, allows three incorrect answers, and applies a five-second input cooldown after each incorrect answer. Replacing a verification uses the same one-second preparation delay.
+The animation starts loading immediately. A verification remains open for one minute after playback begins, allows three incorrect answers, and applies a five-second input cooldown after each incorrect answer. Replacing a verification also starts immediately.
 
 ## Add it to your site
 

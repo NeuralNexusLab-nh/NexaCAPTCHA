@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   compositeCharacterWithinAreaLimit,
   createRevealSegments,
+  revealStateForFrame,
   renderVerificationAnimation
 } from "../src/renderer.js";
 
@@ -40,10 +41,10 @@ describe("verification animation", () => {
       fullCharacter,
       10,
       5,
-      0.28
+      0.32
     );
     const visibleCount = [...target].filter((pixel) => pixel !== 0).length;
-    expect(visibleCount).toBe(28);
+    expect(visibleCount).toBe(32);
   });
 
   it("scans every character fully with uneven per-character timing", () => {
@@ -56,7 +57,7 @@ describe("verification animation", () => {
     const dwellSegments = segments.filter((segment) => segment.kind === "dwell");
     expect(segments.reduce((total, segment) => total + segment.frames, 0)).toBe(110);
     expect(dwellSegments).toHaveLength(4);
-    expect(dwellSegments.every((segment) => segment.frames >= 13)).toBe(true);
+    expect(dwellSegments.every((segment) => segment.frames >= 15)).toBe(true);
     expect(dwellSegments.every((segment) => segment.toX - segment.fromX === 100)).toBe(
       true
     );
@@ -64,5 +65,28 @@ describe("verification animation", () => {
     expect(Math.max(...dwellDurations) - Math.min(...dwellDurations)).toBeGreaterThanOrEqual(
       5
     );
+  });
+
+  it("covers the full character scan without gaps at minimum dwell time", () => {
+    for (let phaseStep = 0; phaseStep < 16; phaseStep += 1) {
+      const segment = {
+        kind: "dwell" as const,
+        frames: 15,
+        fromX: 0,
+        toX: 100,
+        phase: (phaseStep / 16) * Math.PI * 2,
+        backtrackAmplitude: 7,
+        characterIndex: 0
+      };
+      const centers = Array.from({ length: segment.frames }, (_value, frame) =>
+        revealStateForFrame(frame, [segment]).centerX
+      );
+      const maximumGap = Math.max(
+        ...centers.slice(1).map((center, index) => Math.abs(center - (centers[index] ?? 0)))
+      );
+      expect(centers[0]).toBeLessThanOrEqual(9);
+      expect(centers.at(-1)).toBeGreaterThanOrEqual(91);
+      expect(maximumGap).toBeLessThan(18);
+    }
   });
 });

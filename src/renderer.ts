@@ -252,7 +252,7 @@ export function createRevealSegments(
   characterSpacing: number,
   random: () => number
 ): RevealSegment[] {
-  const minimumDwellFrames = 13;
+  const minimumDwellFrames = 15;
   const dwellFrames = Array.from(
     { length: glyphCount },
     () => minimumDwellFrames
@@ -303,7 +303,7 @@ export function createRevealSegments(
       fromX: currentX,
       toX: scanStart,
       phase: random() * Math.PI * 2,
-      backtrackAmplitude: random() < 0.08 ? 3 + random() * 3 : 0
+      backtrackAmplitude: random() < 0.02 ? 3 + random() * 3 : 0
     });
     segments.push({
       kind: "dwell",
@@ -311,7 +311,7 @@ export function createRevealSegments(
       fromX: scanStart,
       toX: scanEnd,
       phase: random() * Math.PI * 2,
-      backtrackAmplitude: random() < 0.14 ? 4 + random() * 3 : 0,
+      backtrackAmplitude: random() < 0.05 ? 4 + random() * 3 : 0,
       characterIndex
     });
     currentX = scanEnd;
@@ -322,7 +322,7 @@ export function createRevealSegments(
     fromX: currentX,
     toX: textStart + (glyphCount - 1) * characterSpacing + scanRadius + 18,
     phase: random() * Math.PI * 2,
-    backtrackAmplitude: random() < 0.08 ? 3 + random() * 3 : 0
+    backtrackAmplitude: random() < 0.02 ? 3 + random() * 3 : 0
   });
   return segments;
 }
@@ -333,7 +333,7 @@ export function compositeCharacterWithinAreaLimit(
   fullCharacter: Uint8Array,
   width: number,
   revealCenter: number,
-  maximumVisibleRatio = 0.7
+  maximumVisibleRatio = 0.34
 ): void {
   let fullPixelCount = 0;
   const visibleIndices: number[] = [];
@@ -343,7 +343,7 @@ export function compositeCharacterWithinAreaLimit(
   }
 
   const visiblePixelLimit = Math.floor(
-    fullPixelCount * Math.min(0.3, Math.max(0.2, maximumVisibleRatio))
+    fullPixelCount * Math.min(0.34, Math.max(0.24, maximumVisibleRatio))
   );
   if (visibleIndices.length > visiblePixelLimit) {
     visibleIndices.sort((left, right) => {
@@ -359,7 +359,7 @@ export function compositeCharacterWithinAreaLimit(
   }
 }
 
-function revealStateForFrame(
+export function revealStateForFrame(
   frame: number,
   segments: RevealSegment[]
 ): { centerX: number; dwellCharacterIndex?: number } {
@@ -403,7 +403,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
   const frames = minFrames + Math.floor(random() * (maxFrames - minFrames + 1));
   const glyphs = answer.split("").map(glyphFor);
   const motionCycles = [2, 3, 4, 5, 6, 7, 8];
-  const questionDistortion = 0.9 + random() * 0.36;
+  const questionDistortion = (0.9 + random() * 0.36) * 0.7;
   const motionProfiles: MotionProfile[] = glyphs.map(() => ({
     phaseX: random() * Math.PI * 2,
     phaseY: random() * Math.PI * 2,
@@ -424,8 +424,8 @@ export function renderVerificationAnimation(answer: string): Buffer {
     jitterPhase: random() * Math.PI * 2,
     colorIndex: 2 + Math.floor(random() * 5)
   }));
-  const partialRevealWidth = 18 + random() * 5;
-  const maximumVisibleRatio = 0.24 + random() * 0.06;
+  const partialRevealWidth = 24 + random() * 5;
+  const maximumVisibleRatio = 0.28 + random() * 0.06;
   const revealShapeProfile: RevealShapeProfile = {
     phase: random() * Math.PI * 2,
     cycles: 2 + Math.floor(random() * 5),

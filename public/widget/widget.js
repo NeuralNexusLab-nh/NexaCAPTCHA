@@ -26,7 +26,6 @@
   var currentVerificationId = null;
   var expiryTimer = null;
   var cooldownTimer = null;
-  var loadingTimer = null;
   var busy = false;
   var coolingDown = false;
   var completed = false;
@@ -68,10 +67,8 @@
   function clearTimers() {
     if (expiryTimer) window.clearTimeout(expiryTimer);
     if (cooldownTimer) window.clearInterval(cooldownTimer);
-    if (loadingTimer) window.clearInterval(loadingTimer);
     expiryTimer = null;
     cooldownTimer = null;
-    loadingTimer = null;
   }
 
   function showLoadingPlaceholder(text) {
@@ -143,25 +140,10 @@
     updateControls();
     sendResult({ success: false, verificationId: null, responseToken: null });
 
-    var remaining = 1;
-    function renderLoadingDelay() {
-      showLoadingPlaceholder(
-        "Starting in " + remaining + (remaining === 1 ? " second…" : " seconds…")
-      );
-      setPill("Starting " + remaining, "fa-circle-notch fa-spin", "");
-      setMessage("Preparing a new verification…", "");
-    }
-    renderLoadingDelay();
-    loadingTimer = window.setInterval(function () {
-      remaining -= 1;
-      if (remaining <= 0) {
-        window.clearInterval(loadingTimer);
-        loadingTimer = null;
-        void createVerification();
-        return;
-      }
-      renderLoadingDelay();
-    }, 1000);
+    showLoadingPlaceholder("Preparing verification…");
+    setPill("Loading", "fa-circle-notch fa-spin", "");
+    setMessage("Loading a new verification…", "");
+    void createVerification();
   }
 
   async function createVerification() {
