@@ -14,8 +14,8 @@
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="/styles.css?v=8">
-    <script src="/app.js?v=8" defer></script>
-    <script src="/captcha.js?v=4" defer></script>
+    <script src="/app.js?v=9" defer></script>
+    <script src="/captcha.js?v=5" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -53,7 +53,7 @@
           <h1 data-i18n="heroTitle">Let humans through.<br>Make bots pay.</h1>
           <p class="hero-lead" data-i18n="heroLead">NexaCAPTCHA turns four characters into a moving target. People follow it naturally. Bots must chase incomplete, distorted pieces across the full animation—on every attempt.</p>
           <div class="hero-actions">
-            <a class="button button-primary" href="https://nexacaptchademo.zeabur.app/" target="_blank"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="tryIt">Try it</span></a>
+            <a class="button button-primary" href="#demo"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="tryIt">Try it</span></a>
             <a class="button button-secondary" href="#setup"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="addToSite">Add to your site</span></a>
           </div>
           <ul class="hero-notes" aria-label="Product highlights">
@@ -90,7 +90,7 @@
           <article class="feature-card reveal">
             <i class="fa-solid fa-eye-slash" aria-hidden="true"></i>
             <h3 data-i18n="featureIncompleteTitle">Incomplete by design</h3>
-            <p data-i18n="featureIncompleteBody">Most frames show only fragments. Two to four characters are never shown in full.</p>
+            <p data-i18n="featureIncompleteBody">A frame never exposes more than 40% of any one character.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
@@ -110,7 +110,7 @@
           <article class="feature-card reveal">
             <i class="fa-solid fa-fingerprint" aria-hidden="true"></i>
             <h3 data-i18n="featureUniqueTitle">Different every time</h3>
-            <p data-i18n="featureUniqueBody">The motion, distortion, timing, and hidden character change with every CAPTCHA.</p>
+            <p data-i18n="featureUniqueBody">Animation length, color, motion, distortion, and timing change with every CAPTCHA.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
@@ -126,7 +126,7 @@
               <h3 id="experiment-title" data-i18n="experimentTitle">Fast for people. Expensive for AI.</h3>
               <p class="experiment-lead" data-i18n="experimentLead">The same model was tested with and without a strategy learned from earlier attempts.</p>
             </div>
-            <span class="experiment-version"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span data-i18n="experimentVersion">Current CAPTCHA</span></span>
+            <span class="experiment-version"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span data-i18n="experimentVersion">Tested build</span></span>
           </div>
           <div class="experiment-results">
             <article class="experiment-result experiment-human">
@@ -137,12 +137,12 @@
             <article class="experiment-result experiment-gpt-cold">
               <div class="experiment-label"><i class="fa-solid fa-robot" aria-hidden="true"></i><span data-i18n="experimentColdLabel">GPT 5.6 Sol - Medium · No experience</span></div>
               <strong>0%<span data-i18n="experimentSuccess">success</span></strong>
-              <p data-i18n="experimentColdMeta">No prior solving strategy ·</p>
+              <p data-i18n="experimentColdMeta">No prior solving strategy</p>
             </article>
             <article class="experiment-result experiment-gpt-warm">
               <div class="experiment-label"><i class="fa-solid fa-brain" aria-hidden="true"></i><span data-i18n="experimentWarmLabel">GPT 5.6 Sol - Medium · Experienced</span></div>
               <strong>2:40<span data-i18n="experimentAverage">average</span></strong>
-              <p data-i18n="experimentWarmMeta">Used a strategy learned from earlier solves · </p>
+              <p data-i18n="experimentWarmMeta">Used a strategy learned from earlier solves</p>
             </article>
           </div>
 
@@ -157,7 +157,7 @@
             <div class="comparison-results">
               <article>
                 <i class="fa-solid fa-images" aria-hidden="true"></i>
-                <div><strong data-i18n="comparisonImageTitle">Image challenge</strong><p data-i18n="comparisonImageMeta">About 60 seconds · passed on the first answer</p></div>
+                <div><strong data-i18n="comparisonImageTitle">Image challenge</strong><p data-i18n="comparisonImageMeta">About 1:30 · passed on the first answer</p></div>
               </article>
               <article>
                 <i class="fa-solid fa-check" aria-hidden="true"></i>
@@ -279,3 +279,4 @@ if (!result.success) {
     <div class="sr-only" id="copy-status" aria-live="polite"></div>
   </body>
 </html>
+
