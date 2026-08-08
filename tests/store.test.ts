@@ -5,16 +5,29 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PublicError } from "../src/errors.js";
 import { VerificationStore, normalizeAnswer } from "../src/store.js";
 
+function publicErrorCode(run: () => unknown): string {
+  try {
+    run();
+  } catch (error) {
+    if (error instanceof PublicError) return error.code;
+    throw error;
+  }
+  throw new Error("Expected a PublicError.");
+}
+
 describe("VerificationStore", () => {
   let directory: string;
   let store: VerificationStore;
+  let now: number;
 
   beforeEach(async () => {
     directory = await mkdtemp(path.join(tmpdir(), "nexacaptcha-test-"));
+    now = 1_700_000_000_000;
     store = new VerificationStore({
       answerFactory: () => "NEXA",
       renderer: () => Buffer.from("GIF89a", "ascii"),
-      mediaDirectory: directory
+      mediaDirectory: directory,
+      clock: () => now
     });
     await store.start();
   });
@@ -28,15 +41,26 @@ describe("VerificationStore", () => {
     expect(normalizeAnswer("  ne xa ")).toBe("NEXA");
   });
 
-  it("allows five incorrect attempts and then fails permanently", async () => {
+  it("enforces three attempts with a five-second cooldown", async () => {
     const verification = await store.create();
-    for (let attempt = 1; attempt <= 4; attempt += 1) {
-      expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
-        success: false,
-        status: "incorrect",
-        attemptsRemaining: 5 - attempt
-      });
-    }
+    store.getMediaPath(verification.verificationId);
+    expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
+      success: false,
+      status: "incorrect",
+      attemptsRemaining: 2,
+      retryAfterSeconds: 5
+    });
+    expect(
+      publicErrorCode(() => store.submitAnswer(verification.verificationId, "WRNG"))
+    ).toBe("answer-cooldown");
+    now += 5_000;
+    expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
+      success: false,
+      status: "incorrect",
+      attemptsRemaining: 1,
+      retryAfterSeconds: 5
+    });
+    now += 5_000;
     expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
       success: false,
       status: "verification_failed",
@@ -47,12 +71,15 @@ describe("VerificationStore", () => {
     );
   });
 
-  it("returns a 32-character token and consumes it once", async () => {
+  it("returns a 64-character token and consumes it once", async () => {
     const verification = await store.create();
+    expect(verification.verificationId).toMatch(/^ver_[A-Za-z0-9_-]{12}$/);
+    expect(verification.verificationId).toHaveLength(16);
+    store.getMediaPath(verification.verificationId);
     const completion = store.submitAnswer(verification.verificationId, "nexa");
     expect(completion.success).toBe(true);
     if (!completion.success) throw new Error("Expected successful completion.");
-    expect(completion.responseToken).toMatch(/^[A-Za-z0-9_-]{32}$/);
+    expect(completion.responseToken).toMatch(/^[A-Za-z0-9_-]{64}$/);
 
     expect(store.verify(verification.verificationId, completion.responseToken).success).toBe(true);
     expect(store.verify(verification.verificationId, completion.responseToken)).toEqual({
@@ -64,8 +91,29 @@ describe("VerificationStore", () => {
   it("rejects a token belonging to a different verification", async () => {
     const first = await store.create();
     const second = await store.create();
+    store.getMediaPath(first.verificationId);
+    store.getMediaPath(second.verificationId);
     const completion = store.submitAnswer(first.verificationId, "NEXA");
     if (!completion.success) throw new Error("Expected successful completion.");
     expect(store.verify(second.verificationId, completion.responseToken).success).toBe(false);
   });
+
+  it("starts the one-minute lifetime when animation playback is requested", async () => {
+    const verification = await store.create();
+    expect(
+      publicErrorCode(() => store.submitAnswer(verification.verificationId, "NEXA"))
+    ).toBe("verification-not-started");
+
+    store.getMediaPath(verification.verificationId);
+    now += 59_999;
+    expect(store.submitAnswer(verification.verificationId, "NEXA").success).toBe(true);
+
+    const expired = await store.create();
+    store.getMediaPath(expired.verificationId);
+    now += 60_001;
+    expect(
+      publicErrorCode(() => store.submitAnswer(expired.verificationId, "NEXA"))
+    ).toBe("verification-expired");
+  });
 });
+
