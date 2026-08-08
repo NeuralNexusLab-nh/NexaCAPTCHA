@@ -41,22 +41,51 @@ describe("VerificationStore", () => {
     expect(normalizeAnswer("  ne xa ")).toBe("NEXA");
   });
 
-  it("always includes characters from both required groups", () => {
+  it("uses only the allowed character set", () => {
     for (let sample = 0; sample < 1_000; sample += 1) {
       const answer = generateAnswer();
       expect(answer).toMatch(/^[A-HJ-NP-Z2-9]{4}$/);
-      expect(answer).toMatch(/[B836]/);
-      expect(answer).toMatch(/[KXADR26GVWYJT7]/);
       expect(answer).not.toMatch(/[IO01]/);
     }
   });
 
-  it("accepts 30-percent duplicate candidates without reselection", () => {
+  it("applies exact inclusion decisions for both character groups", () => {
+    const answerForRolls = (confusableRoll: number, complexRoll: number) => {
+      const rolls = [confusableRoll, complexRoll, 0];
+      return generateAnswer(
+        () => 0,
+        () => rolls.shift() ?? 0
+      );
+    };
+
+    const both = answerForRolls(69, 39);
+    expect(both).toMatch(/[B836]/);
+    expect(both).toMatch(/[KXADR26GVWYJT7]/);
+
+    const confusableOnly = answerForRolls(69, 40);
+    expect(confusableOnly).toMatch(/[B836]/);
+    expect(confusableOnly).not.toMatch(/[KXADR26GVWYJT7]/);
+
+    const complexOnly = answerForRolls(70, 39);
+    expect(complexOnly).not.toMatch(/[B836]/);
+    expect(complexOnly).toMatch(/[KXADR26GVWYJT7]/);
+
+    const neither = answerForRolls(70, 40);
+    expect(neither).not.toMatch(/[B836]/);
+    expect(neither).not.toMatch(/[KXADR26GVWYJT7]/);
+  });
+
+  it("accepts 40-percent duplicate candidates without reselection", () => {
     let duplicateDecisionCalls = 0;
-    const answer = generateAnswer((maximum) => {
-      if (maximum === 100) duplicateDecisionCalls += 1;
-      return 0;
-    });
+    const policyRolls = [0, 0];
+    const answer = generateAnswer(
+      () => 0,
+      () => {
+        if (policyRolls.length > 0) return policyRolls.shift()!;
+        duplicateDecisionCalls += 1;
+        return 0;
+      }
+    );
 
     expect(new Set(answer).size).toBeLessThan(answer.length);
     expect(duplicateDecisionCalls).toBe(1);
@@ -64,19 +93,23 @@ describe("VerificationStore", () => {
 
   it("stops after five duplicate reselections", () => {
     let duplicateDecisionCalls = 0;
-    let candidateCalls = 0;
-    const answer = generateAnswer((maximum) => {
-      if (maximum === 14) candidateCalls += 1;
-      if (maximum === 100) {
+    let candidateCharacterCalls = 0;
+    const policyRolls = [99, 99];
+    const answer = generateAnswer(
+      (maximum) => {
+        if (maximum === 15) candidateCharacterCalls += 1;
+        return 0;
+      },
+      () => {
+        if (policyRolls.length > 0) return policyRolls.shift()!;
         duplicateDecisionCalls += 1;
         return 99;
       }
-      return 0;
-    });
+    );
 
     expect(new Set(answer).size).toBeLessThan(answer.length);
     expect(duplicateDecisionCalls).toBe(5);
-    expect(candidateCalls).toBe(6);
+    expect(candidateCharacterCalls).toBe(24);
   });
 
   it("enforces three attempts with a ten-second cooldown", async () => {
