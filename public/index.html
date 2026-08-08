@@ -13,8 +13,8 @@
     <link rel="stylesheet" href="/vendor/fonts/inter/index.css">
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=8">
-    <script src="/app.js?v=11" defer></script>
+    <link rel="stylesheet" href="/styles.css?v=9">
+    <script src="/app.js?v=12" defer></script>
     <script src="/captcha.js?v=8" defer></script>
   </head>
   <body>
@@ -26,8 +26,7 @@
           <span>NexaCAPTCHA</span>
         </a>
         <div class="nav-links">
-          <a href="#top"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i><span data-i18n="navTop">Top</span></a>
-          <a href="#demo"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="navDemo">Demo</span></a>
+          <a href="#top"><i class="fa-solid fa-house" aria-hidden="true"></i><span data-i18n="navTop">Home</span></a>
           <a href="#features"><i class="fa-solid fa-star" aria-hidden="true"></i><span data-i18n="navFeatures">Features</span></a>
           <a href="#experiment"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="navExperiment">Experiment</span></a>
           <a href="#setup"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="navSetup">Setup</span></a>
@@ -53,7 +52,7 @@
           <h1 data-i18n="heroTitle">Let humans through.<br>Make bots pay.</h1>
           <p class="hero-lead" data-i18n="heroLead">NexaCAPTCHA turns four characters into a moving target. People follow it naturally. Bots must chase incomplete, distorted pieces across the full animation—on every attempt.</p>
           <div class="hero-actions">
-            <a class="button button-primary" href="#demo"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="tryIt">Try it</span></a>
+            <a class="button button-primary" href="https://nexacaptchademo.zeabur.app/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i><span data-i18n="tryIt">Try it</span></a>
             <a class="button button-secondary" href="#setup"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="addToSite">Add to your site</span></a>
           </div>
           <ul class="hero-notes" aria-label="Product highlights">
@@ -124,47 +123,38 @@
             <div>
               <p class="eyebrow"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="experimentEyebrow">SMALL-SCALE TEST</span></p>
               <h3 id="experiment-title" data-i18n="experimentTitle">Fast for people. Expensive for AI.</h3>
-              <p class="experiment-lead" data-i18n="experimentLead">The same model was tested with and without a strategy learned from earlier attempts.</p>
+              <p class="experiment-lead" data-i18n="experimentLead">Average completion results for people and GPT 5.6 Sol - Medium across three verification systems.</p>
             </div>
             <span class="experiment-version"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span data-i18n="experimentVersion">Tested build</span></span>
           </div>
-          <div class="experiment-results">
-            <article class="experiment-result experiment-human">
-              <div class="experiment-label"><i class="fa-solid fa-user" aria-hidden="true"></i><span data-i18n="experimentHumanLabel">Human</span></div>
-              <strong>10.4<span data-i18n="experimentSeconds">s average</span></strong>
-              <p data-i18n="experimentHumanMeta">Average completion time</p>
-            </article>
-            <article class="experiment-result experiment-gpt-cold">
-              <div class="experiment-label"><i class="fa-solid fa-robot" aria-hidden="true"></i><span data-i18n="experimentColdLabel">GPT 5.6 Sol - Medium · No experience</span></div>
-              <strong>0%<span data-i18n="experimentSuccess">success</span></strong>
-              <p data-i18n="experimentColdMeta">No prior solving strategy</p>
-            </article>
-            <article class="experiment-result experiment-gpt-warm">
-              <div class="experiment-label"><i class="fa-solid fa-brain" aria-hidden="true"></i><span data-i18n="experimentWarmLabel">GPT 5.6 Sol - Medium · Experienced</span></div>
-              <strong>2:40<span data-i18n="experimentAverage">average</span></strong>
-              <p data-i18n="experimentWarmMeta">Used a strategy learned from earlier solves</p>
-            </article>
+          <div class="experiment-table-wrap">
+            <table class="experiment-table">
+              <thead>
+                <tr>
+                  <th scope="col"><span class="sr-only" data-i18n="verificationSystem">Verification system</span></th>
+                  <th scope="col"><i class="fa-solid fa-user" aria-hidden="true"></i><span data-i18n="experimentHumanLabel">Human</span></th>
+                  <th scope="col"><i class="fa-solid fa-robot" aria-hidden="true"></i>GPT 5.6 Sol - Medium</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="nexa-result">
+                  <th scope="row"><img src="/assets/logo.svg" alt="" width="24" height="24"><span>NexaCAPTCHA</span></th>
+                  <td><strong>11.5</strong> <span data-i18n="secondsAverage">seconds average</span></td>
+                  <td><strong>0%</strong> <span data-i18n="successRate">success rate</span></td>
+                </tr>
+                <tr>
+                  <th scope="row"><i class="fa-brands fa-google" aria-hidden="true"></i><span>Google reCAPTCHA</span></th>
+                  <td><strong>1.9</strong> <span data-i18n="secondsAverage">seconds average</span></td>
+                  <td><strong>85.7</strong> <span data-i18n="secondsAverage">seconds average</span></td>
+                </tr>
+                <tr>
+                  <th scope="row"><i class="fa-solid fa-shield" aria-hidden="true"></i><span>hCaptcha</span></th>
+                  <td><strong>11.8</strong> <span data-i18n="secondsAverage">seconds average</span></td>
+                  <td><strong>96.5</strong> <span data-i18n="secondsAverage">seconds average</span></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-
-          <section class="google-comparison" aria-labelledby="google-comparison-title">
-            <div class="comparison-heading">
-              <div>
-                <p class="eyebrow"><i class="fa-brands fa-google" aria-hidden="true"></i><span data-i18n="comparisonEyebrow">SAME MODEL · GOOGLE RECAPTCHA</span></p>
-                <h4 id="google-comparison-title" data-i18n="comparisonTitle">A familiar image test was faster. The checkbox asked nothing.</h4>
-              </div>
-              <span data-i18n="comparisonModel">GPT 5.6 Sol - Medium</span>
-            </div>
-            <div class="comparison-results">
-              <article>
-                <i class="fa-solid fa-images" aria-hidden="true"></i>
-                <div><strong data-i18n="comparisonImageTitle">Image challenge</strong><p data-i18n="comparisonImageMeta">About 1:30 · passed on the first answer</p></div>
-              </article>
-              <article>
-                <i class="fa-solid fa-check" aria-hidden="true"></i>
-                <div><strong data-i18n="comparisonCheckboxTitle">Checkbox</strong><p data-i18n="comparisonCheckboxMeta">Passed directly · no image challenge shown</p></div>
-              </article>
-            </div>
-          </section>
           <p class="experiment-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span data-i18n="experimentNote">A documented small-scale test of the current version. Results describe these runs and are not a security guarantee.</span></p>
         </aside>
       </section>
@@ -273,7 +263,11 @@ if (!result.success) {
     <footer class="site-footer">
       <div class="shell footer-grid">
         <div class="footer-brand"><img src="/assets/logo.svg" alt="" width="30" height="30"><div><strong>NexaCAPTCHA</strong><span data-i18n="footerTagline">Simple motion-based human verification.</span></div></div>
-        <a class="github-link" href="https://github.com/NeuralNexusLab-nh/NexaCAPTCHA" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github" aria-hidden="true"></i>GitHub</a>
+        <div class="footer-links">
+          <a class="footer-link" href="https://nxlab.zone.id" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-code" aria-hidden="true"></i><span>Made By NeuralNexusLab</span></a>
+          <a class="footer-link" href="mailto:nexacaptcha@nxlab.zone.id"><i class="fa-solid fa-envelope" aria-hidden="true"></i><span>nexacaptcha@nxlab.zone.id</span></a>
+          <a class="footer-link" href="https://github.com/NeuralNexusLab-nh/NexaCAPTCHA" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github" aria-hidden="true"></i>GitHub</a>
+        </div>
       </div>
     </footer>
     <div class="sr-only" id="copy-status" aria-live="polite"></div>

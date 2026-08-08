@@ -28,8 +28,8 @@ button, input, select { font: inherit; }
 .nav { display: flex; min-height: 70px; align-items: center; gap: 24px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-family: "Space Grotesk", sans-serif; font-weight: 700; }
 .nav-links { display: flex; align-items: center; gap: 18px; margin-left: auto; }
-.nav-links a, .github-link { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 13px; font-weight: 650; }
-.nav-links a:hover, .github-link:hover { color: var(--text); }
+.nav-links a, .footer-link { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 13px; font-weight: 650; }
+.nav-links a:hover, .footer-link:hover { color: var(--text); }
 .language-control { display: inline-flex; align-items: center; gap: 8px; color: var(--blue); }
 .language-control select { min-height: 38px; padding: 0 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); color: var(--text); cursor: pointer; font-size: 12px; font-weight: 700; }
 
@@ -79,27 +79,22 @@ h3 { letter-spacing: -.02em; }
 .experiment-heading h3 { margin: 0; font-size: clamp(24px, 3vw, 32px); }
 .experiment-lead { max-width: 720px; margin: 9px 0 0; color: var(--muted); font-size: 14px; }
 .experiment-version { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; padding: 6px 10px; border: 1px solid rgba(137, 243, 110, .34); border-radius: 999px; color: var(--green); font-size: 11px; font-weight: 750; }
-.experiment-results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 24px; }
-.experiment-result { min-width: 0; padding: 22px; border: 1px solid var(--border); border-radius: 9px; background: rgba(5, 7, 6, .72); }
-.experiment-label { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; color: var(--muted); font-size: 12px; font-weight: 750; }
-.experiment-human .experiment-label i { color: var(--blue); }
-.experiment-gpt-cold .experiment-label i { color: var(--purple); }
-.experiment-gpt-warm .experiment-label i { color: var(--green); }
-.experiment-result strong { display: flex; align-items: baseline; gap: 8px; color: var(--text); font: 700 clamp(30px, 4vw, 44px) "Space Grotesk", sans-serif; letter-spacing: -.04em; }
-.experiment-result strong span { color: var(--muted); font: 650 13px Inter, sans-serif; letter-spacing: 0; }
-.experiment-gpt-cold strong { color: var(--purple); }
-.experiment-gpt-warm strong { color: var(--green); }
-.experiment-result p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
-.google-comparison { margin-top: 16px; padding: 20px; border: 1px solid rgba(173, 140, 255, .28); border-radius: 9px; background: rgba(5, 7, 6, .48); }
-.comparison-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
-.comparison-heading .eyebrow { margin-bottom: 7px; color: var(--purple); }
-.comparison-heading h4 { margin: 0; font: 700 18px/1.3 "Space Grotesk", sans-serif; }
-.comparison-heading > span { flex: 0 0 auto; color: var(--muted); font: 11px "JetBrains Mono", monospace; }
-.comparison-results { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 17px; }
-.comparison-results article { display: flex; align-items: flex-start; gap: 12px; padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: rgba(19, 23, 21, .72); }
-.comparison-results article > i { margin-top: 4px; color: var(--purple); }
-.comparison-results strong { font: 700 14px "Space Grotesk", sans-serif; }
-.comparison-results p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+.experiment-table-wrap { margin-top: 24px; overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: rgba(5, 7, 6, .72); }
+.experiment-table { width: 100%; min-width: 680px; border-collapse: collapse; text-align: left; }
+.experiment-table th, .experiment-table td { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+.experiment-table tr:last-child th, .experiment-table tr:last-child td { border-bottom: 0; }
+.experiment-table thead th { background: rgba(19, 23, 21, .9); color: var(--muted); font-size: 12px; font-weight: 750; }
+.experiment-table thead th:not(:first-child) { width: 31%; }
+.experiment-table thead i { margin-right: 8px; color: var(--blue); }
+.experiment-table thead th:last-child i { color: var(--purple); }
+.experiment-table tbody th { color: var(--text); font: 700 15px "Space Grotesk", sans-serif; }
+.experiment-table tbody th > span, .experiment-table tbody th { vertical-align: middle; }
+.experiment-table tbody th img, .experiment-table tbody th i { width: 24px; margin-right: 10px; color: var(--purple); text-align: center; vertical-align: middle; }
+.experiment-table td { color: var(--muted); font-size: 12px; }
+.experiment-table td strong { margin-right: 5px; color: var(--text); font: 700 23px "Space Grotesk", sans-serif; }
+.experiment-table .nexa-result { background: linear-gradient(90deg, rgba(121, 204, 255, .08), rgba(173, 140, 255, .08)); }
+.experiment-table .nexa-result th { color: var(--green); font-size: 18px; }
+.experiment-table .nexa-result td:last-child strong { color: var(--green); }
 .experiment-note { display: flex; align-items: flex-start; gap: 9px; margin: 17px 0 0; color: var(--muted); font-size: 12px; }
 .experiment-note i { margin-top: 4px; color: var(--blue); }
 
@@ -145,6 +140,8 @@ dd { margin: 0; color: var(--muted); font-size: 13px; }
 .footer-brand { display: flex; align-items: center; gap: 11px; }
 .footer-brand div { display: grid; }
 .footer-brand span { color: var(--muted); font-size: 12px; }
+.footer-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px 18px; }
+.footer-link i { color: var(--blue); }
 .button:focus-visible, a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
 .reveal { opacity: 0; transform: translateY(12px); transition: opacity 500ms ease, transform 500ms ease; }
 .reveal.is-visible { opacity: 1; transform: none; }
@@ -172,12 +169,10 @@ dd { margin: 0; color: var(--muted); font-size: 13px; }
   .feature-grid { grid-template-columns: 1fr; }
   .experiment-panel { padding: 20px; }
   .experiment-heading { align-items: flex-start; flex-direction: column; }
-  .experiment-results { grid-template-columns: 1fr; }
-  .comparison-heading { flex-direction: column; gap: 8px; }
-  .comparison-results { grid-template-columns: 1fr; }
   .setup-row { gap: 18px; }
   dl div { grid-template-columns: 1fr; gap: 5px; }
   .footer-grid { min-height: 150px; align-items: flex-start; flex-direction: column; justify-content: center; gap: 18px; }
+  .footer-links { justify-content: flex-start; }
 }
 
 @media (prefers-reduced-motion: reduce) {
