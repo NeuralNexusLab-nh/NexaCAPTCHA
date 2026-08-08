@@ -23,18 +23,6 @@
     if (instances.has(mount)) return instances.get(mount);
 
     options = options || {};
-    var alternativeUrl = null;
-    var requestedAlternative = options.alternativeUrl || mount.dataset.alternativeUrl;
-    if (requestedAlternative) {
-      try {
-        var parsedAlternative = new URL(requestedAlternative, window.location.href);
-        if (parsedAlternative.origin === window.location.origin) {
-          alternativeUrl = parsedAlternative.href;
-        }
-      } catch (_) {
-        alternativeUrl = null;
-      }
-    }
     sequence += 1;
     var widgetId = "nexa_" + Date.now().toString(36) + "_" + sequence.toString(36);
     var result = { success: false, verificationId: null, responseToken: null };
@@ -42,11 +30,10 @@
     var iframe = document.createElement("iframe");
     iframe.src =
       serviceOrigin +
-      "/widget?v=7&parentOrigin=" +
+      "/widget?v=6&parentOrigin=" +
       encodeURIComponent(window.location.origin) +
       "&widgetId=" +
-      encodeURIComponent(widgetId) +
-      (alternativeUrl ? "&alternativeAvailable=1" : "");
+      encodeURIComponent(widgetId);
     iframe.title = "NexaCAPTCHA verification";
     iframe.width = "100%";
     iframe.height = "360";
@@ -79,9 +66,6 @@
         iframe.height = String(Math.max(260, Math.min(520, data.height)));
       }
       if (data.type === "result") notify(data.result);
-      if (data.type === "alternative" && alternativeUrl) {
-        window.location.assign(alternativeUrl);
-      }
     }
 
     window.addEventListener("message", onMessage);

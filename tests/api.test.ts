@@ -69,20 +69,6 @@ describe("NexaCAPTCHA HTTP API", () => {
       .send(verification)
       .expect(200)
       .expect(({ body }) => expect(body.success).toBe(false));
-
-    await request(app)
-      .get("/api/test-results")
-      .expect("Cache-Control", /no-store/)
-      .expect(200)
-      .expect(({ body }) => {
-        expect(body.records).toHaveLength(1);
-        expect(body.records[0]).toMatchObject({
-          captchaVersion: "motion-v2",
-          outcome: "completed",
-          successfulAttempt: 1
-        });
-        expect(JSON.stringify(body.records)).not.toContain("NEXA");
-      });
   });
 
   it("applies separate CSP and frame rules to the website and widget", async () => {

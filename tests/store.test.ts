@@ -4,7 +4,6 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PublicError } from "../src/errors.js";
 import { VerificationStore, generateAnswer, normalizeAnswer } from "../src/store.js";
-import { AnonymousTestRecorder } from "../src/telemetry.js";
 
 function publicErrorCode(run: () => unknown): string {
   try {
@@ -19,19 +18,16 @@ function publicErrorCode(run: () => unknown): string {
 describe("VerificationStore", () => {
   let directory: string;
   let store: VerificationStore;
-  let telemetry: AnonymousTestRecorder;
   let now: number;
 
   beforeEach(async () => {
     directory = await mkdtemp(path.join(tmpdir(), "nexacaptcha-test-"));
     now = 1_700_000_000_000;
-    telemetry = new AnonymousTestRecorder();
     store = new VerificationStore({
       answerFactory: () => "NEXA",
       renderer: () => Buffer.from("GIF89a", "ascii"),
       mediaDirectory: directory,
-      clock: () => now,
-      telemetry
+      clock: () => now
     });
     await store.start();
   });
@@ -45,17 +41,91 @@ describe("VerificationStore", () => {
     expect(normalizeAnswer("  ne xa ")).toBe("NEXA");
   });
 
-  it("samples every position uniformly from the full allowed alphabet", () => {
+  it("uses only the allowed character set", () => {
     for (let sample = 0; sample < 1_000; sample += 1) {
       const answer = generateAnswer();
       expect(answer).toMatch(/^[A-HJ-NP-Z2-9]{4}$/);
       expect(answer).not.toMatch(/[IO01]/);
     }
-    const observed = new Set<string>();
-    for (let index = 0; index < 32; index += 1) {
-      observed.add(generateAnswer(() => index)[0]!);
-    }
-    expect(observed.size).toBe(32);
+  });
+
+  it("forces selected groups without excluding unselected groups", () => {
+    const answerForRolls = (confusableRoll: number, complexRoll: number) => {
+      const rolls = [confusableRoll, complexRoll, 0];
+      return generateAnswer(
+        (maximum) => maximum === 32 ? 2 : 0,
+        () => rolls.shift() ?? 0
+      );
+    };
+
+    const both = answerForRolls(69, 69);
+    expect(both).toMatch(/[B836]/);
+    expect(both).toMatch(/[KXADR26GVWYJT7]/);
+
+    const confusableOnly = answerForRolls(69, 70);
+    expect(confusableOnly).toMatch(/[B836]/);
+
+    const complexOnly = answerForRolls(70, 69);
+    expect(complexOnly).toMatch(/[KXADR26GVWYJT7]/);
+
+    const neither = answerForRolls(70, 70);
+    expect(neither).not.toMatch(/[B836]/);
+    expect(neither).not.toMatch(/[KXADR26GVWYJT7]/);
+
+    const naturallyConfusable = generateAnswer(
+      (maximum) => maximum === 32 ? 1 : 0,
+      (() => {
+        const rolls = [99, 99, 0];
+        return () => rolls.shift() ?? 0;
+      })()
+    );
+    expect(naturallyConfusable).toMatch(/[B836]/);
+
+    const naturallyComplex = generateAnswer(
+      () => 0,
+      (() => {
+        const rolls = [99, 99, 0];
+        return () => rolls.shift() ?? 0;
+      })()
+    );
+    expect(naturallyComplex).toMatch(/[KXADR26GVWYJT7]/);
+  });
+
+  it("accepts 40-percent duplicate candidates without reselection", () => {
+    let duplicateDecisionCalls = 0;
+    const policyRolls = [0, 0];
+    const answer = generateAnswer(
+      () => 0,
+      () => {
+        if (policyRolls.length > 0) return policyRolls.shift()!;
+        duplicateDecisionCalls += 1;
+        return 0;
+      }
+    );
+
+    expect(new Set(answer).size).toBeLessThan(answer.length);
+    expect(duplicateDecisionCalls).toBe(1);
+  });
+
+  it("stops after five duplicate reselections", () => {
+    let duplicateDecisionCalls = 0;
+    let candidateCharacterCalls = 0;
+    const policyRolls = [99, 99];
+    const answer = generateAnswer(
+      (maximum) => {
+        if (maximum === 32) candidateCharacterCalls += 1;
+        return 0;
+      },
+      () => {
+        if (policyRolls.length > 0) return policyRolls.shift()!;
+        duplicateDecisionCalls += 1;
+        return 99;
+      }
+    );
+
+    expect(new Set(answer).size).toBeLessThan(answer.length);
+    expect(duplicateDecisionCalls).toBe(5);
+    expect(candidateCharacterCalls).toBe(24);
   });
 
   it("enforces three attempts with a ten-second cooldown", async () => {
@@ -86,36 +156,6 @@ describe("VerificationStore", () => {
     expect(
       publicErrorCode(() => store.submitAnswer(verification.verificationId, "NEXA"))
     ).toBe("verification-expired");
-    expect(telemetry.snapshot()).toMatchObject([
-      {
-        captchaVersion: "motion-v2",
-        outcome: "failed",
-        successfulAttempt: null,
-        elapsedMs: 20_000,
-        parameterClass: "custom-renderer"
-      }
-    ]);
-  });
-
-  it("records anonymous completion telemetry without an answer", async () => {
-    const verification = await store.create();
-    store.getMediaPath(verification.verificationId);
-    store.submitAnswer(verification.verificationId, "WRNG");
-    now += 10_000;
-    store.submitAnswer(verification.verificationId, "NEXA");
-
-    const records = telemetry.snapshot();
-    expect(records).toMatchObject([
-      {
-        captchaVersion: "motion-v2",
-        outcome: "completed",
-        successfulAttempt: 2,
-        elapsedMs: 10_000,
-        parameterClass: "custom-renderer"
-      }
-    ]);
-    expect(JSON.stringify(records)).not.toContain("NEXA");
-    expect(JSON.stringify(records)).not.toContain("WRNG");
   });
 
   it("returns a 64-character token and consumes it once", async () => {

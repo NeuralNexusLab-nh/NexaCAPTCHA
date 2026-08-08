@@ -10,12 +10,7 @@ import path from "node:path";
 import { config } from "./config.js";
 import { PublicError } from "./errors.js";
 import { RenderQueue } from "./render-queue.js";
-import { renderVerification, type RenderedVerification } from "./renderer.js";
-import {
-  AnonymousTestRecorder,
-  type AnonymousOutcome,
-  type AnonymousTestRecord
-} from "./telemetry.js";
+import { renderVerificationAnimation } from "./renderer.js";
 
 export type VerificationStatus =
   | "pending"
@@ -31,15 +26,12 @@ interface VerificationRecord {
   status: VerificationStatus;
   attemptsUsed: number;
   createdAt: number;
-  startedAt?: number;
   expiresAt?: number;
   retryAvailableAt?: number;
   mediaPath: string;
   responseTokenHash?: Buffer;
   responseExpiresAt?: number;
   verifiedAt?: number;
-  parameterClass: string;
-  telemetryRecorded?: boolean;
 }
 
 export interface PublicVerification {
@@ -50,15 +42,21 @@ export interface PublicVerification {
 
 interface VerificationStoreOptions {
   answerFactory?: () => string;
-  renderer?: (answer: string) => Buffer | RenderedVerification;
+  renderer?: (answer: string) => Buffer;
   mediaDirectory?: string;
   clock?: () => number;
-  telemetry?: AnonymousTestRecorder;
 }
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const REQUIRED_CONFUSABLE = "B836";
+const REQUIRED_COMPLEX = "KXADR26GVWYJT7";
+const CONFUSABLE_INCLUDE_PERCENT = 70;
+const COMPLEX_INCLUDE_PERCENT = 70;
+const DUPLICATE_ACCEPT_PERCENT = 40;
+const MAX_DUPLICATE_RESELECTIONS = 5;
 
 type RandomInteger = (maxExclusive: number) => number;
+type PercentageRoll = () => number;
 
 function randomBase64Url(byteLength: number): string {
   return randomBytes(byteLength).toString("base64url");
@@ -76,11 +74,52 @@ export function normalizeAnswer(value: string): string {
   return value.trim().toUpperCase().replaceAll(/\s+/g, "");
 }
 
-export function generateAnswer(randomInteger: RandomInteger = randomInt): string {
-  return Array.from(
-    { length: 4 },
-    () => ALPHABET[randomInteger(ALPHABET.length)]!
-  ).join("");
+function randomCharacter(characters: string, randomInteger: RandomInteger): string {
+  return characters[randomInteger(characters.length)]!;
+}
+
+function generateCandidate(
+  randomInteger: RandomInteger,
+  includeConfusable: boolean,
+  includeComplex: boolean
+): string {
+  const characters: string[] = [];
+  if (includeConfusable) {
+    characters.push(randomCharacter(REQUIRED_CONFUSABLE, randomInteger));
+  }
+  if (includeComplex) {
+    characters.push(randomCharacter(REQUIRED_COMPLEX, randomInteger));
+  }
+
+  while (characters.length < 4) {
+    characters.push(randomCharacter(ALPHABET, randomInteger));
+  }
+
+  for (let index = characters.length - 1; index > 0; index -= 1) {
+    const swapIndex = randomInteger(index + 1);
+    [characters[index], characters[swapIndex]] = [characters[swapIndex]!, characters[index]!];
+  }
+  return characters.join("");
+}
+
+export function generateAnswer(
+  randomInteger: RandomInteger = randomInt,
+  percentageRoll: PercentageRoll = () => randomInt(100)
+): string {
+  const includeConfusable = percentageRoll() < CONFUSABLE_INCLUDE_PERCENT;
+  const includeComplex = percentageRoll() < COMPLEX_INCLUDE_PERCENT;
+  let reselections = 0;
+  while (true) {
+    const candidate = generateCandidate(
+      randomInteger,
+      includeConfusable,
+      includeComplex
+    );
+    const hasDuplicate = new Set(candidate).size < candidate.length;
+    if (!hasDuplicate || reselections >= MAX_DUPLICATE_RESELECTIONS) return candidate;
+    if (percentageRoll() < DUPLICATE_ACCEPT_PERCENT) return candidate;
+    reselections += 1;
+  }
 }
 
 export class VerificationStore {
@@ -88,18 +127,16 @@ export class VerificationStore {
   private readonly runtimeSecret = randomBytes(32);
   private readonly renderQueue = new RenderQueue(config.maxRenderQueue);
   private readonly answerFactory: () => string;
-  private readonly renderer: (answer: string) => Buffer | RenderedVerification;
+  private readonly renderer: (answer: string) => Buffer;
   private readonly mediaDirectory: string;
   private readonly clock: () => number;
-  private readonly telemetry: AnonymousTestRecorder;
   private cleanupTimer?: NodeJS.Timeout;
 
   constructor(options: VerificationStoreOptions = {}) {
     this.answerFactory = options.answerFactory ?? generateAnswer;
-    this.renderer = options.renderer ?? renderVerification;
+    this.renderer = options.renderer ?? renderVerificationAnimation;
     this.mediaDirectory = options.mediaDirectory ?? config.mediaDirectory;
     this.clock = options.clock ?? Date.now;
-    this.telemetry = options.telemetry ?? new AnonymousTestRecorder();
   }
 
   async start(): Promise<void> {
@@ -122,23 +159,6 @@ export class VerificationStore {
       .digest();
   }
 
-  private recordOutcome(
-    record: VerificationRecord,
-    outcome: AnonymousOutcome,
-    now: number,
-    successfulAttempt: number | null = null
-  ): void {
-    if (record.telemetryRecorded) return;
-    record.telemetryRecorded = true;
-    this.telemetry.record({
-      captchaVersion: config.captchaVersion,
-      outcome,
-      successfulAttempt,
-      elapsedMs: now - (record.startedAt ?? record.createdAt),
-      parameterClass: record.parameterClass
-    });
-  }
-
   async create(): Promise<PublicVerification> {
     await this.cleanup();
     if (this.records.size >= config.maxActiveVerifications) {
@@ -154,11 +174,7 @@ export class VerificationStore {
     const salt = randomBytes(16);
     const answerDigest = this.digestAnswer(answer, salt);
     const mediaPath = path.join(this.mediaDirectory, `${verificationId}.gif`);
-    const rendered = await this.renderQueue.run(() => this.renderer(answer));
-    const media = Buffer.isBuffer(rendered) ? rendered : rendered.animation;
-    const parameterClass = Buffer.isBuffer(rendered)
-      ? "custom-renderer"
-      : rendered.parameterClass;
+    const media = await this.renderQueue.run(() => this.renderer(answer));
 
     await writeFile(mediaPath, media, { flag: "wx" });
     const now = this.clock();
@@ -169,8 +185,7 @@ export class VerificationStore {
       status: "pending",
       attemptsUsed: 0,
       createdAt: now,
-      mediaPath,
-      parameterClass
+      mediaPath
     });
 
     return {
@@ -188,11 +203,9 @@ export class VerificationStore {
     if (record.status !== "pending") throw this.statusError(record.status);
     const now = this.clock();
     if (record.expiresAt === undefined) {
-      record.startedAt = now;
       record.expiresAt = now + config.verificationLifetimeMs;
     } else if (record.expiresAt <= now) {
       record.status = "expired";
-      this.recordOutcome(record, "failed", now);
       throw this.statusError(record.status);
     }
     return record.mediaPath;
@@ -241,7 +254,6 @@ export class VerificationStore {
       const attemptsRemaining = config.maxAttempts - record.attemptsUsed;
       if (attemptsRemaining <= 0) {
         record.status = "expired";
-        this.recordOutcome(record, "failed", now);
         return { success: false, status: "verification_failed", attemptsRemaining: 0 };
       }
       record.retryAvailableAt = now + config.retryCooldownMs;
@@ -258,7 +270,6 @@ export class VerificationStore {
     record.status = "completed";
     record.responseTokenHash = sha256(responseToken);
     record.responseExpiresAt = responseExpiresAt;
-    this.recordOutcome(record, "completed", now, record.attemptsUsed + 1);
 
     return {
       success: true,
@@ -301,10 +312,6 @@ export class VerificationStore {
     };
   }
 
-  getAnonymousTestRecords(): AnonymousTestRecord[] {
-    return this.telemetry.snapshot();
-  }
-
   private getActiveRecord(verificationId: string): VerificationRecord {
     const record = this.records.get(verificationId);
     if (!record) {
@@ -317,10 +324,8 @@ export class VerificationStore {
         "The verification animation has not started."
       );
     }
-    const now = this.clock();
-    if (record.expiresAt <= now && record.status === "pending") {
+    if (record.expiresAt <= this.clock() && record.status === "pending") {
       record.status = "expired";
-      this.recordOutcome(record, "failed", now);
     }
     if (record.status === "expired") throw this.statusError(record.status);
     return record;
@@ -349,7 +354,6 @@ export class VerificationStore {
         ((record.expiresAt !== undefined && record.expiresAt <= now) ||
           (record.expiresAt === undefined &&
             now - record.createdAt >= config.verificationLifetimeMs));
-      if (pendingExpired) this.recordOutcome(record, "failed", now);
       if (removeAll || pendingExpired || responseExpired || oldTerminalRecord) {
         this.records.delete(id);
         removals.push(rm(record.mediaPath, { force: true }));

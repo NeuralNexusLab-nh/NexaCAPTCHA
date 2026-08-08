@@ -171,13 +171,11 @@ input:disabled { cursor: not-allowed; opacity: .58; }
 
 .captcha-footer p.is-error { color: #e7aaa5; }
 .captcha-footer p.is-success { color: #7fee64; }
-.footer-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
 
 @media (max-width: 430px) {
   .captcha-shell { border-radius: 7px; }
   .verification-stage { margin-block: 11px; }
   .captcha-footer { align-items: flex-start; flex-direction: column; }
-  .footer-actions { justify-content: flex-start; }
 }
 
 @media (max-width: 360px) {

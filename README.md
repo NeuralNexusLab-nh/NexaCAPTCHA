@@ -2,18 +2,18 @@
 
 **Let humans through. Make bots pay.**
 
-NexaCAPTCHA presents four smoothly moving characters with short readable intervals. People can follow the stable character skeletons over time, while direct frame stacking accumulates changing contours and decoy strokes.
+NexaCAPTCHA turns four characters into a moving target. People follow it naturally. Bots must chase incomplete, distorted pieces across the full animation—on every attempt.
 
 Try it at [nexacaptcha.zone.id](https://nexacaptcha.zone.id).
 
 ## Why it is harder to automate
 
-- **Readable intervals:** every character receives a 300–600 ms clarity window while the other characters remain incomplete.
-- **Stable skeletons:** the main character shape remains recognizable; only light contour decoration and local brightness change.
-- **Independent smooth motion:** characters move, rotate, and scale without instant jumps.
-- **Stack-resistant decoration:** nearby decoy strokes look decorative in one frame but accumulate into misleading legal-character structures across frames.
-- **Slow color exchange:** colors transition gradually, so a solver cannot rely on one fixed color per character.
-- **Stable reading order:** four lane markers preserve the original order even when adjacent paths briefly approach.
+- **Incomplete by design:** each frame shows only separated fragments, while the complete animation scans across every part of every character.
+- **Constant distortion:** characters keep bending, stretching, rotating, and changing shape.
+- **Independent movement:** every character moves in its own direction and at its own changing speed.
+- **An unpredictable window:** the visible shape keeps bending and changing while it speeds up, slows down, and moves backward.
+- **Different every time:** animation length, color, motion, distortion, and timing change with every CAPTCHA.
+- **Higher solving cost:** bots must inspect many frames, track moving fragments, and rebuild the answer instead of reading one image.
 
 NexaCAPTCHA is designed to raise the cost of automated solving. It does not claim that automation is impossible.
 
@@ -31,11 +31,8 @@ The Script loads NexaCAPTCHA. The Div chooses where it appears.
 <div
   class="nexa-captcha"
   data-callback="onNexaComplete"
-  data-alternative-url="/accessible-verification"
 ></div>
 ```
-
-`data-alternative-url` is optional. When provided, it must be a same-origin route owned by the integrating site, such as a staffed support or account-recovery flow. NexaCAPTCHA does not provide a weaker built-in bypass. The widget highlights this route for people who prefer reduced motion.
 
 ### 2. Add this to your frontend JavaScript
 
@@ -136,30 +133,6 @@ For Zeabur, create a service from this repository and choose the native Node.js 
 ```sh
 npm run check
 ```
-
-## Anonymous test records
-
-NexaCAPTCHA keeps a bounded in-memory list of anonymous test records and writes the same records to server logs. Each record contains only the CAPTCHA version, completion or failure, successful attempt number, end-to-end duration, and an anonymous visual-parameter class. Verification IDs, IP addresses, submitted answers, and answer hashes are not included.
-
-The current instance records can be read from `GET /api/test-results`. Restarting the single application instance clears the in-memory list.
-
-## Repeatable attack benchmark
-
-```sh
-npm run benchmark
-```
-
-This writes deterministic PGM images and a manifest to `tmp/benchmark` for:
-
-- representative single frames;
-- all-frame pixel maximum;
-- all-frame average;
-- four quarter-timeline maximum composites;
-- four palette-group color-tracking composites.
-
-Run the same OCR engine and settings against every generated image, compare its four-character output with `groundTruth` in `manifest.json`, and report exact-match success per attack. Keep OCR model name, version, preprocessing, hardware, and timeout fixed between releases.
-
-For human acceptance testing, recruit at least 20 people and have each complete 10 randomized attempts. Use the anonymous records to calculate first-attempt success and median end-to-end time. The release targets are at least 85% first-attempt human success, median human completion below 20 seconds, and less than 10% first-attempt exact-match success for each automated baseline.
 
 The release budget is 0.25 vCPU, 200 MB RAM, and 10 GB storage. The current store supports one application instance. Restarting the service invalidates unfinished CAPTCHA sessions.
 

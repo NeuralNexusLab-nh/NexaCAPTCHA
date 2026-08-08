@@ -156,15 +156,6 @@ export function createApp(store: VerificationStore) {
     }
   );
 
-  app.get(
-    "/api/test-results",
-    limiter(60_000, 30),
-    (_request, response) => {
-      response.setHeader("Cache-Control", "no-store");
-      response.json({ records: store.getAnonymousTestRecords() });
-    }
-  );
-
   app.get("/captcha.js", widgetHeaders, (_request, response) => {
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Cache-Control", "public, max-age=300");
