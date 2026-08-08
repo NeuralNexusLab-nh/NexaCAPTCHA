@@ -361,7 +361,7 @@ export function compositeCharacterWithinAreaLimit(
   }
 
   const visiblePixelLimit = Math.floor(
-    fullPixelCount * Math.min(0.42, Math.max(0.3, maximumVisibleRatio))
+    fullPixelCount * Math.min(0.42, Math.max(0.28, maximumVisibleRatio))
   );
   if (visibleIndices.length > visiblePixelLimit) {
     visibleIndices.sort((left, right) => {
@@ -436,7 +436,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
   const frames = minFrames + Math.floor(random() * (maxFrames - minFrames + 1));
   const glyphs = answer.split("").map(glyphFor);
   const motionCycles = [2, 3, 4, 5, 6, 7, 8];
-  const questionDistortion = (0.95 + random() * 0.35) * 0.68;
+  const questionDistortion = (0.95 + random() * 0.35) * 0.83;
   const colorIndices = createDistinctColorIndices(glyphs.length, random);
   const motionProfiles: MotionProfile[] = glyphs.map((_glyph, characterIndex) => ({
     phaseX: random() * Math.PI * 2,
@@ -458,15 +458,15 @@ export function renderVerificationAnimation(answer: string): Buffer {
     jitterPhase: random() * Math.PI * 2,
     colorIndex: colorIndices[characterIndex] ?? 4
   }));
-  const partialRevealWidth = 29 + random() * 6;
-  const maximumVisibleRatio = 0.36 + random() * 0.06;
+  const partialRevealWidth = 22.6 + random() * 4.7;
+  const maximumVisibleRatio = 0.281 + random() * 0.047;
   const revealShapeProfile: RevealShapeProfile = {
     phase: random() * Math.PI * 2,
     cycles: 2 + Math.floor(random() * 5),
     height: 94 + random() * 14,
-    bend: 1.5 + random() * 3.5,
-    pinch: 0.05 + random() * 0.14,
-    edgeWaves: 4 + random() * 4
+    bend: 1.83 + random() * 4.27,
+    pinch: 0.061 + random() * 0.171,
+    edgeWaves: 4.88 + random() * 4.88
   };
   const textStart = 66;
   const characterSpacing = 62;
@@ -494,7 +494,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
       }
     }
     const widthPulse =
-      partialRevealWidth + (revealState.dwellCharacterIndex !== undefined ? 3 : 0);
+      partialRevealWidth + (revealState.dwellCharacterIndex !== undefined ? 2.3 : 0);
     const revealMask: RevealMask = {
       ...revealShapeProfile,
       centerX: revealCenter,
