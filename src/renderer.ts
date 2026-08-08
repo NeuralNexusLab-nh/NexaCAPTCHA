@@ -5,12 +5,12 @@ import { config } from "./config.js";
 
 const PALETTE = [
   [5, 7, 6],
-  [31, 45, 31],
-  [83, 115, 78],
-  [140, 171, 135],
+  [48, 62, 51],
+  [121, 204, 255],
+  [173, 140, 255],
   [221, 255, 220],
-  [127, 238, 100],
-  [72, 83, 70],
+  [137, 243, 110],
+  [255, 190, 100],
   [24, 28, 25]
 ];
 
@@ -42,6 +42,8 @@ interface MotionProfile {
   jitterCyclesX: number;
   jitterCyclesY: number;
   jitterPhase: number;
+  colorPhase: number;
+  colorCycles: number;
 }
 
 interface RevealSegment {
@@ -151,10 +153,8 @@ function drawDisc(
       const dx = x + 0.5 - centerX;
       const dy = y + 0.5 - centerY;
       if (dx * dx + dy * dy <= radiusSquared) {
-        const edge = Math.min(x - characterClipLeft, characterClipRight - x);
-        const featheredColor = edge < 2 ? Math.min(color, 2) : color;
         const index = y * width + x;
-        if ((pixels[index] ?? 0) < featheredColor) pixels[index] = featheredColor;
+        pixels[index] = color;
       }
     }
   }
@@ -253,7 +253,7 @@ function createRevealSegments(
 ): RevealSegment[] {
   const dwellFrames = Array.from(
     { length: glyphCount },
-    () => 12 + Math.floor(random() * 5)
+    () => 10 + Math.floor(random() * 4)
   );
   const transitionCount = glyphCount + 1;
   const minimumTransitionFrames = 4;
@@ -300,6 +300,35 @@ function createRevealSegments(
   return segments;
 }
 
+export function compositeCharacterWithinAreaLimit(
+  target: Uint8Array,
+  visibleCharacter: Uint8Array,
+  fullCharacter: Uint8Array,
+  width: number,
+  revealCenter: number
+): void {
+  let fullPixelCount = 0;
+  const visibleIndices: number[] = [];
+  for (let index = 0; index < fullCharacter.length; index += 1) {
+    if ((fullCharacter[index] ?? 0) !== 0) fullPixelCount += 1;
+    if ((visibleCharacter[index] ?? 0) !== 0) visibleIndices.push(index);
+  }
+
+  const visiblePixelLimit = Math.floor(fullPixelCount * 0.4);
+  if (visibleIndices.length > visiblePixelLimit) {
+    visibleIndices.sort((left, right) => {
+      const leftDistance = Math.abs((left % width) + 0.5 - revealCenter);
+      const rightDistance = Math.abs((right % width) + 0.5 - revealCenter);
+      return leftDistance - rightDistance || left - right;
+    });
+    visibleIndices.length = visiblePixelLimit;
+  }
+
+  for (const index of visibleIndices) {
+    target[index] = visibleCharacter[index] ?? 0;
+  }
+}
+
 function revealStateForFrame(
   frame: number,
   segments: RevealSegment[]
@@ -333,12 +362,13 @@ function revealStateForFrame(
 }
 
 export function renderVerificationAnimation(answer: string): Buffer {
-  const { width, height, frames, delayMs } = config.animation;
+  const { width, height, minFrames, maxFrames, delayMs } = config.animation;
   const seed = randomBytes(8);
   const random = createPrng(seed);
+  const frames = minFrames + Math.floor(random() * (maxFrames - minFrames + 1));
   const glyphs = answer.split("").map(glyphFor);
   const motionCycles = [2, 3, 4, 5, 6, 7, 8];
-  const questionDistortion = 0.82 + random() * 0.34;
+  const questionDistortion = 0.9 + random() * 0.36;
   const motionProfiles: MotionProfile[] = glyphs.map(() => ({
     phaseX: random() * Math.PI * 2,
     phaseY: random() * Math.PI * 2,
@@ -346,19 +376,21 @@ export function renderVerificationAnimation(answer: string): Buffer {
     horizontalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 4,
     verticalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 5,
     distortionCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 3,
-    driftX: 5 + random() * 6,
-    driftY: 4 + random() * 5,
-    stretchX: (0.13 + random() * 0.12) * questionDistortion,
-    stretchY: (0.1 + random() * 0.12) * questionDistortion,
-    waveAmplitude: (2.8 + random() * 2.4) * questionDistortion,
-    shearAmplitude: (5 + random() * 6) * questionDistortion,
-    rotationDegrees: (6 + random() * 8) * questionDistortion,
-    jitterAmplitude: (0.5 + random() * 1.1) * questionDistortion,
+    driftX: 6 + random() * 7,
+    driftY: 5 + random() * 6,
+    stretchX: (0.15 + random() * 0.13) * questionDistortion,
+    stretchY: (0.12 + random() * 0.13) * questionDistortion,
+    waveAmplitude: (3.4 + random() * 2.6) * questionDistortion,
+    shearAmplitude: (6.5 + random() * 6.5) * questionDistortion,
+    rotationDegrees: (7 + random() * 10) * questionDistortion,
+    jitterAmplitude: (0.7 + random() * 1.3) * questionDistortion,
     jitterCyclesX: 18 + Math.floor(random() * 15),
     jitterCyclesY: 18 + Math.floor(random() * 15),
-    jitterPhase: random() * Math.PI * 2
+    jitterPhase: random() * Math.PI * 2,
+    colorPhase: random() * Math.PI * 2,
+    colorCycles: 3 + Math.floor(random() * 6)
   }));
-  const partialRevealWidth = 30 + random() * 4;
+  const partialRevealWidth = 26 + random() * 4;
   const protectedCharacterCount = Math.min(
     glyphs.length,
     2 + Math.floor(random() * 3)
@@ -405,12 +437,8 @@ export function renderVerificationAnimation(answer: string): Buffer {
         revealCenter += horizontalDrift(dwellMotionProfile, progress);
       }
     }
-    const briefFullReveal =
-      revealState.fullRevealCharacterIndex !== undefined &&
-      !neverFullCharacterIndices.has(revealState.fullRevealCharacterIndex)
-        ? 48
-        : 0;
-    const widthPulse = partialRevealWidth + briefFullReveal;
+    const widthPulse =
+      partialRevealWidth + (revealState.dwellCharacterIndex !== undefined ? 3 : 0);
     const revealMask: RevealMask = {
       ...revealShapeProfile,
       centerX: revealCenter,
@@ -428,6 +456,8 @@ export function renderVerificationAnimation(answer: string): Buffer {
     }
 
     glyphs.forEach((glyph, characterIndex) => {
+      const visibleCharacter = new Uint8Array(width * height);
+      const fullCharacter = new Uint8Array(width * height);
       const baseX = textStart + characterIndex * characterSpacing;
       const motionProfile = motionProfiles[characterIndex];
       if (!motionProfile) return;
@@ -439,9 +469,26 @@ export function renderVerificationAnimation(answer: string): Buffer {
         const protectedSlicePhase = protectedSlicePhases[characterIndex] ?? 0;
         const sliceCenter =
           baseX + protectedDrift + 14 * Math.sin(progress * Math.PI * 6 + protectedSlicePhase);
-        characterRevealLeft = Math.max(characterRevealLeft, sliceCenter - 12);
-        characterRevealRight = Math.min(characterRevealRight, sliceCenter + 12);
+        characterRevealLeft = Math.max(characterRevealLeft, sliceCenter - 9);
+        characterRevealRight = Math.min(characterRevealRight, sliceCenter + 9);
       }
+      const colorWave =
+        (Math.sin(
+          progress * Math.PI * 2 * motionProfile.colorCycles + motionProfile.colorPhase
+        ) + 1) / 2;
+      const color = 2 + Math.min(4, Math.floor(colorWave * 5));
+      const fullRevealMask: RevealMask = {
+        phase: 0,
+        cycles: 0,
+        height: height * 2,
+        bend: 0,
+        pinch: 0,
+        edgeWaves: 0,
+        centerX: width / 2,
+        centerY: height / 2,
+        width: width * 2,
+        animatedPhase: 0
+      };
       glyph.paths.forEach((path) => {
         for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
           const previous = path[pointIndex - 1];
@@ -464,19 +511,38 @@ export function renderVerificationAnimation(answer: string): Buffer {
             motionProfile
           );
           drawLine(
-            pixels,
+            visibleCharacter,
             width,
             height,
             from,
             to,
             2.05,
-            characterIndex % 2 === 0 ? 4 : 5,
+            color,
             revealMask,
             characterRevealLeft,
             characterRevealRight
           );
+          drawLine(
+            fullCharacter,
+            width,
+            height,
+            from,
+            to,
+            2.05,
+            color,
+            fullRevealMask,
+            Number.NEGATIVE_INFINITY,
+            Number.POSITIVE_INFINITY
+          );
         }
       });
+      compositeCharacterWithinAreaLimit(
+        pixels,
+        visibleCharacter,
+        fullCharacter,
+        width,
+        revealCenter
+      );
     });
 
     gif.writeFrame(pixels, width, height, {
@@ -489,3 +555,4 @@ export function renderVerificationAnimation(answer: string): Buffer {
   gif.finish();
   return Buffer.from(gif.bytes());
 }
+
