@@ -52,6 +52,7 @@ export interface RevealSegment {
   fromX: number;
   toX: number;
   phase: number;
+  backtrackAmplitude: number;
   characterIndex?: number;
 }
 
@@ -251,7 +252,7 @@ export function createRevealSegments(
   characterSpacing: number,
   random: () => number
 ): RevealSegment[] {
-  const minimumDwellFrames = 7;
+  const minimumDwellFrames = 13;
   const dwellFrames = Array.from(
     { length: glyphCount },
     () => minimumDwellFrames
@@ -263,7 +264,7 @@ export function createRevealSegments(
     () => minimumTransitionFrames
   );
   const dwellWeights = dwellFrames.map(() => 0.2 + Math.pow(random(), 2) * 3.2);
-  const transitionWeights = transitionFrames.map(() => 0.15 + random() * 0.55);
+  const transitionWeights = transitionFrames.map(() => 0.05 + random() * 0.12);
   const weights = [...dwellWeights, ...transitionWeights];
   const minimumFrames =
     glyphCount * minimumDwellFrames + transitionCount * minimumTransitionFrames;
@@ -301,7 +302,8 @@ export function createRevealSegments(
       frames: transitionFrames[characterIndex] ?? minimumTransitionFrames,
       fromX: currentX,
       toX: scanStart,
-      phase: random() * Math.PI * 2
+      phase: random() * Math.PI * 2,
+      backtrackAmplitude: random() < 0.08 ? 3 + random() * 3 : 0
     });
     segments.push({
       kind: "dwell",
@@ -309,6 +311,7 @@ export function createRevealSegments(
       fromX: scanStart,
       toX: scanEnd,
       phase: random() * Math.PI * 2,
+      backtrackAmplitude: random() < 0.14 ? 4 + random() * 3 : 0,
       characterIndex
     });
     currentX = scanEnd;
@@ -318,7 +321,8 @@ export function createRevealSegments(
     frames: transitionFrames[glyphCount] ?? minimumTransitionFrames,
     fromX: currentX,
     toX: textStart + (glyphCount - 1) * characterSpacing + scanRadius + 18,
-    phase: random() * Math.PI * 2
+    phase: random() * Math.PI * 2,
+    backtrackAmplitude: random() < 0.08 ? 3 + random() * 3 : 0
   });
   return segments;
 }
@@ -368,7 +372,8 @@ function revealStateForFrame(
       if (segment.kind === "dwell") {
         const eased = progress * progress * (3 - 2 * progress);
         const unevenMotion =
-          6 * Math.sin(progress * Math.PI * 2 + segment.phase) *
+          segment.backtrackAmplitude *
+          Math.sin(progress * Math.PI * 2 + segment.phase) *
           Math.sin(progress * Math.PI);
         const centerX =
           segment.fromX + (segment.toX - segment.fromX) * eased + unevenMotion;
@@ -379,7 +384,9 @@ function revealStateForFrame(
       }
       const eased = progress * progress * (3 - 2 * progress);
       const unevenMotion =
-        7 * Math.sin(progress * Math.PI * 2 + segment.phase) * Math.sin(progress * Math.PI);
+        segment.backtrackAmplitude *
+        Math.sin(progress * Math.PI * 2 + segment.phase) *
+        Math.sin(progress * Math.PI);
       return {
         centerX: segment.fromX + (segment.toX - segment.fromX) * eased + unevenMotion
       };

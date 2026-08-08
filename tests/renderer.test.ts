@@ -56,6 +56,7 @@ describe("verification animation", () => {
     const dwellSegments = segments.filter((segment) => segment.kind === "dwell");
     expect(segments.reduce((total, segment) => total + segment.frames, 0)).toBe(110);
     expect(dwellSegments).toHaveLength(4);
+    expect(dwellSegments.every((segment) => segment.frames >= 13)).toBe(true);
     expect(dwellSegments.every((segment) => segment.toX - segment.fromX === 100)).toBe(
       true
     );
