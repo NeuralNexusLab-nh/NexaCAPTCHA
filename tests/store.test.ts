@@ -116,4 +116,3 @@ describe("VerificationStore", () => {
     ).toBe("verification-expired");
   });
 });
-
