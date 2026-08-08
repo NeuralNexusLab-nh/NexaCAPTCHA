@@ -102,9 +102,9 @@
     var remaining = Math.max(1, Math.ceil(seconds));
     coolingDown = true;
     updateControls();
+    setPill("Wait", "fa-hourglass-half", "is-error");
 
     function renderCooldown() {
-      setPill("Wait " + remaining + "s", "fa-hourglass-half", "is-error");
       setMessage(
         "That was not correct. You can enter another answer in " + remaining + " seconds.",
         "is-error"
@@ -119,7 +119,7 @@
         cooldownTimer = null;
         coolingDown = false;
         setPill("Try again", "fa-keyboard", "");
-        setMessage("Enter your next answer. Three incorrect answers end this verification.", "");
+        setMessage("Enter your next answer. One more incorrect answer ends this verification.", "");
         updateControls();
         input.focus();
         return;
