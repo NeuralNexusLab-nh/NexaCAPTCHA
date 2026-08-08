@@ -147,4 +147,3 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(400);
   });
 });
-
