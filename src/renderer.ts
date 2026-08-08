@@ -14,7 +14,8 @@ const PALETTE = [
   [24, 28, 25]
 ];
 
-const { GIFEncoder } = gifenc;
+const GIFEncoder =
+  typeof gifenc === "function" ? gifenc : gifenc.GIFEncoder;
 
 interface Glyph {
   paths: Point[][];
@@ -42,11 +43,10 @@ interface MotionProfile {
   jitterCyclesX: number;
   jitterCyclesY: number;
   jitterPhase: number;
-  colorPhase: number;
-  colorCycles: number;
+  colorIndex: number;
 }
 
-interface RevealSegment {
+export interface RevealSegment {
   kind: "transition" | "dwell";
   frames: number;
   fromX: number;
@@ -244,57 +244,80 @@ function transformPoint(
   ];
 }
 
-function createRevealSegments(
+export function createRevealSegments(
   glyphCount: number,
   frames: number,
   textStart: number,
   characterSpacing: number,
   random: () => number
 ): RevealSegment[] {
+  const minimumDwellFrames = 7;
   const dwellFrames = Array.from(
     { length: glyphCount },
-    () => 10 + Math.floor(random() * 4)
+    () => minimumDwellFrames
   );
   const transitionCount = glyphCount + 1;
-  const minimumTransitionFrames = 4;
+  const minimumTransitionFrames = 3;
   const transitionFrames = Array.from(
     { length: transitionCount },
     () => minimumTransitionFrames
   );
-  const dwellTotal = dwellFrames.reduce((total, count) => total + count, 0);
-  const extraTransitionFrames =
-    frames - dwellTotal - transitionCount * minimumTransitionFrames;
-  for (let extra = 0; extra < extraTransitionFrames; extra += 1) {
-    const index = Math.floor(random() * transitionFrames.length);
-    transitionFrames[index] = (transitionFrames[index] ?? 0) + 1;
+  const dwellWeights = dwellFrames.map(() => 0.2 + Math.pow(random(), 2) * 3.2);
+  const transitionWeights = transitionFrames.map(() => 0.15 + random() * 0.55);
+  const weights = [...dwellWeights, ...transitionWeights];
+  const minimumFrames =
+    glyphCount * minimumDwellFrames + transitionCount * minimumTransitionFrames;
+  const extraFrames = Math.max(0, frames - minimumFrames);
+  const totalWeight = weights.reduce((total, weight) => total + weight, 0);
+  for (let extra = 0; extra < extraFrames; extra += 1) {
+    let selection = random() * totalWeight;
+    let selectedIndex = weights.length - 1;
+    for (let index = 0; index < weights.length; index += 1) {
+      selection -= weights[index] ?? 0;
+      if (selection <= 0) {
+        selectedIndex = index;
+        break;
+      }
+    }
+    if (selectedIndex < glyphCount) {
+      dwellFrames[selectedIndex] =
+        (dwellFrames[selectedIndex] ?? minimumDwellFrames) + 1;
+    } else {
+      const transitionIndex = selectedIndex - glyphCount;
+      transitionFrames[transitionIndex] =
+        (transitionFrames[transitionIndex] ?? minimumTransitionFrames) + 1;
+    }
   }
 
   const segments: RevealSegment[] = [];
-  let currentX = textStart - 40;
+  const scanRadius = 50;
+  let currentX = textStart - scanRadius - 18;
   for (let characterIndex = 0; characterIndex < glyphCount; characterIndex += 1) {
     const characterX = textStart + characterIndex * characterSpacing;
+    const scanStart = characterX - scanRadius;
+    const scanEnd = characterX + scanRadius;
     segments.push({
       kind: "transition",
       frames: transitionFrames[characterIndex] ?? minimumTransitionFrames,
       fromX: currentX,
-      toX: characterX,
+      toX: scanStart,
       phase: random() * Math.PI * 2
     });
     segments.push({
       kind: "dwell",
-      frames: dwellFrames[characterIndex] ?? 12,
-      fromX: characterX,
-      toX: characterX,
+      frames: dwellFrames[characterIndex] ?? minimumDwellFrames,
+      fromX: scanStart,
+      toX: scanEnd,
       phase: random() * Math.PI * 2,
       characterIndex
     });
-    currentX = characterX;
+    currentX = scanEnd;
   }
   segments.push({
     kind: "transition",
     frames: transitionFrames[glyphCount] ?? minimumTransitionFrames,
     fromX: currentX,
-    toX: textStart + (glyphCount - 1) * characterSpacing + 40,
+    toX: textStart + (glyphCount - 1) * characterSpacing + scanRadius + 18,
     phase: random() * Math.PI * 2
   });
   return segments;
@@ -305,16 +328,25 @@ export function compositeCharacterWithinAreaLimit(
   visibleCharacter: Uint8Array,
   fullCharacter: Uint8Array,
   width: number,
-  revealCenter: number
+  revealCenter: number,
+  maximumVisibleRatio = 0.7
 ): void {
   let fullPixelCount = 0;
   const visibleIndices: number[] = [];
   for (let index = 0; index < fullCharacter.length; index += 1) {
     if ((fullCharacter[index] ?? 0) !== 0) fullPixelCount += 1;
-    if ((visibleCharacter[index] ?? 0) !== 0) visibleIndices.push(index);
+    if ((visibleCharacter[index] ?? 0) !== 0) {
+      const x = index % width;
+      const y = Math.floor(index / width);
+      const movingFragmentBand =
+        (x + Math.floor(y * 0.45) + Math.floor(revealCenter * 0.6)) % 13;
+      if (movingFragmentBand < 10) visibleIndices.push(index);
+    }
   }
 
-  const visiblePixelLimit = Math.floor(fullPixelCount * 0.4);
+  const visiblePixelLimit = Math.floor(
+    fullPixelCount * Math.min(0.7, Math.max(0.65, maximumVisibleRatio))
+  );
   if (visibleIndices.length > visiblePixelLimit) {
     visibleIndices.sort((left, right) => {
       const leftDistance = Math.abs((left % width) + 0.5 - revealCenter);
@@ -325,14 +357,28 @@ export function compositeCharacterWithinAreaLimit(
   }
 
   for (const index of visibleIndices) {
-    target[index] = visibleCharacter[index] ?? 0;
+    const x = index % width;
+    const y = Math.floor(index / width);
+    const stripe = Math.floor((x + Math.floor(revealCenter * 0.6)) / 13);
+    const verticalOffset = stripe % 2 === 0 ? -9 : 9;
+    const rowBand = Math.floor((y + Math.floor(revealCenter * 0.35)) / 8);
+    const horizontalOffset = rowBand % 2 === 0 ? -5 : 5;
+    const displacedX = x + horizontalOffset;
+    const displacedY = y + verticalOffset;
+    if (
+      displacedX < 0 ||
+      displacedX >= width ||
+      displacedY < 0 ||
+      displacedY >= target.length / width
+    ) continue;
+    target[displacedY * width + displacedX] = visibleCharacter[index] ?? 0;
   }
 }
 
 function revealStateForFrame(
   frame: number,
   segments: RevealSegment[]
-): { centerX: number; dwellCharacterIndex?: number; fullRevealCharacterIndex?: number } {
+): { centerX: number; dwellCharacterIndex?: number } {
   let segmentStart = 0;
   for (const segment of segments) {
     const segmentEnd = segmentStart + segment.frames;
@@ -340,13 +386,15 @@ function revealStateForFrame(
       const localFrame = frame - segmentStart;
       const progress = (localFrame + 0.5) / segment.frames;
       if (segment.kind === "dwell") {
-        const centerX = segment.fromX + 5 * Math.sin(progress * Math.PI * 2 + segment.phase);
-        const fullRevealFrame = Math.floor(segment.frames * 0.58);
+        const eased = progress * progress * (3 - 2 * progress);
+        const unevenMotion =
+          6 * Math.sin(progress * Math.PI * 2 + segment.phase) *
+          Math.sin(progress * Math.PI);
+        const centerX =
+          segment.fromX + (segment.toX - segment.fromX) * eased + unevenMotion;
         return {
           centerX,
-          dwellCharacterIndex: segment.characterIndex,
-          fullRevealCharacterIndex:
-            localFrame === fullRevealFrame ? segment.characterIndex : undefined
+          dwellCharacterIndex: segment.characterIndex
         };
       }
       const eased = progress * progress * (3 - 2 * progress);
@@ -387,26 +435,10 @@ export function renderVerificationAnimation(answer: string): Buffer {
     jitterCyclesX: 18 + Math.floor(random() * 15),
     jitterCyclesY: 18 + Math.floor(random() * 15),
     jitterPhase: random() * Math.PI * 2,
-    colorPhase: random() * Math.PI * 2,
-    colorCycles: 3 + Math.floor(random() * 6)
+    colorIndex: 2 + Math.floor(random() * 5)
   }));
-  const partialRevealWidth = 26 + random() * 4;
-  const protectedCharacterCount = Math.min(
-    glyphs.length,
-    2 + Math.floor(random() * 3)
-  );
-  const shuffledCharacterIndices = glyphs.map((_glyph, index) => index);
-  for (let index = shuffledCharacterIndices.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(random() * (index + 1));
-    [shuffledCharacterIndices[index], shuffledCharacterIndices[swapIndex]] = [
-      shuffledCharacterIndices[swapIndex] ?? index,
-      shuffledCharacterIndices[index] ?? swapIndex
-    ];
-  }
-  const neverFullCharacterIndices = new Set(
-    shuffledCharacterIndices.slice(0, protectedCharacterCount)
-  );
-  const protectedSlicePhases = glyphs.map(() => random() * Math.PI * 2);
+  const partialRevealWidth = 56 + random() * 6;
+  const maximumVisibleRatio = 0.65 + random() * 0.05;
   const revealShapeProfile: RevealShapeProfile = {
     phase: random() * Math.PI * 2,
     cycles: 2 + Math.floor(random() * 5),
@@ -461,22 +493,9 @@ export function renderVerificationAnimation(answer: string): Buffer {
       const baseX = textStart + characterIndex * characterSpacing;
       const motionProfile = motionProfiles[characterIndex];
       if (!motionProfile) return;
-      let characterRevealLeft = Number.NEGATIVE_INFINITY;
-      let characterRevealRight = Number.POSITIVE_INFINITY;
-      if (neverFullCharacterIndices.has(characterIndex)) {
-        // This character is restricted to a narrow moving slice for every frame.
-        const protectedDrift = horizontalDrift(motionProfile, progress);
-        const protectedSlicePhase = protectedSlicePhases[characterIndex] ?? 0;
-        const sliceCenter =
-          baseX + protectedDrift + 14 * Math.sin(progress * Math.PI * 6 + protectedSlicePhase);
-        characterRevealLeft = Math.max(characterRevealLeft, sliceCenter - 9);
-        characterRevealRight = Math.min(characterRevealRight, sliceCenter + 9);
-      }
-      const colorWave =
-        (Math.sin(
-          progress * Math.PI * 2 * motionProfile.colorCycles + motionProfile.colorPhase
-        ) + 1) / 2;
-      const color = 2 + Math.min(4, Math.floor(colorWave * 5));
+      const characterRevealLeft = Number.NEGATIVE_INFINITY;
+      const characterRevealRight = Number.POSITIVE_INFINITY;
+      const color = motionProfile.colorIndex;
       const fullRevealMask: RevealMask = {
         phase: 0,
         cycles: 0,
@@ -541,7 +560,8 @@ export function renderVerificationAnimation(answer: string): Buffer {
         visibleCharacter,
         fullCharacter,
         width,
-        revealCenter
+        revealCenter,
+        maximumVisibleRatio
       );
     });
 

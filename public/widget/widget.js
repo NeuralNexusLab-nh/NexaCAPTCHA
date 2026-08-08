@@ -161,9 +161,11 @@
     updateControls();
     sendResult({ success: false, verificationId: null, responseToken: null });
 
-    var remaining = 3;
+    var remaining = 1;
     function renderLoadingDelay() {
-      showLoadingPlaceholder("Starting in " + remaining + " seconds…");
+      showLoadingPlaceholder(
+        "Starting in " + remaining + (remaining === 1 ? " second…" : " seconds…")
+      );
       setPill("Starting " + remaining, "fa-circle-notch fa-spin", "");
       setMessage("Preparing a new verification…", "");
     }

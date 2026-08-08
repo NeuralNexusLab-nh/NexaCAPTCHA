@@ -8,7 +8,7 @@ Try it at [nexacaptcha.zone.id](https://nexacaptcha.zone.id).
 
 ## Why it is harder to automate
 
-- **Incomplete by design:** no frame exposes more than 40% of any one character's rendered strokes.
+- **Incomplete by design:** each frame shows only separated fragments, while the complete animation scans across every part of every character.
 - **Constant distortion:** characters keep bending, stretching, rotating, and changing shape.
 - **Independent movement:** every character moves in its own direction and at its own changing speed.
 - **An unpredictable window:** the visible shape keeps bending and changing while it speeds up, slows down, and moves backward.
@@ -17,7 +17,7 @@ Try it at [nexacaptcha.zone.id](https://nexacaptcha.zone.id).
 
 NexaCAPTCHA is designed to raise the cost of automated solving. It does not claim that automation is impossible.
 
-The animation begins only after the visitor presses Start. A verification then remains open for one minute, allows three incorrect answers, and applies a five-second input cooldown after each incorrect answer. Starting or replacing a verification has a three-second preparation delay.
+The animation begins only after the visitor presses Start. A verification then remains open for one minute, allows three incorrect answers, and applies a five-second input cooldown after each incorrect answer. Starting or replacing a verification has a one-second preparation delay.
 
 ## Add it to your site
 
