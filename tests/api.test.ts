@@ -29,7 +29,9 @@ describe("NexaCAPTCHA HTTP API", () => {
 
   it("runs the complete create, answer, and verify protocol", async () => {
     const created = await request(app).post("/api/verifications").send({}).expect(201);
-    expect(created.body.verificationId).toMatch(/^ver_[A-Za-z0-9_-]{22}$/);
+    expect(created.body.verificationId).toMatch(/^ver_[A-Za-z0-9_-]{12}$/);
+    expect(created.body.verificationId).toHaveLength(16);
+    expect(created.body.expiresInMs).toBe(60_000);
 
     await request(app)
       .get(created.body.animationUrl)
@@ -37,11 +39,18 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect("Cache-Control", /no-store/)
       .expect(200);
 
+    await request(app)
+      .get(`/api/verifications/${created.body.verificationId}/status`)
+      .expect("Cache-Control", /no-store/)
+      .expect(200)
+      .expect(({ body }) => expect(Number.isNaN(Date.parse(body.expiresAt))).toBe(false));
+
     const completed = await request(app)
       .post(`/api/verifications/${created.body.verificationId}/answer`)
       .send({ answer: "NEXA" })
       .expect(200);
     expect(completed.body.success).toBe(true);
+    expect(completed.body.responseToken).toMatch(/^[A-Za-z0-9_-]{64}$/);
 
     const verification = {
       verificationId: created.body.verificationId,
@@ -138,3 +147,4 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(400);
   });
 });
+
