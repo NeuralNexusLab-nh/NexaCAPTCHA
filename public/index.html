@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="/styles.css?v=9">
-    <script src="/app.js?v=12" defer></script>
+    <script src="/app.js?v=13" defer></script>
     <script src="/captcha.js?v=8" defer></script>
   </head>
   <body>
@@ -121,7 +121,7 @@
         <aside class="experiment-panel reveal" id="experiment" aria-labelledby="experiment-title">
           <div class="experiment-heading">
             <div>
-              <p class="eyebrow"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="experimentEyebrow">SMALL-SCALE TEST</span></p>
+              <p class="eyebrow"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="experimentEyebrow">VERIFICATION TEST</span></p>
               <h3 id="experiment-title" data-i18n="experimentTitle">Fast for people. Expensive for AI.</h3>
               <p class="experiment-lead" data-i18n="experimentLead">Average completion results for people and GPT 5.6 Sol - Medium across three verification systems.</p>
             </div>
@@ -140,22 +140,22 @@
                 <tr class="nexa-result">
                   <th scope="row"><img src="/assets/logo.svg" alt="" width="24" height="24"><span>NexaCAPTCHA</span></th>
                   <td><strong>15.3</strong> <span data-i18n="secondsAverage">seconds average</span></td>
-                  <td><strong>0%</strong> <span data-i18n="successRate">success rate</span></td>
+                  <td><strong>0%</strong> <span data-i18n="successRate">success rate</span> · <strong>0</strong> <span data-i18n="secondsAverage">seconds average</span></td>
                 </tr>
                 <tr>
                   <th scope="row"><i class="fa-brands fa-google" aria-hidden="true"></i><span>Google reCAPTCHA</span></th>
                   <td><strong>1.9</strong> <span data-i18n="secondsAverage">seconds average</span></td>
-                  <td><strong>42.9</strong> <span data-i18n="secondsAverage">seconds average</span></td>
+                  <td><strong>99%</strong> <span data-i18n="successRate">success rate</span> · <strong>42.9</strong> <span data-i18n="secondsAverage">seconds average</span></td>
                 </tr>
                 <tr>
                   <th scope="row"><i class="fa-solid fa-shield" aria-hidden="true"></i><span>hCaptcha</span></th>
                   <td><strong>11.8</strong> <span data-i18n="secondsAverage">seconds average</span></td>
-                  <td><strong>48.3</strong> <span data-i18n="secondsAverage">seconds average</span></td>
+                  <td><strong>83.7%</strong> <span data-i18n="successRate">success rate</span> · <strong>48.3</strong> <span data-i18n="secondsAverage">seconds average</span></td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <p class="experiment-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span data-i18n="experimentNote">A documented small-scale test of the current version. Results describe these runs and are not a security guarantee.</span></p>
+          <p class="experiment-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span data-i18n="experimentNote">A documented verification test of the current version. Results describe these runs and are not a security guarantee.</span></p>
         </aside>
       </section>
 
