@@ -555,4 +555,3 @@ export function renderVerificationAnimation(answer: string): Buffer {
   gif.finish();
   return Buffer.from(gif.bytes());
 }
-
