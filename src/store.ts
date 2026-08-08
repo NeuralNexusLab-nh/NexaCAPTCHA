@@ -50,13 +50,8 @@ interface VerificationStoreOptions {
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const REQUIRED_CONFUSABLE = "B836";
 const REQUIRED_COMPLEX = "KXADR26GVWYJT7";
-const CONFUSABLE_INCLUDE_PERCENT = 70;
-const COMPLEX_INCLUDE_PERCENT = 70;
-const DUPLICATE_ACCEPT_PERCENT = 40;
-const MAX_DUPLICATE_RESELECTIONS = 5;
 
 type RandomInteger = (maxExclusive: number) => number;
-type PercentageRoll = () => number;
 
 function randomBase64Url(byteLength: number): string {
   return randomBytes(byteLength).toString("base64url");
@@ -78,48 +73,36 @@ function randomCharacter(characters: string, randomInteger: RandomInteger): stri
   return characters[randomInteger(characters.length)]!;
 }
 
-function generateCandidate(
-  randomInteger: RandomInteger,
-  includeConfusable: boolean,
-  includeComplex: boolean
+function takeRandomCharacter(
+  characters: string[],
+  randomInteger: RandomInteger
 ): string {
-  const characters: string[] = [];
-  if (includeConfusable) {
-    characters.push(randomCharacter(REQUIRED_CONFUSABLE, randomInteger));
-  }
-  if (includeComplex) {
-    characters.push(randomCharacter(REQUIRED_COMPLEX, randomInteger));
-  }
+  const index = randomInteger(characters.length);
+  return characters.splice(index, 1)[0]!;
+}
 
-  while (characters.length < 4) {
-    characters.push(randomCharacter(ALPHABET, randomInteger));
-  }
+export function generateAnswer(randomInteger: RandomInteger = randomInt): string {
+  const confusable = randomCharacter(REQUIRED_CONFUSABLE, randomInteger);
+  const complexPool = Array.from(REQUIRED_COMPLEX).filter(
+    (character) => character !== confusable
+  );
+  const complex = takeRandomCharacter(complexPool, randomInteger);
+  const remainingPool = Array.from(ALPHABET).filter(
+    (character) =>
+      !REQUIRED_CONFUSABLE.includes(character) && character !== complex
+  );
+  const characters = [
+    confusable,
+    complex,
+    takeRandomCharacter(remainingPool, randomInteger),
+    takeRandomCharacter(remainingPool, randomInteger)
+  ];
 
   for (let index = characters.length - 1; index > 0; index -= 1) {
     const swapIndex = randomInteger(index + 1);
     [characters[index], characters[swapIndex]] = [characters[swapIndex]!, characters[index]!];
   }
   return characters.join("");
-}
-
-export function generateAnswer(
-  randomInteger: RandomInteger = randomInt,
-  percentageRoll: PercentageRoll = () => randomInt(100)
-): string {
-  const includeConfusable = percentageRoll() < CONFUSABLE_INCLUDE_PERCENT;
-  const includeComplex = percentageRoll() < COMPLEX_INCLUDE_PERCENT;
-  let reselections = 0;
-  while (true) {
-    const candidate = generateCandidate(
-      randomInteger,
-      includeConfusable,
-      includeComplex
-    );
-    const hasDuplicate = new Set(candidate).size < candidate.length;
-    if (!hasDuplicate || reselections >= MAX_DUPLICATE_RESELECTIONS) return candidate;
-    if (percentageRoll() < DUPLICATE_ACCEPT_PERCENT) return candidate;
-    reselections += 1;
-  }
 }
 
 export class VerificationStore {

@@ -46,86 +46,34 @@ describe("VerificationStore", () => {
       const answer = generateAnswer();
       expect(answer).toMatch(/^[A-HJ-NP-Z2-9]{4}$/);
       expect(answer).not.toMatch(/[IO01]/);
+      expect(new Set(answer).size).toBe(4);
     }
   });
 
-  it("forces selected groups without excluding unselected groups", () => {
-    const answerForRolls = (confusableRoll: number, complexRoll: number) => {
-      const rolls = [confusableRoll, complexRoll, 0];
-      return generateAnswer(
-        (maximum) => maximum === 32 ? 2 : 0,
-        () => rolls.shift() ?? 0
-      );
-    };
+  it("always includes both required groups without repeating characters", () => {
+    for (let sample = 0; sample < 1_000; sample += 1) {
+      const answer = generateAnswer();
+      expect(answer).toMatch(/[B836]/);
+      expect(answer).toMatch(/[KXADR26GVWYJT7]/);
+      expect(new Set(answer).size).toBe(4);
 
-    const both = answerForRolls(69, 69);
-    expect(both).toMatch(/[B836]/);
-    expect(both).toMatch(/[KXADR26GVWYJT7]/);
-
-    const confusableOnly = answerForRolls(69, 70);
-    expect(confusableOnly).toMatch(/[B836]/);
-
-    const complexOnly = answerForRolls(70, 69);
-    expect(complexOnly).toMatch(/[KXADR26GVWYJT7]/);
-
-    const neither = answerForRolls(70, 70);
-    expect(neither).not.toMatch(/[B836]/);
-    expect(neither).not.toMatch(/[KXADR26GVWYJT7]/);
-
-    const naturallyConfusable = generateAnswer(
-      (maximum) => maximum === 32 ? 1 : 0,
-      (() => {
-        const rolls = [99, 99, 0];
-        return () => rolls.shift() ?? 0;
-      })()
-    );
-    expect(naturallyConfusable).toMatch(/[B836]/);
-
-    const naturallyComplex = generateAnswer(
-      () => 0,
-      (() => {
-        const rolls = [99, 99, 0];
-        return () => rolls.shift() ?? 0;
-      })()
-    );
-    expect(naturallyComplex).toMatch(/[KXADR26GVWYJT7]/);
+      const confusableCharacters = answer.match(/[B836]/g) ?? [];
+      expect(confusableCharacters.length).toBeLessThanOrEqual(2);
+      if (confusableCharacters.length === 2) {
+        expect(confusableCharacters).toContain("6");
+      }
+    }
   });
 
-  it("accepts 40-percent duplicate candidates without reselection", () => {
-    let duplicateDecisionCalls = 0;
-    const policyRolls = [0, 0];
+  it("does not select 6 for both required positions", () => {
+    const selections = [3, 0, 0, 0, 0, 0, 0];
     const answer = generateAnswer(
-      () => 0,
-      () => {
-        if (policyRolls.length > 0) return policyRolls.shift()!;
-        duplicateDecisionCalls += 1;
-        return 0;
-      }
+      (maximum) => Math.min(selections.shift() ?? 0, maximum - 1)
     );
 
-    expect(new Set(answer).size).toBeLessThan(answer.length);
-    expect(duplicateDecisionCalls).toBe(1);
-  });
-
-  it("stops after five duplicate reselections", () => {
-    let duplicateDecisionCalls = 0;
-    let candidateCharacterCalls = 0;
-    const policyRolls = [99, 99];
-    const answer = generateAnswer(
-      (maximum) => {
-        if (maximum === 32) candidateCharacterCalls += 1;
-        return 0;
-      },
-      () => {
-        if (policyRolls.length > 0) return policyRolls.shift()!;
-        duplicateDecisionCalls += 1;
-        return 99;
-      }
-    );
-
-    expect(new Set(answer).size).toBeLessThan(answer.length);
-    expect(duplicateDecisionCalls).toBe(5);
-    expect(candidateCharacterCalls).toBe(24);
+    expect(answer.match(/6/g)).toHaveLength(1);
+    expect(answer).toMatch(/[KXADR2GVWYJT7]/);
+    expect(new Set(answer).size).toBe(4);
   });
 
   it("enforces three attempts with a ten-second cooldown", async () => {
