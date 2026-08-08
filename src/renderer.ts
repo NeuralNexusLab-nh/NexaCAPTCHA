@@ -3,14 +3,33 @@ import gifenc from "gifenc";
 import { stringToPaths, type Point } from "hershey";
 import { config } from "./config.js";
 
+const COLOR_STEPS = 4;
+const COLOR_ANCHORS = [
+  [121, 204, 255],
+  [173, 140, 255],
+  [137, 243, 110],
+  [255, 190, 100]
+];
+
+function interpolateColor(from: number[], to: number[], progress: number): number[] {
+  return from.map((channel, index) =>
+    Math.round(channel + ((to[index] ?? channel) - channel) * progress)
+  );
+}
+
+const TRACK_COLORS = COLOR_ANCHORS.flatMap((anchor, anchorIndex) => {
+  const next = COLOR_ANCHORS[(anchorIndex + 1) % COLOR_ANCHORS.length] ?? anchor;
+  return Array.from({ length: COLOR_STEPS }, (_value, step) =>
+    interpolateColor(anchor, next, step / COLOR_STEPS)
+  );
+});
+
+const FIRST_TRACK_COLOR = 2;
+const VIGNETTE_COLOR = FIRST_TRACK_COLOR + TRACK_COLORS.length;
 const PALETTE = [
   [5, 7, 6],
   [48, 62, 51],
-  [121, 204, 255],
-  [173, 140, 255],
-  [221, 255, 220],
-  [137, 243, 110],
-  [255, 190, 100],
+  ...TRACK_COLORS,
   [24, 28, 25]
 ];
 
@@ -43,7 +62,12 @@ interface MotionProfile {
   jitterCyclesX: number;
   jitterCyclesY: number;
   jitterPhase: number;
-  colorIndex: number;
+  colorPhase: number;
+  colorCycles: number;
+  contourPhase: number;
+  decoyPhase: number;
+  proximityOffset: number;
+  proximityPhase: number;
 }
 
 export interface RevealSegment {
@@ -70,6 +94,18 @@ interface RevealMask extends RevealShapeProfile {
   centerY: number;
   width: number;
   animatedPhase: number;
+}
+
+export interface RenderOptions {
+  seedBytes?: Uint8Array;
+  collectFrames?: boolean;
+}
+
+export interface RenderedVerification {
+  animation: Buffer;
+  parameterClass: string;
+  frames?: Uint8Array[];
+  palette: number[][];
 }
 
 function createPrng(seedBytes: Uint8Array): () => number {
@@ -104,10 +140,25 @@ function horizontalDrift(
   const motion = frameProgress * Math.PI * 2;
   const horizontalMotion =
     motion * motionProfile.horizontalCycles + motionProfile.phaseX;
+  const proximityPulse = Math.max(
+    0,
+    Math.sin(motion + motionProfile.proximityPhase)
+  );
   return (
     motionProfile.driftX * Math.sin(horizontalMotion) +
-    2.6 * Math.sin(horizontalMotion * 2 + motionProfile.phaseY)
+    2.6 * Math.sin(horizontalMotion * 2 + motionProfile.phaseY) +
+    motionProfile.proximityOffset * proximityPulse * proximityPulse
   );
+}
+
+function colorIndexForFrame(
+  motionProfile: MotionProfile,
+  frameProgress: number,
+  localOffset = 0
+): number {
+  const cycle =
+    (motionProfile.colorPhase + frameProgress * motionProfile.colorCycles + localOffset) % 1;
+  return FIRST_TRACK_COLOR + Math.floor(cycle * TRACK_COLORS.length);
 }
 
 function isInsideRevealMask(x: number, y: number, mask: RevealMask): boolean {
@@ -245,6 +296,51 @@ function transformPoint(
   ];
 }
 
+function glyphPointFromNormalized(glyph: Glyph, x: number, y: number): Point {
+  const glyphWidth = Math.max(1, glyph.maxX - glyph.minX);
+  const glyphHeight = Math.max(1, glyph.maxY - glyph.minY);
+  return [
+    (glyph.minX + glyph.maxX) / 2 + x * glyphWidth,
+    (glyph.minY + glyph.maxY) / 2 + y * glyphHeight
+  ];
+}
+
+function decoyStrokeFor(
+  character: string,
+  glyph: Glyph,
+  frameProgress: number,
+  motionProfile: MotionProfile
+): [Point, Point] {
+  let from: Point = [-0.34, -0.28];
+  let to: Point = [-0.08, -0.28];
+  if ("B836".includes(character)) {
+    from = [-0.08, -0.02];
+    to = [0.3, 0.02];
+  } else if ("6G".includes(character)) {
+    from = [0.02, 0.08];
+    to = [0.34, 0.08];
+  } else if ("KX".includes(character)) {
+    from = [-0.18, -0.3];
+    to = [0.24, 0.28];
+  } else if ("MN".includes(character)) {
+    from = [-0.24, 0.28];
+    to = [0.08, -0.28];
+  } else if ("WVY".includes(character)) {
+    from = [-0.2, -0.02];
+    to = [0.02, 0.3];
+  } else if ("PFRD".includes(character)) {
+    from = [0.02, 0.02];
+    to = [0.28, 0.3];
+  }
+  const motion = frameProgress * Math.PI * 2;
+  const shiftX = 0.08 * Math.sin(motion * 1.3 + motionProfile.decoyPhase);
+  const shiftY = 0.06 * Math.cos(motion * 1.1 + motionProfile.decoyPhase);
+  return [
+    glyphPointFromNormalized(glyph, from[0] + shiftX, from[1] + shiftY),
+    glyphPointFromNormalized(glyph, to[0] + shiftX, to[1] + shiftY)
+  ];
+}
+
 export function createRevealSegments(
   glyphCount: number,
   frames: number,
@@ -361,7 +457,7 @@ export function compositeCharacterWithinAreaLimit(
   }
 
   const visiblePixelLimit = Math.floor(
-    fullPixelCount * Math.min(0.42, Math.max(0.3, maximumVisibleRatio))
+    fullPixelCount * Math.min(0.72, Math.max(0.3, maximumVisibleRatio))
   );
   if (visibleIndices.length > visiblePixelLimit) {
     visibleIndices.sort((left, right) => {
@@ -380,7 +476,7 @@ export function compositeCharacterWithinAreaLimit(
 export function revealStateForFrame(
   frame: number,
   segments: RevealSegment[]
-): { centerX: number; dwellCharacterIndex?: number } {
+): { centerX: number; dwellCharacterIndex?: number; clarity?: number } {
   let segmentStart = 0;
   for (const segment of segments) {
     const segmentEnd = segmentStart + segment.frames;
@@ -397,7 +493,8 @@ export function revealStateForFrame(
           segment.fromX + (segment.toX - segment.fromX) * eased + unevenMotion;
         return {
           centerX,
-          dwellCharacterIndex: segment.characterIndex
+          dwellCharacterIndex: segment.characterIndex,
+          clarity: Math.max(0, 1 - Math.abs(progress - 0.5) / 0.2)
         };
       }
       const eased = progress * progress * (3 - 2 * progress);
@@ -414,30 +511,21 @@ export function revealStateForFrame(
   return { centerX: segments.at(-1)?.toX ?? 0 };
 }
 
-export function createDistinctColorIndices(
-  glyphCount: number,
-  random: () => number
-): number[] {
-  const colorIndices = [2, 3, 4, 5, 6];
-  for (let index = colorIndices.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(random() * (index + 1));
-    [colorIndices[index], colorIndices[swapIndex]] = [
-      colorIndices[swapIndex]!,
-      colorIndices[index]!
-    ];
-  }
-  return colorIndices.slice(0, glyphCount);
-}
-
-export function renderVerificationAnimation(answer: string): Buffer {
+export function renderVerification(
+  answer: string,
+  options: RenderOptions = {}
+): RenderedVerification {
   const { width, height, minFrames, maxFrames, delayMs } = config.animation;
-  const seed = randomBytes(8);
+  const seed = options.seedBytes ?? randomBytes(8);
   const random = createPrng(seed);
   const frames = minFrames + Math.floor(random() * (maxFrames - minFrames + 1));
   const glyphs = answer.split("").map(glyphFor);
   const motionCycles = [2, 3, 4, 5, 6, 7, 8];
   const questionDistortion = (0.95 + random() * 0.35) * 0.68;
-  const colorIndices = createDistinctColorIndices(glyphs.length, random);
+  const proximityPair = random() < 0.35
+    ? Math.floor(random() * Math.max(1, glyphs.length - 1))
+    : -1;
+  const proximityPhase = random() * Math.PI * 2;
   const motionProfiles: MotionProfile[] = glyphs.map((_glyph, characterIndex) => ({
     phaseX: random() * Math.PI * 2,
     phaseY: random() * Math.PI * 2,
@@ -456,7 +544,17 @@ export function renderVerificationAnimation(answer: string): Buffer {
     jitterCyclesX: 18 + Math.floor(random() * 15),
     jitterCyclesY: 18 + Math.floor(random() * 15),
     jitterPhase: random() * Math.PI * 2,
-    colorIndex: colorIndices[characterIndex] ?? 4
+    colorPhase: (random() * 0.12 + characterIndex / Math.max(1, glyphs.length)) % 1,
+    colorCycles: 0.65 + random() * 0.25,
+    contourPhase: random() * Math.PI * 2,
+    decoyPhase: random() * Math.PI * 2,
+    proximityOffset:
+      characterIndex === proximityPair
+        ? 18
+        : characterIndex === proximityPair + 1
+          ? -18
+          : 0,
+    proximityPhase
   }));
   const partialRevealWidth = 29 + random() * 6;
   const maximumVisibleRatio = 0.36 + random() * 0.06;
@@ -481,11 +579,13 @@ export function renderVerificationAnimation(answer: string): Buffer {
   const pixels = new Uint8Array(width * height);
   const visibleCharacter = new Uint8Array(width * height);
   const fullCharacter = new Uint8Array(width * height);
+  const capturedFrames = options.collectFrames ? [] as Uint8Array[] : undefined;
 
   for (let frame = 0; frame < frames; frame += 1) {
     pixels.fill(0);
-    const progress = frame / Math.max(1, frames);
+    const progress = frame / Math.max(1, frames - 1);
     const revealState = revealStateForFrame(frame, revealSegments);
+    const clarity = revealState.clarity ?? 0;
     let revealCenter = revealState.centerX;
     if (revealState.dwellCharacterIndex !== undefined) {
       const dwellMotionProfile = motionProfiles[revealState.dwellCharacterIndex];
@@ -494,7 +594,9 @@ export function renderVerificationAnimation(answer: string): Buffer {
       }
     }
     const widthPulse =
-      partialRevealWidth + (revealState.dwellCharacterIndex !== undefined ? 3 : 0);
+      partialRevealWidth +
+      (revealState.dwellCharacterIndex !== undefined ? 3 : 0) +
+      clarity * 25;
     const revealMask: RevealMask = {
       ...revealShapeProfile,
       centerX: revealCenter,
@@ -508,7 +610,17 @@ export function renderVerificationAnimation(answer: string): Buffer {
 
     for (let y = 0; y < height; y += 1) {
       const vignette = Math.abs(y - height / 2) / (height / 2);
-      if (vignette > 0.86) pixels.fill(7, y * width, (y + 1) * width);
+      if (vignette > 0.86) {
+        pixels.fill(VIGNETTE_COLOR, y * width, (y + 1) * width);
+      }
+    }
+    for (let characterIndex = 0; characterIndex < glyphs.length; characterIndex += 1) {
+      const anchorX = Math.round(textStart + characterIndex * characterSpacing);
+      for (let y = height - 9; y <= height - 7; y += 1) {
+        for (let x = anchorX - 1; x <= anchorX + 1; x += 1) {
+          pixels[y * width + x] = 1;
+        }
+      }
     }
 
     glyphs.forEach((glyph, characterIndex) => {
@@ -519,7 +631,6 @@ export function renderVerificationAnimation(answer: string): Buffer {
       if (!motionProfile) return;
       const characterRevealLeft = Number.NEGATIVE_INFINITY;
       const characterRevealRight = Number.POSITIVE_INFINITY;
-      const color = motionProfile.colorIndex;
       const fullRevealMask: RevealMask = {
         phase: 0,
         cycles: 0,
@@ -531,6 +642,18 @@ export function renderVerificationAnimation(answer: string): Buffer {
         centerY: height / 2,
         width: width * 2,
         animatedPhase: 0
+      };
+      const trackingMask: RevealMask = {
+        phase: motionProfile.phaseX,
+        cycles: 1,
+        height: 84,
+        bend: 1.2,
+        pinch: 0.08,
+        edgeWaves: 4,
+        centerX: baseX + horizontalDrift(motionProfile, progress),
+        centerY: height / 2,
+        width: 10 + 2 * Math.sin(progress * Math.PI * 2 + motionProfile.phaseY),
+        animatedPhase: progress * Math.PI * 2 + motionProfile.phaseX
       };
       glyph.paths.forEach((path) => {
         for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
@@ -552,6 +675,40 @@ export function renderVerificationAnimation(answer: string): Buffer {
             progress,
             baseX,
             motionProfile
+          );
+          const contourOffsetX =
+            1.25 * Math.sin(progress * Math.PI * 4 + motionProfile.contourPhase + pointIndex);
+          const contourOffsetY =
+            1.05 * Math.cos(progress * Math.PI * 3 + motionProfile.contourPhase + pointIndex);
+          const color = colorIndexForFrame(
+            motionProfile,
+            progress,
+            (pointIndex % 3) * 0.012
+          );
+          const contourColor = colorIndexForFrame(motionProfile, progress, 0.08);
+          drawLine(
+            visibleCharacter,
+            width,
+            height,
+            [from[0] + contourOffsetX, from[1] + contourOffsetY],
+            [to[0] + contourOffsetX, to[1] + contourOffsetY],
+            2.55,
+            contourColor,
+            revealMask,
+            characterRevealLeft,
+            characterRevealRight
+          );
+          drawLine(
+            visibleCharacter,
+            width,
+            height,
+            from,
+            to,
+            1.55,
+            color,
+            trackingMask,
+            characterRevealLeft,
+            characterRevealRight
           );
           drawLine(
             visibleCharacter,
@@ -579,13 +736,47 @@ export function renderVerificationAnimation(answer: string): Buffer {
           );
         }
       });
+      const [decoyFromPoint, decoyToPoint] = decoyStrokeFor(
+        answer[characterIndex] ?? "",
+        glyph,
+        progress,
+        motionProfile
+      );
+      const decoyFrom = transformPoint(
+        decoyFromPoint,
+        glyph,
+        characterIndex,
+        progress,
+        baseX,
+        motionProfile
+      );
+      const decoyTo = transformPoint(
+        decoyToPoint,
+        glyph,
+        characterIndex,
+        progress,
+        baseX,
+        motionProfile
+      );
+      drawLine(
+        visibleCharacter,
+        width,
+        height,
+        decoyFrom,
+        decoyTo,
+        1.15,
+        colorIndexForFrame(motionProfile, progress, 0.16),
+        revealMask,
+        characterRevealLeft,
+        characterRevealRight
+      );
       compositeCharacterWithinAreaLimit(
         pixels,
         visibleCharacter,
         fullCharacter,
         width,
         revealCenter,
-        maximumVisibleRatio
+        Math.min(0.72, maximumVisibleRatio + clarity * 0.3)
       );
     });
 
@@ -594,8 +785,25 @@ export function renderVerificationAnimation(answer: string): Buffer {
       delay: delayMs,
       repeat: 0
     });
+    capturedFrames?.push(pixels.slice());
   }
 
   gif.finish();
-  return Buffer.from(gif.bytes());
+  const distortionClass = questionDistortion < 0.72
+    ? "soft"
+    : questionDistortion < 0.82
+      ? "balanced"
+      : "firm";
+  const revealClass = maximumVisibleRatio < 0.39 ? "compact" : "wide";
+  const pathClass = proximityPair >= 0 ? "approach" : "separate";
+  return {
+    animation: Buffer.from(gif.bytes()),
+    parameterClass: `motion-v2:${distortionClass}:${revealClass}:${pathClass}`,
+    frames: capturedFrames,
+    palette: PALETTE
+  };
+}
+
+export function renderVerificationAnimation(answer: string): Buffer {
+  return renderVerification(answer).animation;
 }

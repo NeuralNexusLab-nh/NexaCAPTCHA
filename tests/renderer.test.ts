@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   compositeCharacterWithinAreaLimit,
-  createDistinctColorIndices,
   createRevealSegments,
   revealStateForFrame,
+  renderVerification,
   renderVerificationAnimation
 } from "../src/renderer.js";
 
@@ -22,15 +22,37 @@ function frameDelays(gif: Buffer): number[] {
 }
 
 describe("verification animation", () => {
-  it("assigns four visibly distinct character colors", () => {
-    let value = 0;
-    const colors = createDistinctColorIndices(4, () => {
-      value = (value + 0.37) % 1;
-      return value;
+  it("changes contour colors without exposing the answer in metadata", () => {
+    const rendered = renderVerification("N3XA", {
+      seedBytes: new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]),
+      collectFrames: true
     });
-    expect(colors).toHaveLength(4);
-    expect(new Set(colors).size).toBe(4);
-    expect(colors.every((color) => color >= 2 && color <= 6)).toBe(true);
+    const usedTrackColors = new Set<number>();
+    for (const frame of rendered.frames ?? []) {
+      for (const pixel of frame) {
+        if (pixel >= 2 && pixel < 18) usedTrackColors.add(pixel);
+      }
+    }
+    expect(usedTrackColors.size).toBeGreaterThanOrEqual(8);
+    expect(rendered.parameterClass).toMatch(/^motion-v2:/);
+    expect(rendered.parameterClass).not.toContain("N3XA");
+  });
+
+  it("provides a 300 to 600 ms clarity window during a dwell", () => {
+    const segment = {
+      kind: "dwell" as const,
+      frames: 12,
+      fromX: 0,
+      toX: 100,
+      phase: 0,
+      backtrackAmplitude: 0,
+      characterIndex: 0
+    };
+    const clearFrames = Array.from({ length: segment.frames }, (_value, frame) =>
+      (revealStateForFrame(frame, [segment]).clarity ?? 0) > 0.25
+    ).filter(Boolean).length;
+    expect(clearFrames).toBeGreaterThanOrEqual(3);
+    expect(clearFrames).toBeLessThanOrEqual(6);
   });
 
   it("randomizes playback between 13 and 18 seconds", () => {

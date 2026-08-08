@@ -24,6 +24,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:resource": "node --max-old-space-size=64 scripts/resource-check.mjs",
+    "benchmark": "npm run build && node scripts/benchmark.mjs",
     "check": "npm run build && npm test && npm run test:resource"
   },
   "dependencies": {

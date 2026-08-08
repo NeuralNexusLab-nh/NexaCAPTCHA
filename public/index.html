@@ -14,8 +14,8 @@
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="/styles.css?v=9">
-    <script src="/app.js?v=12" defer></script>
-    <script src="/captcha.js?v=8" defer></script>
+    <script src="/app.js?v=13" defer></script>
+    <script src="/captcha.js?v=9" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -56,8 +56,8 @@
             <a class="button button-secondary" href="#setup"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="addToSite">Add to your site</span></a>
           </div>
           <ul class="hero-notes" aria-label="Product highlights">
-            <li><i class="fa-solid fa-eye-slash" aria-hidden="true"></i><span data-i18n="noCleanFrame">No clean screenshot</span></li>
-            <li><i class="fa-solid fa-arrows-up-down-left-right" aria-hidden="true"></i><span data-i18n="changingMotion">Changing motion and shape</span></li>
+            <li><i class="fa-solid fa-eye-slash" aria-hidden="true"></i><span data-i18n="noCleanFrame">No clean all-character frame</span></li>
+            <li><i class="fa-solid fa-arrows-up-down-left-right" aria-hidden="true"></i><span data-i18n="changingMotion">Smooth independent motion</span></li>
             <li><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span data-i18n="higherCost">More work per bot attempt</span></li>
           </ul>
         </div>
@@ -83,38 +83,38 @@
         <div class="section-heading reveal">
           <p class="eyebrow eyebrow-purple"><i class="fa-solid fa-star" aria-hidden="true"></i><span data-i18n="featuresEyebrow">FEATURES</span></p>
           <h2 id="features-title" data-i18n="featuresTitle">Why use NexaCAPTCHA?</h2>
-          <p data-i18n="featuresLead">Random distortion, independent movement, and incomplete display force automated solvers to do far more work for every answer.</p>
+          <p data-i18n="featuresLead">Readable intervals help people, while changing contours, decoy strokes, and slow color exchange make direct frame stacking unreliable.</p>
         </div>
         <div class="feature-grid">
           <article class="feature-card reveal">
             <i class="fa-solid fa-eye-slash" aria-hidden="true"></i>
-            <h3 data-i18n="featureIncompleteTitle">No complete frame</h3>
-            <p data-i18n="featureIncompleteBody">No single frame contains a complete, directly readable character. Only the full animation scans every part.</p>
+            <h3 data-i18n="featureIncompleteTitle">Readable in motion</h3>
+            <p data-i18n="featureIncompleteBody">Each character gets a short clear interval, but no frame presents all four as one clean OCR target.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
-            <h3 data-i18n="featureDistortionTitle">Constant distortion</h3>
-            <p data-i18n="featureDistortionBody">Characters keep bending, stretching, rotating, and changing shape.</p>
+            <h3 data-i18n="featureDistortionTitle">Stable core, changing contours</h3>
+            <p data-i18n="featureDistortionBody">The main skeleton stays readable while light outlines and brightness details change between frames.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-arrows-up-down-left-right" aria-hidden="true"></i>
-            <h3 data-i18n="featureMotionTitle">Independent movement</h3>
-            <p data-i18n="featureMotionBody">Every character moves in its own direction and at its own changing speed.</p>
+            <h3 data-i18n="featureMotionTitle">Independent smooth movement</h3>
+            <p data-i18n="featureMotionBody">Every character moves, rotates, and scales smoothly without instant jumps.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
-            <h3 data-i18n="featureWindowTitle">An unpredictable window</h3>
-            <p data-i18n="featureWindowBody">The visible shape keeps bending and changing while it speeds up, slows down, and moves backward.</p>
+            <h3 data-i18n="featureWindowTitle">Moving decoy strokes</h3>
+            <p data-i18n="featureWindowBody">Small nearby decorations remain harmless in one frame but create misleading contours when frames are stacked.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-fingerprint" aria-hidden="true"></i>
-            <h3 data-i18n="featureUniqueTitle">Different every time</h3>
-            <p data-i18n="featureUniqueBody">Animation length, fixed character colors, motion, distortion, and timing change with every CAPTCHA.</p>
+            <h3 data-i18n="featureUniqueTitle">Slow color exchange</h3>
+            <p data-i18n="featureUniqueBody">Character colors transition gradually, preventing a fixed-color tracking shortcut while remaining easy to follow.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
             <h3 data-i18n="featureCostTitle">Higher solving cost</h3>
-            <p data-i18n="featureCostBody">Bots must inspect many frames, track moving fragments, and rebuild the answer instead of reading one image.</p>
+            <p data-i18n="featureCostBody">Bots must align motion, reject decoys, and recover stable skeletons instead of reading or stacking one image.</p>
           </article>
         </div>
 

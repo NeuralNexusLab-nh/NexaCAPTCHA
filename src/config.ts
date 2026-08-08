@@ -2,6 +2,7 @@ import path from "node:path";
 
 export const config = Object.freeze({
   port: Number.parseInt(process.env.PORT ?? "3000", 10),
+  captchaVersion: "motion-v2",
   verificationLifetimeMs: 120_000,
   responseLifetimeMs: 300_000,
   retryCooldownMs: 10_000,

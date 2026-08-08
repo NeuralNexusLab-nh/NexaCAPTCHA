@@ -2,8 +2,14 @@ import { createServer } from "node:http";
 import { createApp } from "./app.js";
 import { config } from "./config.js";
 import { VerificationStore } from "./store.js";
+import { AnonymousTestRecorder } from "./telemetry.js";
 
-const store = new VerificationStore();
+const telemetry = new AnonymousTestRecorder({
+  logger: (record) => {
+    console.log(JSON.stringify({ event: "nexacaptcha-test", ...record }));
+  }
+});
+const store = new VerificationStore({ telemetry });
 await store.start();
 
 const server = createServer(createApp(store));

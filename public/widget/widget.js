@@ -4,6 +4,8 @@
   var parameters = new URLSearchParams(window.location.search);
   var widgetId = parameters.get("widgetId") || "standalone";
   var requestedParentOrigin = parameters.get("parentOrigin");
+  var alternativeAvailable = parameters.get("alternativeAvailable") === "1";
+  var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var parentOrigin = null;
   try {
     var parsedParent = new URL(requestedParentOrigin || window.location.origin);
@@ -18,6 +20,7 @@
   var input = document.getElementById("captcha-answer");
   var verifyButton = document.getElementById("verify-button");
   var newButton = document.getElementById("new-button");
+  var alternativeButton = document.getElementById("alternative-button");
   var image = document.getElementById("verification-image");
   var placeholder = document.getElementById("stage-placeholder");
   var stage = document.getElementById("verification-stage");
@@ -168,7 +171,12 @@
         image.classList.add("is-visible");
         busy = false;
         setPill("Playing", "fa-eye", "");
-        setMessage("Follow the reveal, then enter all four characters.", "");
+        setMessage(
+          prefersReducedMotion && alternativeAvailable
+            ? "Follow the reveal, or use the lower-motion alternative."
+            : "Follow the reveal, then enter all four characters.",
+          ""
+        );
         updateControls();
         armExpiry(Math.max(1_000, (result.expiresInMs || 120_000) - 1_000));
         void fetch(
@@ -280,6 +288,12 @@
   });
   form.addEventListener("submit", submitAnswer);
   newButton.addEventListener("click", scheduleVerification);
+  if (alternativeAvailable) {
+    alternativeButton.hidden = false;
+    alternativeButton.addEventListener("click", function () {
+      send("alternative", {});
+    });
+  }
   window.addEventListener("message", function (event) {
     if (event.origin !== parentOrigin) return;
     var data = event.data;
