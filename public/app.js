@@ -97,102 +97,49 @@
   });
   currentLanguage = storedLanguage();
   languageSelect.value = currentLanguage;
-  applyLan…15093 tokens truncated…t loads NexaCAPTCHA. The Div chooses where it appears.</p></div>
-            </div>
-            <div class="code-window">
-              <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span><button class="copy-button" type="button" data-copy="embed-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
-              <pre><code id="embed-code">&lt;script src="https://nexacaptcha.zone.id/captcha.js" defer&gt;&lt;/script&gt;
+  applyLanguage(currentLanguage);
 
-&lt;div class="nexa-captcha" data-callback="onNexaComplete"&gt;&lt;/div&gt;</code></pre>
-            </div>
-          </article>
-
-          <article class="setup-row reveal">
-            <div class="setup-copy">
-              <span class="step-number">2</span>
-              <div><h3><i class="fa-solid fa-arrow-right" aria-hidden="true"></i><span data-i18n="sendTitle">Send the result with your form</span></h3><p data-i18n="sendBody">Put this in your frontend JavaScript. Replace yourSubmitFunction with your existing submit function.</p></div>
-            </div>
-            <div class="code-window">
-              <div class="code-toolbar"><span><i class="fa-brands fa-js" aria-hidden="true"></i><span data-i18n="frontendLocation">JavaScript · frontend</span></span><button class="copy-button" type="button" data-copy="callback-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
-              <pre><code id="callback-code">function onNexaComplete(result) {
-  if (!result.success) return;
-
-  yourSubmitFunction({
-    verificationId: result.verificationId,
-    responseToken: result.responseToken
+  document.querySelectorAll("[data-copy]").forEach(function (button) {
+    button.addEventListener("click", async function () {
+      var target = document.getElementById(button.dataset.copy);
+      if (!target) return;
+      try {
+        await navigator.clipboard.writeText(target.textContent);
+        var icon = button.querySelector("i");
+        var label = button.querySelector("[data-copy-label]");
+        icon.className = "fa-solid fa-check";
+        label.textContent = text("copied");
+        button.classList.add("is-copied");
+        copyStatus.textContent = text("copySuccess");
+        window.setTimeout(function () {
+          icon.className = "fa-solid fa-copy";
+          label.textContent = text("copy");
+          button.classList.remove("is-copied");
+        }, 1800);
+      } catch (_) {
+        copyStatus.textContent = text("copyFailure");
+      }
+    });
   });
-}</code></pre>
-            </div>
-          </article>
 
-          <div class="parameter-card reveal">
-            <h3><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span data-i18n="valuesTitle">Two values come back</span></h3>
-            <dl>
-              <div><dt>verificationId</dt><dd data-i18n="idMeaning">The ID of the completed CAPTCHA.</dd></div>
-              <div><dt>responseToken</dt><dd data-i18n="tokenMeaning">Proof that it was completed. It works once.</dd></div>
-            </dl>
-          </div>
-        </div>
-      </section>
-
-      <section class="section shell" id="verify" aria-labelledby="verify-title">
-        <div class="section-heading reveal">
-          <p class="eyebrow eyebrow-purple"><i class="fa-solid fa-server" aria-hidden="true"></i><span data-i18n="verifyEyebrow">BACKEND VERIFICATION</span></p>
-          <h2 id="verify-title" data-i18n="verifyTitle">Check it on your server</h2>
-          <p data-i18n="verifyLead">Before accepting the form, signup, or login, send both values to NexaCAPTCHA.</p>
-        </div>
-
-        <div class="verify-layout">
-          <article class="endpoint-card reveal">
-            <header><span class="method">POST</span><code>/api/siteverify</code></header>
-            <div class="endpoint-part"><h3><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i><span data-i18n="request">Request</span></h3><pre><code id="verify-input">{
-  "verificationId": "&lt;verificationId&gt;",
-  "responseToken": "&lt;responseToken&gt;"
-}</code></pre></div>
-            <div class="endpoint-part"><h3><i class="fa-solid fa-arrow-down" aria-hidden="true"></i><span data-i18n="successResponse">Response · success</span></h3><pre><code>{
-  "success": true,
-  "verifiedAt": "2026-08-07T12:30:00.000Z"
-}</code></pre></div>
-            <div class="endpoint-part"><h3><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i><span data-i18n="failureResponse">Response · failure</span></h3><pre><code>{
-  "success": false,
-  "errorCode": "invalid-or-expired-verification"
-}</code></pre></div>
-          </article>
-
-          <article class="backend-card reveal">
-            <div class="code-toolbar"><span><i class="fa-brands fa-node-js" aria-hidden="true"></i><span data-i18n="backendLocation">Node.js · backend</span></span><button class="copy-button" type="button" data-copy="backend-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
-            <pre><code id="backend-code">const response = await fetch(
-  "https://nexacaptcha.zone.id/api/siteverify",
-  {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      verificationId,
-      responseToken
-    })
+  if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll(".reveal").forEach(function (element) { element.classList.add("is-visible"); });
+  } else {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll(".reveal").forEach(function (element) { observer.observe(element); });
   }
-);
 
-const result = await response.json();
-if (!result.success) {
-  return res.status(403).send("Verification failed");
-}</code></pre>
-          </article>
-        </div>
-
-        <aside class="important-note reveal">
-          <i class="fa-solid fa-lock" aria-hidden="true"></i>
-          <p data-i18n="important">Continue only when the response says success: true. A responseToken works once and expires after five minutes.</p>
-        </aside>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <div class="shell footer-grid">
-        <div class="footer-brand"><img src="/assets/logo.svg" alt="" width="30" height="30"><div><strong>NexaCAPTCHA</strong><span data-i18n="footerTagline">Simple motion-based human verification.</span></div></div>
-        <a class="github-link" href="https://github.com/NeuralNexusLab-nh/NexaCAPTCHA" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github" aria-hidden="true"></i>GitHub</a>
-      </div>
-    </footer>
-    <div class="sr-only" id="copy-status" aria-live="polite"></div>
-  </body>
-</html>
+  window.onNexaComplete = function (result) {
+    var output = document.getElementById("demo-output");
+    if (!output || !result.success) return;
+    output.classList.add("is-success");
+    output.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i><span></span>';
+    output.querySelector("span").textContent = text("completed");
+  };
+})();
