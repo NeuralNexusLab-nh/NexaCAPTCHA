@@ -51,7 +51,7 @@ const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const REQUIRED_CONFUSABLE = "B836";
 const REQUIRED_COMPLEX = "KXADR26GVWYJT7";
 const CONFUSABLE_INCLUDE_PERCENT = 70;
-const COMPLEX_INCLUDE_PERCENT = 40;
+const COMPLEX_INCLUDE_PERCENT = 70;
 const DUPLICATE_ACCEPT_PERCENT = 40;
 const MAX_DUPLICATE_RESELECTIONS = 5;
 
@@ -78,40 +78,21 @@ function randomCharacter(characters: string, randomInteger: RandomInteger): stri
   return characters[randomInteger(characters.length)]!;
 }
 
-function withoutCharacters(source: string, excluded: string): string {
-  return [...source].filter((character) => !excluded.includes(character)).join("");
-}
-
 function generateCandidate(
   randomInteger: RandomInteger,
   includeConfusable: boolean,
   includeComplex: boolean
 ): string {
   const characters: string[] = [];
-  let remainingPool = ALPHABET;
-
-  if (includeConfusable && includeComplex) {
-    characters.push(
-      randomCharacter(REQUIRED_CONFUSABLE, randomInteger),
-      randomCharacter(REQUIRED_COMPLEX, randomInteger)
-    );
-  } else if (includeConfusable) {
-    const confusableOnly = withoutCharacters(REQUIRED_CONFUSABLE, REQUIRED_COMPLEX);
-    characters.push(randomCharacter(confusableOnly, randomInteger));
-    remainingPool = withoutCharacters(ALPHABET, REQUIRED_COMPLEX);
-  } else if (includeComplex) {
-    const complexOnly = withoutCharacters(REQUIRED_COMPLEX, REQUIRED_CONFUSABLE);
-    characters.push(randomCharacter(complexOnly, randomInteger));
-    remainingPool = withoutCharacters(ALPHABET, REQUIRED_CONFUSABLE);
-  } else {
-    remainingPool = withoutCharacters(
-      ALPHABET,
-      REQUIRED_CONFUSABLE + REQUIRED_COMPLEX
-    );
+  if (includeConfusable) {
+    characters.push(randomCharacter(REQUIRED_CONFUSABLE, randomInteger));
+  }
+  if (includeComplex) {
+    characters.push(randomCharacter(REQUIRED_COMPLEX, randomInteger));
   }
 
   while (characters.length < 4) {
-    characters.push(randomCharacter(remainingPool, randomInteger));
+    characters.push(randomCharacter(ALPHABET, randomInteger));
   }
 
   for (let index = characters.length - 1; index > 0; index -= 1) {

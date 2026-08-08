@@ -252,12 +252,23 @@ export function createRevealSegments(
   characterSpacing: number,
   random: () => number
 ): RevealSegment[] {
-  const minimumDwellFrames = 15;
+  const initialOrder = Array.from({ length: glyphCount }, (_value, index) => index);
+  const revisitOrder = [...initialOrder];
+  for (let index = revisitOrder.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [revisitOrder[index], revisitOrder[swapIndex]] = [
+      revisitOrder[swapIndex]!,
+      revisitOrder[index]!
+    ];
+  }
+  const visitOrder = [...initialOrder, ...revisitOrder];
+  const visitCount = visitOrder.length;
+  const minimumDwellFrames = 12;
   const dwellFrames = Array.from(
-    { length: glyphCount },
+    { length: visitCount },
     () => minimumDwellFrames
   );
-  const transitionCount = glyphCount + 1;
+  const transitionCount = visitCount + 1;
   const minimumTransitionFrames = 3;
   const transitionFrames = Array.from(
     { length: transitionCount },
@@ -267,7 +278,7 @@ export function createRevealSegments(
   const transitionWeights = transitionFrames.map(() => 0.05 + random() * 0.12);
   const weights = [...dwellWeights, ...transitionWeights];
   const minimumFrames =
-    glyphCount * minimumDwellFrames + transitionCount * minimumTransitionFrames;
+    visitCount * minimumDwellFrames + transitionCount * minimumTransitionFrames;
   const extraFrames = Math.max(0, frames - minimumFrames);
   const totalWeight = weights.reduce((total, weight) => total + weight, 0);
   for (let extra = 0; extra < extraFrames; extra += 1) {
@@ -280,11 +291,11 @@ export function createRevealSegments(
         break;
       }
     }
-    if (selectedIndex < glyphCount) {
+    if (selectedIndex < visitCount) {
       dwellFrames[selectedIndex] =
         (dwellFrames[selectedIndex] ?? minimumDwellFrames) + 1;
     } else {
-      const transitionIndex = selectedIndex - glyphCount;
+      const transitionIndex = selectedIndex - visitCount;
       transitionFrames[transitionIndex] =
         (transitionFrames[transitionIndex] ?? minimumTransitionFrames) + 1;
     }
@@ -293,13 +304,14 @@ export function createRevealSegments(
   const segments: RevealSegment[] = [];
   const scanRadius = 50;
   let currentX = textStart - scanRadius - 18;
-  for (let characterIndex = 0; characterIndex < glyphCount; characterIndex += 1) {
+  for (let visitIndex = 0; visitIndex < visitCount; visitIndex += 1) {
+    const characterIndex = visitOrder[visitIndex] ?? 0;
     const characterX = textStart + characterIndex * characterSpacing;
     const scanStart = characterX - scanRadius;
     const scanEnd = characterX + scanRadius;
     segments.push({
       kind: "transition",
-      frames: transitionFrames[characterIndex] ?? minimumTransitionFrames,
+      frames: transitionFrames[visitIndex] ?? minimumTransitionFrames,
       fromX: currentX,
       toX: scanStart,
       phase: random() * Math.PI * 2,
@@ -307,7 +319,7 @@ export function createRevealSegments(
     });
     segments.push({
       kind: "dwell",
-      frames: dwellFrames[characterIndex] ?? minimumDwellFrames,
+      frames: dwellFrames[visitIndex] ?? minimumDwellFrames,
       fromX: scanStart,
       toX: scanEnd,
       phase: random() * Math.PI * 2,
@@ -318,7 +330,7 @@ export function createRevealSegments(
   }
   segments.push({
     kind: "transition",
-    frames: transitionFrames[glyphCount] ?? minimumTransitionFrames,
+    frames: transitionFrames[visitCount] ?? minimumTransitionFrames,
     fromX: currentX,
     toX: textStart + (glyphCount - 1) * characterSpacing + scanRadius + 18,
     phase: random() * Math.PI * 2,
@@ -396,6 +408,21 @@ export function revealStateForFrame(
   return { centerX: segments.at(-1)?.toX ?? 0 };
 }
 
+export function createDistinctColorIndices(
+  glyphCount: number,
+  random: () => number
+): number[] {
+  const colorIndices = [2, 3, 4, 5, 6];
+  for (let index = colorIndices.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [colorIndices[index], colorIndices[swapIndex]] = [
+      colorIndices[swapIndex]!,
+      colorIndices[index]!
+    ];
+  }
+  return colorIndices.slice(0, glyphCount);
+}
+
 export function renderVerificationAnimation(answer: string): Buffer {
   const { width, height, minFrames, maxFrames, delayMs } = config.animation;
   const seed = randomBytes(8);
@@ -403,8 +430,9 @@ export function renderVerificationAnimation(answer: string): Buffer {
   const frames = minFrames + Math.floor(random() * (maxFrames - minFrames + 1));
   const glyphs = answer.split("").map(glyphFor);
   const motionCycles = [2, 3, 4, 5, 6, 7, 8];
-  const questionDistortion = (0.95 + random() * 0.35) * 0.95;
-  const motionProfiles: MotionProfile[] = glyphs.map(() => ({
+  const questionDistortion = (0.95 + random() * 0.35) * 0.84;
+  const colorIndices = createDistinctColorIndices(glyphs.length, random);
+  const motionProfiles: MotionProfile[] = glyphs.map((_glyph, characterIndex) => ({
     phaseX: random() * Math.PI * 2,
     phaseY: random() * Math.PI * 2,
     phaseDistortion: random() * Math.PI * 2,
@@ -422,7 +450,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
     jitterCyclesX: 18 + Math.floor(random() * 15),
     jitterCyclesY: 18 + Math.floor(random() * 15),
     jitterPhase: random() * Math.PI * 2,
-    colorIndex: 2 + Math.floor(random() * 5)
+    colorIndex: colorIndices[characterIndex] ?? 4
   }));
   const partialRevealWidth = 24 + random() * 5;
   const maximumVisibleRatio = 0.28 + random() * 0.06;

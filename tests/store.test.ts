@@ -49,30 +49,46 @@ describe("VerificationStore", () => {
     }
   });
 
-  it("applies exact inclusion decisions for both character groups", () => {
+  it("forces selected groups without excluding unselected groups", () => {
     const answerForRolls = (confusableRoll: number, complexRoll: number) => {
       const rolls = [confusableRoll, complexRoll, 0];
       return generateAnswer(
-        () => 0,
+        (maximum) => maximum === 32 ? 2 : 0,
         () => rolls.shift() ?? 0
       );
     };
 
-    const both = answerForRolls(69, 39);
+    const both = answerForRolls(69, 69);
     expect(both).toMatch(/[B836]/);
     expect(both).toMatch(/[KXADR26GVWYJT7]/);
 
-    const confusableOnly = answerForRolls(69, 40);
+    const confusableOnly = answerForRolls(69, 70);
     expect(confusableOnly).toMatch(/[B836]/);
-    expect(confusableOnly).not.toMatch(/[KXADR26GVWYJT7]/);
 
-    const complexOnly = answerForRolls(70, 39);
-    expect(complexOnly).not.toMatch(/[B836]/);
+    const complexOnly = answerForRolls(70, 69);
     expect(complexOnly).toMatch(/[KXADR26GVWYJT7]/);
 
-    const neither = answerForRolls(70, 40);
+    const neither = answerForRolls(70, 70);
     expect(neither).not.toMatch(/[B836]/);
     expect(neither).not.toMatch(/[KXADR26GVWYJT7]/);
+
+    const naturallyConfusable = generateAnswer(
+      (maximum) => maximum === 32 ? 1 : 0,
+      (() => {
+        const rolls = [99, 99, 0];
+        return () => rolls.shift() ?? 0;
+      })()
+    );
+    expect(naturallyConfusable).toMatch(/[B836]/);
+
+    const naturallyComplex = generateAnswer(
+      () => 0,
+      (() => {
+        const rolls = [99, 99, 0];
+        return () => rolls.shift() ?? 0;
+      })()
+    );
+    expect(naturallyComplex).toMatch(/[KXADR26GVWYJT7]/);
   });
 
   it("accepts 40-percent duplicate candidates without reselection", () => {
@@ -97,7 +113,7 @@ describe("VerificationStore", () => {
     const policyRolls = [99, 99];
     const answer = generateAnswer(
       (maximum) => {
-        if (maximum === 15) candidateCharacterCalls += 1;
+        if (maximum === 32) candidateCharacterCalls += 1;
         return 0;
       },
       () => {

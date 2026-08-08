@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   compositeCharacterWithinAreaLimit,
+  createDistinctColorIndices,
   createRevealSegments,
   revealStateForFrame,
   renderVerificationAnimation
@@ -21,14 +22,25 @@ function frameDelays(gif: Buffer): number[] {
 }
 
 describe("verification animation", () => {
-  it("randomizes playback between 8 and 13 seconds", () => {
+  it("assigns four visibly distinct character colors", () => {
+    let value = 0;
+    const colors = createDistinctColorIndices(4, () => {
+      value = (value + 0.37) % 1;
+      return value;
+    });
+    expect(colors).toHaveLength(4);
+    expect(new Set(colors).size).toBe(4);
+    expect(colors.every((color) => color >= 2 && color <= 6)).toBe(true);
+  });
+
+  it("randomizes playback between 13 and 20 seconds", () => {
     const delays = frameDelays(renderVerificationAnimation("N3XA"));
-    expect(delays.length).toBeGreaterThanOrEqual(80);
-    expect(delays.length).toBeLessThanOrEqual(130);
+    expect(delays.length).toBeGreaterThanOrEqual(130);
+    expect(delays.length).toBeLessThanOrEqual(200);
     expect(delays.every((delay) => delay === 10)).toBe(true);
     const totalCentiseconds = delays.reduce((total, delay) => total + delay, 0);
-    expect(totalCentiseconds).toBeGreaterThanOrEqual(800);
-    expect(totalCentiseconds).toBeLessThanOrEqual(1300);
+    expect(totalCentiseconds).toBeGreaterThanOrEqual(1300);
+    expect(totalCentiseconds).toBeLessThanOrEqual(2000);
   });
 
   it("limits a frame to one small stroke or corner", () => {
@@ -53,11 +65,16 @@ describe("verification animation", () => {
       state = (Math.imul(state, 1_664_525) + 1_013_904_223) >>> 0;
       return state / 0x1_0000_0000;
     };
-    const segments = createRevealSegments(4, 110, 66, 62, random);
+    const segments = createRevealSegments(4, 165, 66, 62, random);
     const dwellSegments = segments.filter((segment) => segment.kind === "dwell");
-    expect(segments.reduce((total, segment) => total + segment.frames, 0)).toBe(110);
-    expect(dwellSegments).toHaveLength(4);
-    expect(dwellSegments.every((segment) => segment.frames >= 15)).toBe(true);
+    expect(segments.reduce((total, segment) => total + segment.frames, 0)).toBe(165);
+    expect(dwellSegments).toHaveLength(8);
+    expect(dwellSegments.every((segment) => segment.frames >= 12)).toBe(true);
+    for (let characterIndex = 0; characterIndex < 4; characterIndex += 1) {
+      expect(
+        dwellSegments.filter((segment) => segment.characterIndex === characterIndex)
+      ).toHaveLength(2);
+    }
     expect(dwellSegments.every((segment) => segment.toX - segment.fromX === 100)).toBe(
       true
     );
@@ -71,7 +88,7 @@ describe("verification animation", () => {
     for (let phaseStep = 0; phaseStep < 16; phaseStep += 1) {
       const segment = {
         kind: "dwell" as const,
-        frames: 15,
+        frames: 12,
         fromX: 0,
         toX: 100,
         phase: (phaseStep / 16) * Math.PI * 2,
