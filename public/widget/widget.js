@@ -25,7 +25,10 @@
   var pill = document.getElementById("status-pill");
   var currentVerificationId = null;
   var expiryTimer = null;
+  var cooldownTimer = null;
+  var loadingTimer = null;
   var busy = false;
+  var coolingDown = false;
   var completed = false;
 
   function send(type, payload) {
@@ -54,15 +57,24 @@
     message.className = kind || "";
   }
 
-  function setBusy(value) {
-    busy = value;
-    stage.setAttribute("aria-busy", String(value));
-    verifyButton.disabled = value || completed || !currentVerificationId;
-    input.disabled = value || completed || !currentVerificationId;
-    newButton.disabled = value;
+  function updateControls() {
+    stage.setAttribute("aria-busy", String(busy));
+    var unavailable = busy || coolingDown || completed || !currentVerificationId;
+    verifyButton.disabled = unavailable;
+    input.disabled = unavailable;
+    newButton.disabled = busy;
   }
 
-  function showPlaceholder(text) {
+  function clearTimers() {
+    if (expiryTimer) window.clearTimeout(expiryTimer);
+    if (cooldownTimer) window.clearInterval(cooldownTimer);
+    if (loadingTimer) window.clearInterval(loadingTimer);
+    expiryTimer = null;
+    cooldownTimer = null;
+    loadingTimer = null;
+  }
+
+  function showLoadingPlaceholder(text) {
     image.classList.remove("is-visible");
     image.removeAttribute("src");
     placeholder.hidden = false;
@@ -73,28 +85,105 @@
     placeholder.append(icon, document.createTextNode(text));
   }
 
-  function armExpiry(expiresAt) {
+  function showStartPrompt() {
+    image.classList.remove("is-visible");
+    image.removeAttribute("src");
+    placeholder.hidden = false;
+    placeholder.replaceChildren();
+    var startButton = document.createElement("button");
+    startButton.className = "stage-start";
+    startButton.type = "button";
+    var icon = document.createElement("i");
+    icon.className = "fa-solid fa-play";
+    icon.setAttribute("aria-hidden", "true");
+    startButton.append(icon, document.createTextNode("Start animation"));
+    startButton.addEventListener("click", scheduleVerification, { once: true });
+    placeholder.append(startButton);
+    setPill("Ready", "fa-play", "");
+    setMessage("Press Start. The one-minute timer begins with the animation.", "");
+  }
+
+  function armExpiry(expiresAtOrDuration) {
     if (expiryTimer) window.clearTimeout(expiryTimer);
-    var delay = Math.max(0, new Date(expiresAt).getTime() - Date.now());
+    var durationMs = typeof expiresAtOrDuration === "string"
+      ? new Date(expiresAtOrDuration).getTime() - Date.now()
+      : expiresAtOrDuration;
     expiryTimer = window.setTimeout(function () {
       currentVerificationId = null;
       completed = false;
-      setBusy(false);
+      coolingDown = false;
+      updateControls();
       setPill("Expired", "fa-clock", "is-error");
-      setMessage("This verification expired. Request a new one.", "is-error");
+      setMessage("This verification expired after one minute. Request a new one.", "is-error");
       sendResult({ success: false, verificationId: null, responseToken: null });
-    }, delay);
+    }, Math.max(0, durationMs));
+  }
+
+  function startCooldown(seconds) {
+    var remaining = Math.max(1, Math.ceil(seconds));
+    coolingDown = true;
+    updateControls();
+
+    function renderCooldown() {
+      setPill("Wait " + remaining + "s", "fa-hourglass-half", "is-error");
+      setMessage(
+        "That was not correct. You can enter another answer in " + remaining + " seconds.",
+        "is-error"
+      );
+    }
+
+    renderCooldown();
+    cooldownTimer = window.setInterval(function () {
+      remaining -= 1;
+      if (remaining <= 0) {
+        window.clearInterval(cooldownTimer);
+        cooldownTimer = null;
+        coolingDown = false;
+        setPill("Try again", "fa-keyboard", "");
+        setMessage("Enter your next answer. Three incorrect answers end this verification.", "");
+        updateControls();
+        input.focus();
+        return;
+      }
+      renderCooldown();
+    }, 1000);
+  }
+
+  function scheduleVerification() {
+    clearTimers();
+    image.onload = null;
+    image.onerror = null;
+    completed = false;
+    coolingDown = false;
+    currentVerificationId = null;
+    input.value = "";
+    busy = true;
+    updateControls();
+    sendResult({ success: false, verificationId: null, responseToken: null });
+
+    var remaining = 3;
+    function renderLoadingDelay() {
+      showLoadingPlaceholder("Starting in " + remaining + " seconds…");
+      setPill("Starting " + remaining, "fa-circle-notch fa-spin", "");
+      setMessage("Preparing a new verification…", "");
+    }
+    renderLoadingDelay();
+    loadingTimer = window.setInterval(function () {
+      remaining -= 1;
+      if (remaining <= 0) {
+        window.clearInterval(loadingTimer);
+        loadingTimer = null;
+        void createVerification();
+        return;
+      }
+      renderLoadingDelay();
+    }, 1000);
   }
 
   async function createVerification() {
-    completed = false;
-    currentVerificationId = null;
-    input.value = "";
-    showPlaceholder("Preparing verification…");
+    showLoadingPlaceholder("Preparing verification…");
     setPill("Loading", "fa-circle-notch fa-spin", "");
     setMessage("Loading a new verification…", "");
-    setBusy(true);
-    sendResult({ success: false, verificationId: null, responseToken: null });
 
     try {
       var response = await fetch("/api/verifications", {
@@ -104,35 +193,53 @@
         cache: "no-store"
       });
       var result = await response.json();
-      if (!response.ok) throw new Error(result.message || "Unable to create verification.");
+      if (!response.ok) throw new Error(result.errorCode || "verification-create-error");
 
       currentVerificationId = result.verificationId;
       image.onload = function () {
+        var playbackVerificationId = currentVerificationId;
         placeholder.hidden = true;
         image.classList.add("is-visible");
-        setPill("Ready", "fa-eye", "");
+        busy = false;
+        setPill("Playing", "fa-eye", "");
         setMessage("Follow the reveal, then enter all four characters.", "");
-        setBusy(false);
+        updateControls();
+        armExpiry(Math.max(1_000, (result.expiresInMs || 60_000) - 1_000));
+        void fetch(
+          "/api/verifications/" + encodeURIComponent(playbackVerificationId) + "/status",
+          { cache: "no-store" }
+        ).then(function (statusResponse) {
+          if (!statusResponse.ok) throw new Error("status-error");
+          return statusResponse.json();
+        }).then(function (status) {
+          if (currentVerificationId === playbackVerificationId && status.expiresAt) {
+            armExpiry(status.expiresAt);
+          }
+        }).catch(function () {
+          // The conservative local timer remains armed when status sync fails.
+        });
+        input.focus();
       };
       image.onerror = function () {
         currentVerificationId = null;
+        busy = false;
         setPill("Error", "fa-circle-exclamation", "is-error");
         setMessage("The verification animation could not be loaded. Try again.", "is-error");
-        setBusy(false);
+        updateControls();
       };
       image.src = result.animationUrl;
-      armExpiry(result.expiresAt);
     } catch (_) {
       currentVerificationId = null;
+      busy = false;
       setPill("Offline", "fa-triangle-exclamation", "is-error");
       setMessage("Unable to reach NexaCAPTCHA. Try again.", "is-error");
-      setBusy(false);
+      updateControls();
     }
   }
 
   async function submitAnswer(event) {
     event.preventDefault();
-    if (busy || completed || !currentVerificationId) return;
+    if (busy || coolingDown || completed || !currentVerificationId) return;
     var answer = input.value.trim().toUpperCase();
     input.value = answer;
     if (answer.length !== 4) {
@@ -141,7 +248,8 @@
       return;
     }
 
-    setBusy(true);
+    busy = true;
+    updateControls();
     setPill("Checking", "fa-circle-notch fa-spin", "");
     setMessage("Checking your answer…", "");
     try {
@@ -157,12 +265,13 @@
       var result = await response.json();
       if (!response.ok) throw new Error(result.errorCode || "verification-error");
 
+      busy = false;
       if (result.success) {
         completed = true;
-        if (expiryTimer) window.clearTimeout(expiryTimer);
+        clearTimers();
         setPill("Complete", "fa-circle-check", "is-complete");
         setMessage("Verification complete.", "is-success");
-        setBusy(false);
+        updateControls();
         sendResult({
           success: true,
           verificationId: result.verificationId,
@@ -173,29 +282,30 @@
 
       input.value = "";
       if (result.status === "verification_failed") {
-        if (expiryTimer) window.clearTimeout(expiryTimer);
+        clearTimers();
         currentVerificationId = null;
         setPill("Failed", "fa-circle-exclamation", "is-error");
-        setMessage("Verification failed. Request a new verification to try again.", "is-error");
+        setMessage("Three incorrect answers ended this verification.", "is-error");
+        updateControls();
       } else {
-        setPill("Try again", "fa-circle-exclamation", "is-error");
-        setMessage(
-          "That was not correct. " + result.attemptsRemaining + " attempts remaining.",
-          "is-error"
-        );
+        startCooldown(result.retryAfterSeconds || 5);
       }
-      setBusy(false);
-      if (currentVerificationId) input.focus();
     } catch (error) {
-      if (String(error.message).includes("verification-expired")) {
+      busy = false;
+      var code = String(error.message);
+      if (code.includes("verification-expired")) {
+        clearTimers();
         currentVerificationId = null;
         setPill("Expired", "fa-clock", "is-error");
-        setMessage("This verification expired. Request a new one.", "is-error");
+        setMessage("This verification expired after one minute. Request a new one.", "is-error");
+        updateControls();
+      } else if (code.includes("answer-cooldown")) {
+        startCooldown(5);
       } else {
         setPill("Error", "fa-circle-exclamation", "is-error");
         setMessage("Verification could not be completed. Try again.", "is-error");
+        updateControls();
       }
-      setBusy(false);
     }
   }
 
@@ -203,12 +313,12 @@
     input.value = input.value.replace(/[^a-z0-9]/gi, "").toUpperCase();
   });
   form.addEventListener("submit", submitAnswer);
-  newButton.addEventListener("click", createVerification);
+  newButton.addEventListener("click", scheduleVerification);
   window.addEventListener("message", function (event) {
     if (event.origin !== parentOrigin) return;
     var data = event.data;
     if (!data || data.namespace !== "NexaCAPTCHA" || data.widgetId !== widgetId) return;
-    if (data.type === "reset") createVerification();
+    if (data.type === "reset") scheduleVerification();
   });
 
   if (window.ResizeObserver) {
@@ -216,5 +326,9 @@
       send("resize", { height: document.documentElement.scrollHeight + 12 });
     }).observe(document.body);
   }
-  createVerification();
+
+  busy = false;
+  updateControls();
+  showStartPrompt();
 })();
+
