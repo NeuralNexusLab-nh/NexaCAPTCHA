@@ -331,4 +331,3 @@
   updateControls();
   showStartPrompt();
 })();
-
