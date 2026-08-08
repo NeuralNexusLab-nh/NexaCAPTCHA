@@ -106,7 +106,7 @@ function horizontalDrift(
     motion * motionProfile.horizontalCycles + motionProfile.phaseX;
   return (
     motionProfile.driftX * Math.sin(horizontalMotion) +
-    2 * Math.sin(horizontalMotion * 2 + motionProfile.phaseY)
+    2.6 * Math.sin(horizontalMotion * 2 + motionProfile.phaseY)
   );
 }
 
@@ -231,7 +231,7 @@ function transformPoint(
   const floatX = horizontalDrift(motionProfile, frameProgress);
   const floatY =
     motionProfile.driftY * Math.sin(verticalMotion) +
-    1.8 * Math.sin(verticalMotion * 2 + motionProfile.phaseX);
+    2.4 * Math.sin(verticalMotion * 2 + motionProfile.phaseX);
   const jitterX =
     motionProfile.jitterAmplitude *
     Math.sin(motion * motionProfile.jitterCyclesX + motionProfile.jitterPhase);
@@ -403,7 +403,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
   const frames = minFrames + Math.floor(random() * (maxFrames - minFrames + 1));
   const glyphs = answer.split("").map(glyphFor);
   const motionCycles = [2, 3, 4, 5, 6, 7, 8];
-  const questionDistortion = (0.9 + random() * 0.36) * 0.7;
+  const questionDistortion = (0.95 + random() * 0.35) * 0.95;
   const motionProfiles: MotionProfile[] = glyphs.map(() => ({
     phaseX: random() * Math.PI * 2,
     phaseY: random() * Math.PI * 2,
@@ -411,14 +411,14 @@ export function renderVerificationAnimation(answer: string): Buffer {
     horizontalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 4,
     verticalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 5,
     distortionCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 3,
-    driftX: 6 + random() * 7,
-    driftY: 5 + random() * 6,
+    driftX: 8 + random() * 8,
+    driftY: 6.5 + random() * 7,
     stretchX: (0.15 + random() * 0.13) * questionDistortion,
     stretchY: (0.12 + random() * 0.13) * questionDistortion,
     waveAmplitude: (3.4 + random() * 2.6) * questionDistortion,
     shearAmplitude: (6.5 + random() * 6.5) * questionDistortion,
     rotationDegrees: (7 + random() * 10) * questionDistortion,
-    jitterAmplitude: (0.7 + random() * 1.3) * questionDistortion,
+    jitterAmplitude: (1 + random() * 1.5) * questionDistortion,
     jitterCyclesX: 18 + Math.floor(random() * 15),
     jitterCyclesY: 18 + Math.floor(random() * 15),
     jitterPhase: random() * Math.PI * 2,
