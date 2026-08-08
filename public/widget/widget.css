@@ -98,6 +98,27 @@ body { padding: 6px; }
 
 .stage-placeholder[hidden] { display: none !important; }
 
+.stage-start {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 17px;
+  border: 1px solid #7fee64;
+  border-radius: 999px;
+  background: rgba(127, 238, 100, .1);
+  color: #bfffad;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  transition: transform 120ms ease, background-color 150ms ease;
+}
+
+.stage-start:hover { transform: translateY(-1px); background: rgba(127, 238, 100, .17); }
+.stage-start:focus-visible { outline: 2px solid #7fee64; outline-offset: 3px; }
+
 label {
   display: flex;
   align-items: center;

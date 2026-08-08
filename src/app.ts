@@ -24,8 +24,8 @@ const createVerificationSchema = z.object({}).strict();
 
 const verificationSchema = z
   .object({
-    verificationId: z.string().regex(/^ver_[A-Za-z0-9_-]{22}$/),
-    responseToken: z.string().regex(/^[A-Za-z0-9_-]{32}$/)
+    verificationId: z.string().regex(/^ver_[A-Za-z0-9_-]{12}$/),
+    responseToken: z.string().regex(/^[A-Za-z0-9_-]{64}$/)
   })
   .strict();
 
@@ -101,6 +101,22 @@ export function createApp(store: VerificationStore) {
         response.sendFile(mediaPath, (error) => {
           if (error) next(error);
         });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  app.get(
+    "/api/verifications/:verificationId/status",
+    limiter(60_000, 120),
+    (request, response, next) => {
+      try {
+        const expiresAt = store.getPlaybackExpiry(
+          routeParameter(request.params.verificationId)
+        );
+        response.setHeader("Cache-Control", "no-store");
+        response.json({ expiresAt });
       } catch (error) {
         next(error);
       }

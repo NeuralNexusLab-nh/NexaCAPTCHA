@@ -8,14 +8,16 @@ Try it at [nexacaptcha.zone.id](https://nexacaptcha.zone.id).
 
 ## Why it is harder to automate
 
-- **Incomplete by design:** most frames show only fragments, and two to four characters are never shown in full.
+- **Incomplete by design:** no frame exposes more than 40% of any one character's rendered strokes.
 - **Constant distortion:** characters keep bending, stretching, rotating, and changing shape.
 - **Independent movement:** every character moves in its own direction and at its own changing speed.
 - **An unpredictable window:** the visible shape keeps bending and changing while it speeds up, slows down, and moves backward.
-- **Different every time:** motion, distortion, timing, and the hidden character change with every CAPTCHA.
+- **Different every time:** animation length, color, motion, distortion, and timing change with every CAPTCHA.
 - **Higher solving cost:** bots must inspect many frames, track moving fragments, and rebuild the answer instead of reading one image.
 
 NexaCAPTCHA is designed to raise the cost of automated solving. It does not claim that automation is impossible.
+
+The animation begins only after the visitor presses Start. A verification then remains open for one minute, allows three incorrect answers, and applies a five-second input cooldown after each incorrect answer. Starting or replacing a verification has a three-second preparation delay.
 
 ## Add it to your site
 
@@ -52,7 +54,7 @@ NexaCAPTCHA returns two values:
 | Value | Meaning |
 | --- | --- |
 | `verificationId` | The ID of the completed CAPTCHA. |
-| `responseToken` | Proof that it was completed. It works once. |
+| `responseToken` | A 64-character proof that it was completed. It works once. |
 
 ## Check the result on your backend
 
@@ -107,6 +109,32 @@ if (!result.success) {
 ```
 
 Continue only when the response says `success: true`. A `responseToken` works once and expires after five minutes.
+
+## Run it yourself
+
+Requires Node.js 20 or newer and npm.
+
+```sh
+npm install
+npm run dev
+```
+
+Production:
+
+```sh
+npm run build
+npm start
+```
+
+For Zeabur, create a service from this repository and choose the native Node.js runtime. `zbpack.json` supplies the build and start commands.
+
+## Limits and checks
+
+```sh
+npm run check
+```
+
+The release budget is 0.25 vCPU, 100 MB RAM, and 10 GB storage. The current store supports one application instance. Restarting the service invalidates unfinished CAPTCHA sessions.
 
 Read [SECURITY.md](SECURITY.md) before production use.
 

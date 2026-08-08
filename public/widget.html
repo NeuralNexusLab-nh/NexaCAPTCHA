@@ -7,7 +7,7 @@
     <title>NexaCAPTCHA verification</title>
     <link rel="stylesheet" href="/vendor/fonts/inter/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/widget-assets/widget.css?v=2">
+    <link rel="stylesheet" href="/widget-assets/widget.css?v=3">
   </head>
   <body>
     <main class="captcha-shell" aria-labelledby="captcha-title">
@@ -17,16 +17,18 @@
           <span id="captcha-title">NexaCAPTCHA</span>
         </a>
         <span class="status-pill" id="status-pill">
-          <i class="fa-solid fa-circle-notch" aria-hidden="true"></i>
-          Loading
+          <i class="fa-solid fa-play" aria-hidden="true"></i>
+          Ready
         </span>
       </header>
 
-      <div class="verification-stage" aria-busy="true" id="verification-stage">
+      <div class="verification-stage" aria-busy="false" id="verification-stage">
         <img id="verification-image" alt="Animated verification text" draggable="false">
         <div class="stage-placeholder" id="stage-placeholder">
-          <i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i>
-          Preparing verification…
+          <button class="stage-start" type="button">
+            <i class="fa-solid fa-play" aria-hidden="true"></i>
+            Start animation
+          </button>
         </div>
       </div>
 
@@ -58,13 +60,13 @@
       </form>
 
       <footer class="captcha-footer">
-        <p id="status-message" role="status" aria-live="polite">Loading a new verification…</p>
+        <p id="status-message" role="status" aria-live="polite">Press Start. The one-minute timer begins with the animation.</p>
         <button class="button button-quiet" id="new-button" type="button">
           <i class="fa-solid fa-rotate" aria-hidden="true"></i>
           New verification
         </button>
       </footer>
     </main>
-    <script src="/widget-assets/widget.js?v=2" defer></script>
+    <script src="/widget-assets/widget.js?v=3" defer></script>
   </body>
 </html>

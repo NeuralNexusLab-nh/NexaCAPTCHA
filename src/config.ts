@@ -2,9 +2,10 @@ import path from "node:path";
 
 export const config = Object.freeze({
   port: Number.parseInt(process.env.PORT ?? "3000", 10),
-  verificationLifetimeMs: 300_000,
+  verificationLifetimeMs: 60_000,
   responseLifetimeMs: 300_000,
-  maxAttempts: 5,
+  retryCooldownMs: 5_000,
+  maxAttempts: 3,
   maxActiveVerifications: 160,
   maxRenderQueue: 6,
   maxTemporaryBytes: 64 * 1024 * 1024,
@@ -14,7 +15,8 @@ export const config = Object.freeze({
   animation: {
     width: 320,
     height: 116,
-    frames: 100,
+    minFrames: 80,
+    maxFrames: 130,
     delayMs: 100
   }
 });
