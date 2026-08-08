@@ -4,8 +4,8 @@
   var translations = {
     en: {
       skip: "Skip to content", languageLabel: "Language", navTop: "Home", navFeatures: "Features", navExperiment: "Experiment", navSetup: "Setup", navVerify: "Check the result",
-      heroEyebrow: "HUMANS IN. BOTS HELD BACK.", heroTitle: "Let humans through. Make bots pay.", heroLead: "NexaCAPTCHA turns four characters into a moving target. People follow it naturally. Bots must chase incomplete, distorted pieces across the full animation—on every attempt.",
-      tryIt: "Try it", addToSite: "Add to your site", noCleanFrame: "No clean screenshot", changingMotion: "Changing motion and shape", higherCost: "More work per bot attempt",
+      heroEyebrow: "BUILT FOR PEOPLE. COSTLY FOR BOTS.", heroTitle: "Simple for people. Expensive to automate.", heroLead: "NexaCAPTCHA helps legitimate users verify quickly while reducing automated success rates and raising the cost of repeated solving attempts.",
+      tryIt: "Try it", addToSite: "Add to your site", noCleanFrame: "Designed for human readability", changingMotion: "Lower automated success rates", higherCost: "Higher solving cost at scale",
       liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA", ready: "Ready", demoHelp: "Follow the moving window, then enter all four characters.", demoOutput: "Your result will appear here.",
       featuresEyebrow: "FEATURES", featuresTitle: "Why use NexaCAPTCHA?", featuresLead: "Random distortion, independent movement, and incomplete display force automated solvers to do far more work for every answer.",
       experimentEyebrow: "VERIFICATION TEST", experimentTitle: "Fast for people. Expensive for AI.", experimentLead: "Average completion results for people and GPT 5.6 Sol - Medium across three verification systems.", experimentVersion: "Tested build", experimentHumanLabel: "Human", verificationSystem: "Verification system", secondsAverage: "seconds average", successRate: "success rate", experimentNote: "A documented verification test of the tested build. Results describe these runs and are not a security guarantee.",
@@ -18,8 +18,8 @@
     },
     "zh-Hant": {
       skip: "跳到主要內容", languageLabel: "語言", navTop: "首頁", navFeatures: "特點", navExperiment: "實驗", navSetup: "串接", navVerify: "檢查結果",
-      heroEyebrow: "讓人類通過，擋下 BOT", heroTitle: "讓人類通過，讓 Bot 付出代價。", heroLead: "NexaCAPTCHA 把四個字元變成持續移動的目標。人類能自然跟著閱讀；Bot 每次都必須在完整動畫中追蹤不完整、持續扭曲的片段。",
-      tryIt: "立即試用", addToSite: "加入你的網站", noCleanFrame: "沒有乾淨的完整畫面", changingMotion: "移動與形狀持續改變", higherCost: "每次破解都要更多處理",
+      heroEyebrow: "為真人設計，讓自動化付出代價", heroTitle: "真人輕鬆通過，自動化更難得逞。", heroLead: "NexaCAPTCHA 讓一般使用者快速完成驗證，同時降低自動化破解的成功率，並大幅提高大量嘗試的時間與運算成本。",
+      tryIt: "立即試用", addToSite: "加入你的網站", noCleanFrame: "兼顧真人可讀性", changingMotion: "降低自動化成功率", higherCost: "提高大量破解成本",
       liveDemo: "即時示範", tryNexa: "試用 NexaCAPTCHA", ready: "可以開始", demoHelp: "跟著移動窗口閱讀，然後輸入四個字元。", demoOutput: "驗證結果會顯示在這裡。",
       featuresEyebrow: "特點", featuresTitle: "為什麼使用 NexaCAPTCHA？", featuresLead: "隨機扭曲、獨立移動和不完整顯示，會讓自動破解每個答案都必須付出大幅增加的處理成本。",
       experimentEyebrow: "驗證測試", experimentTitle: "人類快速完成，AI 付出高昂成本。", experimentLead: "比較人類與 GPT 5.6 Sol - Medium 在三種驗證系統中的平均完成結果。", experimentVersion: "測試版本", experimentHumanLabel: "人類", verificationSystem: "驗證系統", secondsAverage: "秒平均完成", successRate: "成功率", experimentNote: "這是測試版本有紀錄的驗證測試；結果只描述這些測試，不代表安全保證。",
@@ -32,8 +32,8 @@
     },
     ja: {
       skip: "メインコンテンツへ移動", languageLabel: "言語", navTop: "ホーム", navFeatures: "特徴", navExperiment: "実験", navSetup: "導入", navVerify: "結果を確認",
-      heroEyebrow: "人を通し、BOT を止める", heroTitle: "人を通す。Bot には代償を。", heroLead: "NexaCAPTCHA は4文字を動く標的に変えます。人は自然に追えますが、Bot は毎回、アニメーション全体から不完全で歪んだ断片を追跡する必要があります。",
-      tryIt: "試してみる", addToSite: "サイトに追加", noCleanFrame: "きれいな全体画像がない", changingMotion: "動きと形が変化", higherCost: "Bot の試行ごとに追加処理",
+      heroEyebrow: "人にやさしく、自動化には高コスト", heroTitle: "人にはスムーズに。自動化には高い壁を。", heroLead: "NexaCAPTCHA は、正規ユーザーがすばやく認証できる使いやすさを保ちながら、自動解読の成功率を抑え、大量試行にかかるコストを大幅に引き上げます。",
+      tryIt: "試してみる", addToSite: "サイトに追加", noCleanFrame: "人に配慮した読みやすさ", changingMotion: "自動解読の成功率を低減", higherCost: "大規模な解読コストを増大",
       liveDemo: "ライブデモ", tryNexa: "NexaCAPTCHA を試す", ready: "準備完了", demoHelp: "移動する窓を追い、4文字すべてを入力してください。", demoOutput: "認証結果がここに表示されます。",
       featuresEyebrow: "特徴", featuresTitle: "NexaCAPTCHA を使う理由", featuresLead: "ランダムな歪み、独立した動き、不完全な表示により、自動解読の処理コストが大幅に増えます。",
       experimentEyebrow: "検証テスト", experimentTitle: "人には速く、AI には高コスト。", experimentLead: "3種類の認証システムで、人間と GPT 5.6 Sol - Medium の平均完了結果を比較しました。", experimentVersion: "テスト版", experimentHumanLabel: "人間", verificationSystem: "認証システム", secondsAverage: "秒（平均）", successRate: "成功率", experimentNote: "テスト版について記録した検証テストです。結果は今回の試行のみを示し、安全性を保証するものではありません。",
