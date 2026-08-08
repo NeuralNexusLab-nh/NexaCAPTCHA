@@ -335,17 +335,11 @@ export function compositeCharacterWithinAreaLimit(
   const visibleIndices: number[] = [];
   for (let index = 0; index < fullCharacter.length; index += 1) {
     if ((fullCharacter[index] ?? 0) !== 0) fullPixelCount += 1;
-    if ((visibleCharacter[index] ?? 0) !== 0) {
-      const x = index % width;
-      const y = Math.floor(index / width);
-      const movingFragmentBand =
-        (x + Math.floor(y * 0.45) + Math.floor(revealCenter * 0.6)) % 13;
-      if (movingFragmentBand < 10) visibleIndices.push(index);
-    }
+    if ((visibleCharacter[index] ?? 0) !== 0) visibleIndices.push(index);
   }
 
   const visiblePixelLimit = Math.floor(
-    fullPixelCount * Math.min(0.7, Math.max(0.65, maximumVisibleRatio))
+    fullPixelCount * Math.min(0.3, Math.max(0.2, maximumVisibleRatio))
   );
   if (visibleIndices.length > visiblePixelLimit) {
     visibleIndices.sort((left, right) => {
@@ -357,21 +351,7 @@ export function compositeCharacterWithinAreaLimit(
   }
 
   for (const index of visibleIndices) {
-    const x = index % width;
-    const y = Math.floor(index / width);
-    const stripe = Math.floor((x + Math.floor(revealCenter * 0.6)) / 13);
-    const verticalOffset = stripe % 2 === 0 ? -9 : 9;
-    const rowBand = Math.floor((y + Math.floor(revealCenter * 0.35)) / 8);
-    const horizontalOffset = rowBand % 2 === 0 ? -5 : 5;
-    const displacedX = x + horizontalOffset;
-    const displacedY = y + verticalOffset;
-    if (
-      displacedX < 0 ||
-      displacedX >= width ||
-      displacedY < 0 ||
-      displacedY >= target.length / width
-    ) continue;
-    target[displacedY * width + displacedX] = visibleCharacter[index] ?? 0;
+    target[index] = visibleCharacter[index] ?? 0;
   }
 }
 
@@ -437,8 +417,8 @@ export function renderVerificationAnimation(answer: string): Buffer {
     jitterPhase: random() * Math.PI * 2,
     colorIndex: 2 + Math.floor(random() * 5)
   }));
-  const partialRevealWidth = 56 + random() * 6;
-  const maximumVisibleRatio = 0.65 + random() * 0.05;
+  const partialRevealWidth = 18 + random() * 5;
+  const maximumVisibleRatio = 0.24 + random() * 0.06;
   const revealShapeProfile: RevealShapeProfile = {
     phase: random() * Math.PI * 2,
     cycles: 2 + Math.floor(random() * 5),
@@ -457,9 +437,12 @@ export function renderVerificationAnimation(answer: string): Buffer {
     random
   );
   const gif = GIFEncoder({ initialCapacity: 192 * 1024 });
+  const pixels = new Uint8Array(width * height);
+  const visibleCharacter = new Uint8Array(width * height);
+  const fullCharacter = new Uint8Array(width * height);
 
   for (let frame = 0; frame < frames; frame += 1) {
-    const pixels = new Uint8Array(width * height);
+    pixels.fill(0);
     const progress = frame / Math.max(1, frames);
     const revealState = revealStateForFrame(frame, revealSegments);
     let revealCenter = revealState.centerX;
@@ -488,8 +471,8 @@ export function renderVerificationAnimation(answer: string): Buffer {
     }
 
     glyphs.forEach((glyph, characterIndex) => {
-      const visibleCharacter = new Uint8Array(width * height);
-      const fullCharacter = new Uint8Array(width * height);
+      visibleCharacter.fill(0);
+      fullCharacter.fill(0);
       const baseX = textStart + characterIndex * characterSpacing;
       const motionProfile = motionProfiles[characterIndex];
       if (!motionProfile) return;

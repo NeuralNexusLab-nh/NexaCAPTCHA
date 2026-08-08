@@ -30,25 +30,20 @@ describe("verification animation", () => {
     expect(totalCentiseconds).toBeLessThanOrEqual(1300);
   });
 
-  it("caps a fragmented character frame between sixty-five and seventy percent", () => {
-    const fullCharacter = new Uint8Array(600);
-    const visibleCharacter = new Uint8Array(600);
-    const target = new Uint8Array(600);
-    for (let y = 10; y < 20; y += 1) {
-      fullCharacter.fill(4, y * 20 + 5, y * 20 + 15);
-      visibleCharacter.fill(5, y * 20 + 5, y * 20 + 15);
-    }
+  it("limits a frame to one small stroke or corner", () => {
+    const fullCharacter = new Uint8Array(100).fill(4);
+    const visibleCharacter = new Uint8Array(100).fill(5);
+    const target = new Uint8Array(100);
     compositeCharacterWithinAreaLimit(
       target,
       visibleCharacter,
       fullCharacter,
-      20,
       10,
-      0.68
+      5,
+      0.28
     );
     const visibleCount = [...target].filter((pixel) => pixel !== 0).length;
-    expect(visibleCount).toBeGreaterThanOrEqual(65);
-    expect(visibleCount).toBeLessThanOrEqual(68);
+    expect(visibleCount).toBe(28);
   });
 
   it("scans every character fully with uneven per-character timing", () => {

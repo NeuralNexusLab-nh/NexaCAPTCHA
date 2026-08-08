@@ -17,7 +17,7 @@ Try it at [nexacaptcha.zone.id](https://nexacaptcha.zone.id).
 
 NexaCAPTCHA is designed to raise the cost of automated solving. It does not claim that automation is impossible.
 
-The animation begins only after the visitor presses Start. A verification then remains open for one minute, allows three incorrect answers, and applies a five-second input cooldown after each incorrect answer. Starting or replacing a verification has a one-second preparation delay.
+The animation starts automatically after a one-second preparation delay. A verification then remains open for one minute, allows three incorrect answers, and applies a five-second input cooldown after each incorrect answer. Replacing a verification uses the same one-second preparation delay.
 
 ## Add it to your site
 
@@ -134,7 +134,7 @@ For Zeabur, create a service from this repository and choose the native Node.js 
 npm run check
 ```
 
-The release budget is 0.25 vCPU, 100 MB RAM, and 10 GB storage. The current store supports one application instance. Restarting the service invalidates unfinished CAPTCHA sessions.
+The release budget is 0.25 vCPU, 200 MB RAM, and 10 GB storage. The current store supports one application instance. Restarting the service invalidates unfinished CAPTCHA sessions.
 
 Read [SECURITY.md](SECURITY.md) before production use.
 

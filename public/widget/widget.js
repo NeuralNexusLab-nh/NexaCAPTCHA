@@ -85,24 +85,6 @@
     placeholder.append(icon, document.createTextNode(text));
   }
 
-  function showStartPrompt() {
-    image.classList.remove("is-visible");
-    image.removeAttribute("src");
-    placeholder.hidden = false;
-    placeholder.replaceChildren();
-    var startButton = document.createElement("button");
-    startButton.className = "stage-start";
-    startButton.type = "button";
-    var icon = document.createElement("i");
-    icon.className = "fa-solid fa-play";
-    icon.setAttribute("aria-hidden", "true");
-    startButton.append(icon, document.createTextNode("Start animation"));
-    startButton.addEventListener("click", scheduleVerification, { once: true });
-    placeholder.append(startButton);
-    setPill("Ready", "fa-play", "");
-    setMessage("Press Start. The one-minute timer begins with the animation.", "");
-  }
-
   function armExpiry(expiresAtOrDuration) {
     if (expiryTimer) window.clearTimeout(expiryTimer);
     var durationMs = typeof expiresAtOrDuration === "string"
@@ -331,5 +313,5 @@
 
   busy = false;
   updateControls();
-  showStartPrompt();
+  scheduleVerification();
 })();
