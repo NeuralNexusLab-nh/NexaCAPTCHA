@@ -10,13 +10,16 @@ describe("NexaCAPTCHA HTTP API", () => {
   let directory: string;
   let store: VerificationStore;
   let app: ReturnType<typeof createApp>;
+  let now: number;
 
   beforeEach(async () => {
     directory = await mkdtemp(path.join(tmpdir(), "nexacaptcha-api-"));
+    now = 1_700_000_000_000;
     store = new VerificationStore({
       answerFactory: () => "NEXA",
       renderer: () => Buffer.from("GIF89a", "ascii"),
-      mediaDirectory: directory
+      mediaDirectory: directory,
+      clock: () => now
     });
     await store.start();
     app = createApp(store);
@@ -31,7 +34,7 @@ describe("NexaCAPTCHA HTTP API", () => {
     const created = await request(app).post("/api/verifications").send({}).expect(201);
     expect(created.body.verificationId).toMatch(/^ver_[A-Za-z0-9_-]{12}$/);
     expect(created.body.verificationId).toHaveLength(16);
-    expect(created.body.expiresInMs).toBe(60_000);
+    expect(created.body.expiresInMs).toBe(120_000);
 
     await request(app)
       .get(created.body.animationUrl)
@@ -77,6 +80,56 @@ describe("NexaCAPTCHA HTTP API", () => {
     expect(widget.headers["content-security-policy"]).toContain("frame-ancestors *");
     expect(widget.headers["x-frame-options"]).toBeUndefined();
     expect(widget.headers["cross-origin-opener-policy"]).toBe("unsafe-none");
+  });
+
+  it("enforces cooldown, attempt exhaustion, and expiry through the API", async () => {
+    const created = await request(app).post("/api/verifications").send({}).expect(201);
+    const answerUrl = `/api/verifications/${created.body.verificationId}/answer`;
+    await request(app).get(created.body.animationUrl).expect(200);
+
+    await request(app)
+      .post(answerUrl)
+      .send({ answer: "WRNG" })
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.attemptsRemaining).toBe(2);
+        expect(body.retryAfterSeconds).toBe(10);
+      });
+
+    await request(app)
+      .post(answerUrl)
+      .send({ answer: "NEXA" })
+      .expect(429)
+      .expect(({ body }) => expect(body.errorCode).toBe("answer-cooldown"));
+
+    now += 10_000;
+    await request(app)
+      .post(answerUrl)
+      .send({ answer: "WRNG" })
+      .expect(200)
+      .expect(({ body }) => expect(body.attemptsRemaining).toBe(1));
+
+    now += 10_000;
+    await request(app)
+      .post(answerUrl)
+      .send({ answer: "WRNG" })
+      .expect(200)
+      .expect(({ body }) => expect(body.status).toBe("verification_failed"));
+
+    await request(app)
+      .post(answerUrl)
+      .send({ answer: "NEXA" })
+      .expect(410)
+      .expect(({ body }) => expect(body.errorCode).toBe("verification-expired"));
+
+    const expiring = await request(app).post("/api/verifications").send({}).expect(201);
+    await request(app).get(expiring.body.animationUrl).expect(200);
+    now += 120_001;
+    await request(app)
+      .post(`/api/verifications/${expiring.body.verificationId}/answer`)
+      .send({ answer: "NEXA" })
+      .expect(410)
+      .expect(({ body }) => expect(body.errorCode).toBe("verification-expired"));
   });
 
   it("serves only the unversioned public loader and API routes", async () => {

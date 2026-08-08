@@ -2,9 +2,9 @@ import path from "node:path";
 
 export const config = Object.freeze({
   port: Number.parseInt(process.env.PORT ?? "3000", 10),
-  verificationLifetimeMs: 60_000,
+  verificationLifetimeMs: 120_000,
   responseLifetimeMs: 300_000,
-  retryCooldownMs: 5_000,
+  retryCooldownMs: 10_000,
   maxAttempts: 3,
   maxActiveVerifications: 160,
   maxRenderQueue: 6,

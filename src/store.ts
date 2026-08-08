@@ -202,7 +202,7 @@ export class VerificationStore {
       record.attemptsUsed += 1;
       const attemptsRemaining = config.maxAttempts - record.attemptsUsed;
       if (attemptsRemaining <= 0) {
-        record.status = "failed";
+        record.status = "expired";
         return { success: false, status: "verification_failed", attemptsRemaining: 0 };
       }
       record.retryAvailableAt = now + config.retryCooldownMs;

@@ -41,34 +41,34 @@ describe("VerificationStore", () => {
     expect(normalizeAnswer("  ne xa ")).toBe("NEXA");
   });
 
-  it("enforces three attempts with a five-second cooldown", async () => {
+  it("enforces three attempts with a ten-second cooldown", async () => {
     const verification = await store.create();
     store.getMediaPath(verification.verificationId);
     expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
       success: false,
       status: "incorrect",
       attemptsRemaining: 2,
-      retryAfterSeconds: 5
+      retryAfterSeconds: 10
     });
     expect(
       publicErrorCode(() => store.submitAnswer(verification.verificationId, "WRNG"))
     ).toBe("answer-cooldown");
-    now += 5_000;
+    now += 10_000;
     expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
       success: false,
       status: "incorrect",
       attemptsRemaining: 1,
-      retryAfterSeconds: 5
+      retryAfterSeconds: 10
     });
-    now += 5_000;
+    now += 10_000;
     expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
       success: false,
       status: "verification_failed",
       attemptsRemaining: 0
     });
-    expect(() => store.submitAnswer(verification.verificationId, "NEXA")).toThrowError(
-      PublicError
-    );
+    expect(
+      publicErrorCode(() => store.submitAnswer(verification.verificationId, "NEXA"))
+    ).toBe("verification-expired");
   });
 
   it("returns a 64-character token and consumes it once", async () => {
@@ -98,21 +98,34 @@ describe("VerificationStore", () => {
     expect(store.verify(second.verificationId, completion.responseToken).success).toBe(false);
   });
 
-  it("starts the one-minute lifetime when animation playback is requested", async () => {
+  it("starts the two-minute lifetime when animation playback is requested", async () => {
     const verification = await store.create();
     expect(
       publicErrorCode(() => store.submitAnswer(verification.verificationId, "NEXA"))
     ).toBe("verification-not-started");
 
     store.getMediaPath(verification.verificationId);
-    now += 59_999;
+    now += 119_999;
     expect(store.submitAnswer(verification.verificationId, "NEXA").success).toBe(true);
 
     const expired = await store.create();
     store.getMediaPath(expired.verificationId);
-    now += 60_001;
+    now += 120_001;
     expect(
       publicErrorCode(() => store.submitAnswer(expired.verificationId, "NEXA"))
     ).toBe("verification-expired");
+  });
+
+  it("rejects an expired response token", async () => {
+    const verification = await store.create();
+    store.getMediaPath(verification.verificationId);
+    const completion = store.submitAnswer(verification.verificationId, "NEXA");
+    if (!completion.success) throw new Error("Expected successful completion.");
+
+    now += 300_001;
+    expect(store.verify(verification.verificationId, completion.responseToken)).toEqual({
+      success: false,
+      errorCode: "invalid-or-expired-verification"
+    });
   });
 });

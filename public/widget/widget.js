@@ -93,7 +93,7 @@
       coolingDown = false;
       updateControls();
       setPill("Expired", "fa-clock", "is-error");
-      setMessage("This verification expired after one minute. Request a new one.", "is-error");
+      setMessage("This verification expired after two minutes. Request a new one.", "is-error");
       sendResult({ success: false, verificationId: null, responseToken: null });
     }, Math.max(0, durationMs));
   }
@@ -170,7 +170,7 @@
         setPill("Playing", "fa-eye", "");
         setMessage("Follow the reveal, then enter all four characters.", "");
         updateControls();
-        armExpiry(Math.max(1_000, (result.expiresInMs || 60_000) - 1_000));
+        armExpiry(Math.max(1_000, (result.expiresInMs || 120_000) - 1_000));
         void fetch(
           "/api/verifications/" + encodeURIComponent(playbackVerificationId) + "/status",
           { cache: "no-store" }
@@ -254,7 +254,7 @@
         setMessage("Three incorrect answers ended this verification.", "is-error");
         updateControls();
       } else {
-        startCooldown(result.retryAfterSeconds || 5);
+        startCooldown(result.retryAfterSeconds || 10);
       }
     } catch (error) {
       busy = false;
@@ -263,10 +263,10 @@
         clearTimers();
         currentVerificationId = null;
         setPill("Expired", "fa-clock", "is-error");
-        setMessage("This verification expired after one minute. Request a new one.", "is-error");
+        setMessage("This verification expired after two minutes. Request a new one.", "is-error");
         updateControls();
       } else if (code.includes("answer-cooldown")) {
-        startCooldown(5);
+        startCooldown(10);
       } else {
         setPill("Error", "fa-circle-exclamation", "is-error");
         setMessage("Verification could not be completed. Try again.", "is-error");
