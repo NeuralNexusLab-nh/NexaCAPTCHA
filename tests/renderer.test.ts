@@ -4,6 +4,7 @@ import {
   createDistinctColorIndices,
   createRevealSegments,
   estimateGlyphVisibility,
+  reduceGlyphVisibility,
   revealStateForFrame,
   renderVerificationAnimation
 } from "../src/renderer.js";
@@ -45,7 +46,7 @@ describe("verification animation", () => {
     expect(totalCentiseconds).toBeLessThanOrEqual(1800);
   });
 
-  it("limits a frame to one small stroke or corner", () => {
+  it("limits a frame to the reduced visible area", () => {
     const fullCharacter = new Uint8Array(100).fill(4);
     const visibleCharacter = new Uint8Array(100).fill(5);
     const target = new Uint8Array(100);
@@ -55,10 +56,10 @@ describe("verification animation", () => {
       fullCharacter,
       10,
       5,
-      0.4
+      0.2
     );
     const visibleCount = [...target].filter((pixel) => pixel !== 0).length;
-    expect(visibleCount).toBe(40);
+    expect(visibleCount).toBe(20);
   });
 
   it("adapts the visible area to about one stroke and one corner", () => {
@@ -74,6 +75,12 @@ describe("verification animation", () => {
       expect(estimate.visibleRatio).toBeLessThanOrEqual(0.56);
     }
     expect(curved.visibleRatio).toBeGreaterThan(simple.visibleRatio);
+  });
+
+  it("reduces the estimated stroke area to 40-50 percent of its former size", () => {
+    expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.136);
+    expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.28);
+    expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.225);
   });
 
   it("scans every character fully with uneven per-character timing", () => {

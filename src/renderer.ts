@@ -172,6 +172,14 @@ export function estimateGlyphVisibility(paths: Point[][]): GlyphVisibilityEstima
   };
 }
 
+export function reduceGlyphVisibility(
+  estimatedVisibleRatio: number,
+  randomValue: number
+): number {
+  const reduction = 0.4 + Math.min(1, Math.max(0, randomValue)) * 0.1;
+  return Math.min(0.29, Math.max(0.13, estimatedVisibleRatio * reduction));
+}
+
 function horizontalDrift(
   motionProfile: MotionProfile,
   frameProgress: number
@@ -436,7 +444,7 @@ export function compositeCharacterWithinAreaLimit(
   }
 
   const visiblePixelLimit = Math.floor(
-    fullPixelCount * Math.min(0.58, Math.max(0.3, maximumVisibleRatio))
+    fullPixelCount * Math.min(0.3, Math.max(0.12, maximumVisibleRatio))
   );
   if (visibleIndices.length > visiblePixelLimit) {
     visibleIndices.sort((left, right) => {
@@ -536,7 +544,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
   const partialRevealWidth = 25.5 + random() * 4.8;
   const maximumVisibleRatios = glyphs.map((glyph) => {
     const estimate = estimateGlyphVisibility(glyph.paths);
-    return Math.min(0.58, Math.max(0.32, estimate.visibleRatio + (random() - 0.5) * 0.035));
+    return reduceGlyphVisibility(estimate.visibleRatio, random());
   });
   const revealShapeProfile: RevealShapeProfile = {
     phase: random() * Math.PI * 2,
@@ -663,7 +671,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
         fullCharacter,
         width,
         revealCenter,
-        maximumVisibleRatios[characterIndex] ?? 0.42
+        maximumVisibleRatios[characterIndex] ?? 0.2
       );
     });
 
