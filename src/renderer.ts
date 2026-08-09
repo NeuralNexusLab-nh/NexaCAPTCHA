@@ -483,18 +483,12 @@ export function createRevealSegments(
   characterSpacing: number,
   random: () => number
 ): RevealSegment[] {
-  const initialOrder = Array.from({ length: glyphCount }, (_value, index) => index);
-  const revisitOrder = [...initialOrder];
-  for (let index = revisitOrder.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(random() * (index + 1));
-    [revisitOrder[index], revisitOrder[swapIndex]] = [
-      revisitOrder[swapIndex]!,
-      revisitOrder[index]!
-    ];
-  }
-  const visitOrder = [...initialOrder, ...revisitOrder];
+  // A single ordered pass avoids the former shuffled revisit, which could
+  // relocate the reveal window two or three characters in only a few frames.
+  // The former two visits are merged into one longer dwell per character.
+  const visitOrder = Array.from({ length: glyphCount }, (_value, index) => index);
   const visitCount = visitOrder.length;
-  const minimumDwellFrames = 31;
+  const minimumDwellFrames = 62;
   const dwellFrames = Array.from(
     { length: visitCount },
     () => minimumDwellFrames
@@ -508,7 +502,7 @@ export function createRevealSegments(
   const dwellWeights = dwellFrames.map(() => 0.85 + random() * 0.3);
   const transitionWeights = transitionFrames.map(() => 0.08 + random() * 0.06);
   const weights = [...dwellWeights, ...transitionWeights];
-  const maximumDwellFrames = 48;
+  const maximumDwellFrames = 96;
   const minimumFrames =
     visitCount * minimumDwellFrames + transitionCount * minimumTransitionFrames;
   const extraFrames = Math.max(0, frames - minimumFrames);
@@ -539,7 +533,9 @@ export function createRevealSegments(
   }
 
   const segments: RevealSegment[] = [];
-  const scanRadius = 50;
+  // Half the 62px character spacing keeps adjacent scan endpoints touching,
+  // so ordinary character transitions remain spatially continuous.
+  const scanRadius = characterSpacing / 2;
   let currentX = textStart - scanRadius - 18;
   for (let visitIndex = 0; visitIndex < visitCount; visitIndex += 1) {
     const characterIndex = visitOrder[visitIndex] ?? 0;

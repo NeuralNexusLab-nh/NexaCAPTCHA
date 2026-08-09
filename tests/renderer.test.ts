@@ -108,27 +108,33 @@ describe("verification animation", () => {
     };
     const segments = createRevealSegments(4, 325, 66, 62, random);
     const dwellSegments = segments.filter((segment) => segment.kind === "dwell");
+    const transitionSegments = segments.filter((segment) => segment.kind === "transition");
     expect(segments.reduce((total, segment) => total + segment.frames, 0)).toBe(325);
-    expect(dwellSegments).toHaveLength(8);
-    expect(dwellSegments.every((segment) => segment.frames >= 31)).toBe(true);
+    expect(dwellSegments).toHaveLength(4);
+    expect(dwellSegments.every((segment) => segment.frames >= 62)).toBe(true);
     for (let characterIndex = 0; characterIndex < 4; characterIndex += 1) {
       expect(
         dwellSegments.filter((segment) => segment.characterIndex === characterIndex)
-      ).toHaveLength(2);
+      ).toHaveLength(1);
     }
-    expect(dwellSegments.every((segment) => segment.toX - segment.fromX === 100)).toBe(
+    expect(dwellSegments.every((segment) => segment.toX - segment.fromX === 62)).toBe(
       true
     );
     const dwellDurations = dwellSegments.map((segment) => segment.frames);
-    expect(Math.max(...dwellDurations)).toBeLessThanOrEqual(48);
+    expect(Math.max(...dwellDurations)).toBeLessThanOrEqual(96);
     expect(new Set(dwellDurations).size).toBeGreaterThan(1);
+    expect(
+      transitionSegments.every(
+        (segment) => Math.abs(segment.toX - segment.fromX) <= 18
+      )
+    ).toBe(true);
   });
 
   it("covers the full character scan without gaps at minimum dwell time", () => {
     for (let phaseStep = 0; phaseStep < 16; phaseStep += 1) {
       const segment = {
         kind: "dwell" as const,
-        frames: 31,
+        frames: 62,
         fromX: 0,
         toX: 100,
         phase: (phaseStep / 16) * Math.PI * 2,
@@ -143,7 +149,7 @@ describe("verification animation", () => {
       );
       expect(centers[0]).toBeLessThanOrEqual(9);
       expect(centers.at(-1)).toBeGreaterThanOrEqual(91);
-      expect(maximumGap).toBeLessThan(9);
+      expect(maximumGap).toBeLessThan(5);
     }
   });
 
