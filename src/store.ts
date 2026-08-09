@@ -10,7 +10,10 @@ import path from "node:path";
 import { config } from "./config.js";
 import { PublicError } from "./errors.js";
 import { RenderQueue } from "./render-queue.js";
-import { renderVerificationAnimation } from "./renderer.js";
+import {
+  renderVerificationAnimationWithMetadata,
+  type RenderedVerificationAnimation
+} from "./renderer.js";
 
 export type VerificationStatus =
   | "pending"
@@ -37,6 +40,7 @@ interface VerificationRecord {
 export interface PublicVerification {
   verificationId: string;
   animationUrl: string;
+  animationDurationMs: number;
   expiresInMs: number;
 }
 
@@ -110,14 +114,21 @@ export class VerificationStore {
   private readonly runtimeSecret = randomBytes(32);
   private readonly renderQueue = new RenderQueue(config.maxRenderQueue);
   private readonly answerFactory: () => string;
-  private readonly renderer: (answer: string) => Buffer;
+  private readonly renderer: (answer: string) => RenderedVerificationAnimation;
   private readonly mediaDirectory: string;
   private readonly clock: () => number;
   private cleanupTimer?: NodeJS.Timeout;
 
   constructor(options: VerificationStoreOptions = {}) {
     this.answerFactory = options.answerFactory ?? generateAnswer;
-    this.renderer = options.renderer ?? renderVerificationAnimation;
+    this.renderer = options.renderer
+      ? (answer) => ({
+          buffer: options.renderer!(answer),
+          durationMs:
+            Math.round((config.animation.minFrames + config.animation.maxFrames) / 2) *
+            config.animation.delayMs
+        })
+      : renderVerificationAnimationWithMetadata;
     this.mediaDirectory = options.mediaDirectory ?? config.mediaDirectory;
     this.clock = options.clock ?? Date.now;
   }
@@ -159,7 +170,7 @@ export class VerificationStore {
     const mediaPath = path.join(this.mediaDirectory, `${verificationId}.gif`);
     const media = await this.renderQueue.run(() => this.renderer(answer));
 
-    await writeFile(mediaPath, media, { flag: "wx" });
+    await writeFile(mediaPath, media.buffer, { flag: "wx" });
     const now = this.clock();
     this.records.set(verificationId, {
       id: verificationId,
@@ -174,6 +185,7 @@ export class VerificationStore {
     return {
       verificationId,
       animationUrl: `/api/verifications/${encodeURIComponent(verificationId)}/animation`,
+      animationDurationMs: media.durationMs,
       expiresInMs: config.verificationLifetimeMs
     };
   }

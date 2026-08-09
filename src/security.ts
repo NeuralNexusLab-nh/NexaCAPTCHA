@@ -24,7 +24,7 @@ const WIDGET_CSP = [
   "script-src 'self'",
   "style-src 'self'",
   "font-src 'self'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data:",
   "connect-src 'self'"
 ].join("; ");
 

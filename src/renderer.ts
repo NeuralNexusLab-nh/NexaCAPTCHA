@@ -659,7 +659,14 @@ export function createDistinctColorIndices(
   return colorIndices.slice(0, glyphCount);
 }
 
-export function renderVerificationAnimation(answer: string): Buffer {
+export interface RenderedVerificationAnimation {
+  buffer: Buffer;
+  durationMs: number;
+}
+
+export function renderVerificationAnimationWithMetadata(
+  answer: string
+): RenderedVerificationAnimation {
   const { width, height, minFrames, maxFrames, delayMs } = config.animation;
   const seed = randomBytes(8);
   const random = createPrng(seed);
@@ -848,5 +855,12 @@ export function renderVerificationAnimation(answer: string): Buffer {
   }
 
   gif.finish();
-  return Buffer.from(gif.bytes());
+  return {
+    buffer: Buffer.from(gif.bytes()),
+    durationMs: frames * delayMs
+  };
+}
+
+export function renderVerificationAnimation(answer: string): Buffer {
+  return renderVerificationAnimationWithMetadata(answer).buffer;
 }

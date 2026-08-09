@@ -40,8 +40,7 @@ body { padding: 6px; }
 .captcha-brand img { display: block; filter: drop-shadow(0 0 9px rgba(22, 135, 255, .38)); }
 
 .status-area,
-.playback-progress,
-.footer-status {
+.playback-progress {
   display: flex;
   align-items: center;
 }
@@ -198,30 +197,10 @@ input:disabled { cursor: not-allowed; opacity: .58; }
   margin-top: 10px;
 }
 
-.footer-status { min-width: 0; gap: 8px; }
-.footer-status p { min-width: 0; overflow-wrap: anywhere; }
-
-.speed-button {
-  flex: 0 0 auto;
-  min-width: 46px;
-  height: 40px;
-  padding: 0 7px;
-  border: 1px solid #31577f;
-  border-radius: 8px;
-  background: #050d18;
-  color: #68baff;
-  cursor: pointer;
-  font: inherit;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.speed-button:hover:not(:disabled) { border-color: #1687ff; background: #071426; }
-.speed-button:focus-visible { outline: 2px solid #1687ff; outline-offset: 2px; }
-.speed-button:disabled { cursor: not-allowed; opacity: .48; }
-
 .captcha-footer p {
+  min-width: 0;
   margin: 0;
+  overflow-wrap: anywhere;
   color: #89a9ca;
   font-size: 12px;
   line-height: 1.4;
@@ -236,9 +215,8 @@ input:disabled { cursor: not-allowed; opacity: .58; }
   .captcha-footer { align-items: flex-start; flex-direction: column; }
   .captcha-brand { flex-wrap: wrap; gap: 9px; }
   .status-area { width: 100%; margin-left: 0; gap: 7px; justify-content: space-between; }
-  .footer-status { width: 100%; }
   .progress-track { width: 58px; }
-  .button, .speed-button { min-height: 44px; }
+  .button { min-height: 44px; }
 }
 
 @media (max-width: 360px) {
@@ -247,7 +225,7 @@ input:disabled { cursor: not-allowed; opacity: .58; }
 }
 
 @media (pointer: coarse) {
-  .button, .speed-button { min-height: 44px; }
+  .button { min-height: 44px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
