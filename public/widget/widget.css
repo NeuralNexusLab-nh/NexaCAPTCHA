@@ -18,7 +18,7 @@ body { padding: 6px; }
   padding: clamp(11px, 3.5vw, 16px);
   overflow: hidden;
   border: 1px solid #31577f;
-  border-radius: 2px;
+  border-radius: 14px;
   background: #07101e;
 }
 
@@ -35,9 +35,8 @@ body { padding: 6px; }
   letter-spacing: -.02em;
 }
 
-.captcha-home { display: inline-flex; align-items: center; gap: 9px; border-radius: 2px; color: inherit; text-decoration: none; }
+.captcha-home { display: inline-flex; align-items: center; gap: 9px; border-radius: 2px; color: inherit; }
 .captcha-home:hover { color: #68baff; }
-.captcha-home:focus-visible { outline: 2px solid #1687ff; outline-offset: 3px; }
 .captcha-brand img { display: block; filter: drop-shadow(0 0 9px rgba(22, 135, 255, .38)); }
 
 .status-pill {
@@ -48,13 +47,13 @@ body { padding: 6px; }
   padding: 4px 8px;
   border: 1px solid #31577f;
   border-radius: 2px;
-  color: #89a9ca;
+  color: #68baff;
   font-size: 11px;
   font-weight: 600;
 }
 
-.status-pill.is-complete { border-color: #1687ff; color: #68baff; }
-.status-pill.is-error { border-color: #b66a66; color: #e7aaa5; }
+.status-pill.is-complete { border-color: #48b978; color: #72dc9b; }
+.status-pill.is-error { border-color: #df5360; color: #ff7b85; }
 
 .verification-stage {
   position: relative;
@@ -92,7 +91,7 @@ body { padding: 6px; }
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #89a9ca;
+  color: #68baff;
   font-size: 13px;
 }
 
@@ -169,11 +168,11 @@ input:disabled { cursor: not-allowed; opacity: .58; }
   line-height: 1.4;
 }
 
-.captcha-footer p.is-error { color: #e7aaa5; }
-.captcha-footer p.is-success { color: #68baff; }
+.captcha-footer p.is-error { color: #ff7b85; }
+.captcha-footer p.is-success { color: #72dc9b; }
 
 @media (max-width: 430px) {
-  .captcha-shell { border-radius: 2px; }
+  .captcha-shell { border-radius: 12px; }
   .verification-stage { margin-block: 11px; }
   .captcha-footer { align-items: flex-start; flex-direction: column; }
 }

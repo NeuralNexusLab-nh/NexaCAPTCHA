@@ -102,7 +102,7 @@
     var remaining = Math.max(1, Math.ceil(seconds));
     coolingDown = true;
     updateControls();
-    setPill("Wait", "fa-hourglass-half", "is-error");
+    setPill("Wait", "fa-hourglass-half", "");
 
     function renderCooldown() {
       setMessage(
