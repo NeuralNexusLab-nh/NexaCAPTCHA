@@ -23,12 +23,6 @@
   var stage = document.getElementById("verification-stage");
   var message = document.getElementById("status-message");
   var pill = document.getElementById("status-pill");
-  var progressPercent = document.getElementById("progress-percent");
-  var progressTrack = document.getElementById("progress-track");
-  var progressMarker = document.getElementById("progress-marker");
-  var playbackDurationMs = 0;
-  var playbackStartedAt = 0;
-  var progressTimer = null;
   var currentVerificationId = null;
   var expiryTimer = null;
   var cooldownTimer = null;
@@ -78,37 +72,6 @@
     if (cooldownTimer) window.clearInterval(cooldownTimer);
     expiryTimer = null;
     cooldownTimer = null;
-  }
-
-  function setProgress(value) {
-    var normalized = Math.min(100, Math.max(0, value));
-    var rounded = Math.floor(normalized);
-    progressPercent.textContent = rounded + "%";
-    progressTrack.setAttribute("aria-valuenow", String(rounded));
-    progressMarker.style.left = normalized + "%";
-  }
-
-  function stopProgress() {
-    if (progressTimer) window.clearInterval(progressTimer);
-    progressTimer = null;
-  }
-
-  function startProgress(durationMs) {
-    stopProgress();
-    playbackDurationMs = Math.max(1, durationMs);
-    playbackStartedAt = performance.now();
-    setProgress(0);
-    progressTimer = window.setInterval(function () {
-      var elapsed = performance.now() - playbackStartedAt;
-      setProgress((elapsed % playbackDurationMs) / playbackDurationMs * 100);
-    }, 100);
-  }
-
-  function resetPlaybackProgress() {
-    stopProgress();
-    playbackDurationMs = 0;
-    playbackStartedAt = 0;
-    setProgress(0);
   }
 
   function showLoadingPlaceholder(text) {
@@ -172,7 +135,6 @@
     clearTimers();
     image.onload = null;
     image.onerror = null;
-    resetPlaybackProgress();
     completed = false;
     coolingDown = false;
     currentVerificationId = null;
@@ -205,7 +167,6 @@
       currentVerificationId = result.verificationId;
       image.onload = function () {
         var playbackVerificationId = currentVerificationId;
-        startProgress(result.animationDurationMs || 32_500);
         placeholder.hidden = true;
         image.classList.add("is-visible");
         busy = false;
@@ -239,7 +200,6 @@
     } catch (_) {
       currentVerificationId = null;
       busy = false;
-      resetPlaybackProgress();
       setPill("Offline", "fa-triangle-exclamation", "is-error");
       setMessage("Unable to reach NexaCAPTCHA. Try again.", "is-error");
       updateControls();
@@ -329,10 +289,6 @@
     if (!data || data.namespace !== "NexaCAPTCHA" || data.widgetId !== widgetId) return;
     if (data.type === "reset") scheduleVerification();
   });
-  window.addEventListener("beforeunload", function () {
-    stopProgress();
-  });
-
   if (window.ResizeObserver) {
     new ResizeObserver(function () {
       send("resize", { height: document.documentElement.scrollHeight + 12 });

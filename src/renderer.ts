@@ -258,8 +258,8 @@ export function reduceGlyphVisibility(
   estimatedVisibleRatio: number,
   randomValue: number
 ): number {
-  const reduction = 0.57 + Math.min(1, Math.max(0, randomValue)) * 0.11;
-  return Math.min(0.39, Math.max(0.19, estimatedVisibleRatio * reduction));
+  const reduction = 0.55 + Math.min(1, Math.max(0, randomValue)) * 0.09;
+  return Math.min(0.36, Math.max(0.18, estimatedVisibleRatio * reduction));
 }
 
 function horizontalDrift(
@@ -590,7 +590,7 @@ export function compositeCharacterWithinAreaLimit(
   }
 
   const visiblePixelLimit = Math.floor(
-    fullPixelCount * Math.min(0.4, Math.max(0.065, maximumVisibleRatio))
+    fullPixelCount * Math.min(0.37, Math.max(0.065, maximumVisibleRatio))
   );
   if (visibleIndices.length > visiblePixelLimit) {
     visibleIndices.sort((left, right) => {
@@ -658,15 +658,10 @@ export function createDistinctColorIndices(
   return colorIndices.slice(0, glyphCount);
 }
 
-export interface RenderedVerificationAnimation {
-  buffer: Buffer;
-  durationMs: number;
-}
-
-export function renderVerificationAnimationWithMetadata(
+function renderVerificationAnimationAttempt(
   answer: string,
   renderAttempt = 0
-): RenderedVerificationAnimation {
+): Buffer {
   const { width, height, minFrames, maxFrames, delayMs } = config.animation;
   const seed = randomBytes(8);
   const random = createPrng(seed);
@@ -695,7 +690,7 @@ export function renderVerificationAnimationWithMetadata(
     jitterPhase: random() * Math.PI * 2,
     colorIndex: colorIndices[characterIndex] ?? 4
   }));
-  const partialRevealWidth = 32 + random() * 5;
+  const partialRevealWidth = 29 + random() * 4;
   const maximumVisibleRatios = glyphs.map((glyph) => {
     const estimate = estimateGlyphVisibility(glyph.paths);
     return reduceGlyphVisibility(estimate.visibleRatio, random());
@@ -871,16 +866,13 @@ export function renderVerificationAnimationWithMetadata(
   gif.finish();
   if (containsBlankFrame) {
     if (renderAttempt < 2) {
-      return renderVerificationAnimationWithMetadata(answer, renderAttempt + 1);
+      return renderVerificationAnimationAttempt(answer, renderAttempt + 1);
     }
     throw new Error("CAPTCHA rendering produced a blank frame after three attempts.");
   }
-  return {
-    buffer: Buffer.from(gif.bytes()),
-    durationMs: frames * delayMs
-  };
+  return Buffer.from(gif.bytes());
 }
 
 export function renderVerificationAnimation(answer: string): Buffer {
-  return renderVerificationAnimationWithMetadata(answer).buffer;
+  return renderVerificationAnimationAttempt(answer);
 }

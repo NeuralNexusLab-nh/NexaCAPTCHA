@@ -15,9 +15,9 @@ export const config = Object.freeze({
   animation: {
     width: 320,
     height: 116,
-    minFrames: 196,
-    maxFrames: 259,
-    delayMs: 100
+    minFrames: 167,
+    maxFrames: 233,
+    delayMs: 30
   }
 });
 

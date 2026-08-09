@@ -40,14 +40,14 @@ describe("verification animation", () => {
     expect(colors.every((color) => color >= 2 && color <= 6)).toBe(true);
   });
 
-  it("randomizes playback between 19.6 and 25.9 seconds", () => {
+  it("randomizes playback between 5.01 and 6.99 seconds", () => {
     const delays = frameDelays(renderVerificationAnimation("N3XA"));
-    expect(delays.length).toBeGreaterThanOrEqual(196);
-    expect(delays.length).toBeLessThanOrEqual(259);
-    expect(delays.every((delay) => delay === 10)).toBe(true);
+    expect(delays.length).toBeGreaterThanOrEqual(167);
+    expect(delays.length).toBeLessThanOrEqual(233);
+    expect(delays.every((delay) => delay === 3)).toBe(true);
     const totalCentiseconds = delays.reduce((total, delay) => total + delay, 0);
-    expect(totalCentiseconds).toBeGreaterThanOrEqual(1960);
-    expect(totalCentiseconds).toBeLessThanOrEqual(2590);
+    expect(totalCentiseconds).toBeGreaterThanOrEqual(501);
+    expect(totalCentiseconds).toBeLessThanOrEqual(699);
   });
 
   it("limits a frame to the reduced visible area", () => {
@@ -83,9 +83,9 @@ describe("verification animation", () => {
   });
 
   it("keeps the enlarged visible area within the readability range", () => {
-    expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.1938);
-    expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.3808);
-    expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.3125);
+    expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.187);
+    expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.3584);
+    expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.2975);
   });
 
   it("shrinks frames around distinctive joined strokes", () => {
