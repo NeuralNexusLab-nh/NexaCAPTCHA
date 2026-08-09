@@ -3,46 +3,46 @@
 
   var translations = {
     en: {
-      skip: "Skip to content", languageLabel: "Language", navTop: "Home", navFeatures: "Features", navExperiment: "Experiment", navSetup: "Setup", navVerify: "Check the result",
-      heroEyebrow: "BUILT FOR PEOPLE. COSTLY FOR BOTS.", heroTitle: "Simple for people. Expensive to automate.", heroLead: "NexaCAPTCHA helps legitimate users verify quickly while reducing automated success rates and raising the cost of repeated solving attempts.",
-      tryIt: "Try it", addToSite: "Add to your site", noCleanFrame: "Designed for human readability", changingMotion: "Lower automated success rates", higherCost: "Higher solving cost at scale",
-      liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA", ready: "Ready", demoHelp: "Follow the moving window, then enter all four characters.", demoOutput: "Your result will appear here.",
-      featuresEyebrow: "FEATURES", featuresTitle: "Why use NexaCAPTCHA?", featuresLead: "Random distortion, independent movement, and incomplete display force automated solvers to do far more work for every answer.",
-      experimentEyebrow: "VERIFICATION TEST", experimentTitle: "Fast for people. Expensive for AI.", experimentLead: "Average completion results for people and GPT 5.6 Sol - Medium across three verification systems.", experimentVersion: "Tested build", experimentHumanLabel: "Human", verificationSystem: "Verification system", secondsAverage: "seconds average", successRate: "success rate", experimentNote: "A documented verification test of the tested build. Results describe these runs and are not a security guarantee.",
-      featureIncompleteTitle: "No complete frame", featureIncompleteBody: "No single frame contains a complete, directly readable character. Only the full animation scans every part.", featureDistortionTitle: "Constant distortion", featureDistortionBody: "Characters keep bending, stretching, rotating, and changing shape.", featureMotionTitle: "Independent movement", featureMotionBody: "Every character moves in its own direction and at its own changing speed.", featureWindowTitle: "An unpredictable window", featureWindowBody: "The visible shape keeps bending and changing while it speeds up, slows down, and moves backward.", featureUniqueTitle: "Different every time", featureUniqueBody: "Animation length, fixed character colors, motion, distortion, and timing change with every CAPTCHA.", featureCostTitle: "Higher solving cost", featureCostBody: "Bots must inspect many frames, track moving fragments, and rebuild the answer instead of reading one image.",
+      skip: "Skip to content", languageLabel: "Language", navTop: "Home", navFeatures: "How it works", navExperiment: "Results", navSetup: "Setup", navVerify: "Check the result",
+      heroEyebrow: "HUMAN CHECKS, WITHOUT THE EASY FRAMES", heroTitleLine1: "Easy to follow", heroTitleLine2: "Hard to fake", heroLead: "People follow four colors. Automated solvers have to track the motion, separate the fragments and rebuild the answer.",
+      tryIt: "Open the demo", addToSite: "Read the setup", noCleanFrame: "Readable in motion", changingMotion: "24.7% model success in our test", higherCost: "Two tries, then it expires",
+      liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA", ready: "Ready", demoHelp: "Follow each color through the animation. Enter the four characters when you're ready.", demoOutput: "Your result will appear here.",
+      featuresEyebrow: "HOW IT WORKS", featuresTitle: "Four colors for people. A reconstruction problem for bots.", featuresLead: "The check is meant to be watched, not frozen. People keep track of each color; a solver has to piece changing fragments together across time.",
+      experimentEyebrow: "VERIFICATION TEST", experimentTitle: "What we saw in testing", experimentLead: "We timed people and GPT 5.6 Sol - Medium on three verification systems. These are the averages from those runs.", experimentVersion: "Tested build", experimentHumanLabel: "Human", verificationSystem: "Verification system", secondsAverage: "seconds average", successRate: "success rate", experimentNote: "This is a recorded test, not a promise that every model or every run will behave the same way.",
+      featureIncompleteTitle: "No lucky screenshot", featureIncompleteBody: "A single frame never gives away a whole character. It only makes sense after you follow it for a moment.", featureDistortionTitle: "More than one thing moves", featureDistortionBody: "At least two characters stay active, so there is no tidy one-by-one sequence to collect.", featureMotionTitle: "Color keeps your place", featureMotionBody: "Each character keeps its own color, giving people a steady cue even when paths cross.", featureWindowTitle: "The pieces do not line up", featureWindowBody: "Visible fragments shift in position, angle and scale. Simple frame stacking leaves a messy result.", featureUniqueTitle: "Hard shapes stay split", featureUniqueBody: "Long strokes and closed loops appear in separate stages instead of revealing the shape at once.", featureCostTitle: "Different every run", featureCostBody: "Timing, paths and presentation are generated again for every verification.",
       setupEyebrow: "SETUP", setupTitle: "Add NexaCAPTCHA to your site", setupLead: "Copy these two pieces. No frontend framework is required.",
       loadTitle: "Paste this into your HTML", loadBody: "The Script loads NexaCAPTCHA. The Div chooses where it appears.", sendTitle: "Send the result with your form", sendBody: "Put this in your frontend JavaScript. Replace yourSubmitFunction with your existing submit function.",
       htmlLocation: "HTML · page markup", frontendLocation: "JavaScript · frontend", backendLocation: "Node.js · backend", valuesTitle: "Two values come back", idMeaning: "The ID of the completed CAPTCHA.", tokenMeaning: "Proof that it was completed. It works once.",
       verifyEyebrow: "SERVER CHECK", verifyTitle: "Check it on your server", verifyLead: "Before accepting the form, signup, or login, send both values to NexaCAPTCHA.", request: "Request", successResponse: "Response · success", failureResponse: "Response · failure", important: "Continue only when the response says success: true. A responseToken works once and expires after five minutes.",
-      copy: "Copy", copied: "Copied", copySuccess: "Code copied.", copyFailure: "Could not copy. Select the code manually.", completed: "Verification complete", footerTagline: "Human verification that makes bots work harder."
+      copy: "Copy", copied: "Copied", copySuccess: "Code copied.", copyFailure: "Could not copy. Select the code manually.", completed: "Verification complete", footerTagline: "A CAPTCHA people can follow, not just stare at."
     },
     "zh-Hant": {
-      skip: "跳到主要內容", languageLabel: "語言", navTop: "首頁", navFeatures: "特點", navExperiment: "實驗", navSetup: "串接", navVerify: "檢查結果",
-      heroEyebrow: "為真人設計，讓自動化付出代價", heroTitle: "真人輕鬆通過，自動化更難得逞。", heroLead: "NexaCAPTCHA 讓一般使用者快速完成驗證，同時降低自動化破解的成功率，並大幅提高大量嘗試的時間與運算成本。",
-      tryIt: "立即試用", addToSite: "加入你的網站", noCleanFrame: "兼顧真人可讀性", changingMotion: "降低自動化成功率", higherCost: "提高大量破解成本",
-      liveDemo: "即時示範", tryNexa: "試用 NexaCAPTCHA", ready: "可以開始", demoHelp: "跟著移動窗口閱讀，然後輸入四個字元。", demoOutput: "驗證結果會顯示在這裡。",
-      featuresEyebrow: "特點", featuresTitle: "為什麼使用 NexaCAPTCHA？", featuresLead: "隨機扭曲、獨立移動和不完整顯示，會讓自動破解每個答案都必須付出大幅增加的處理成本。",
-      experimentEyebrow: "驗證測試", experimentTitle: "人類快速完成，AI 付出高昂成本。", experimentLead: "比較人類與 GPT 5.6 Sol - Medium 在三種驗證系統中的平均完成結果。", experimentVersion: "測試版本", experimentHumanLabel: "人類", verificationSystem: "驗證系統", secondsAverage: "秒平均完成", successRate: "成功率", experimentNote: "這是測試版本有紀錄的驗證測試；結果只描述這些測試，不代表安全保證。",
-      featureIncompleteTitle: "沒有完整畫面", featureIncompleteBody: "沒有任何一幀包含完整、可直接讀取的字元；只有看完整段動畫才會掃過所有部分。", featureDistortionTitle: "持續扭曲", featureDistortionBody: "字元會不斷彎曲、拉伸、旋轉和改變形狀。", featureMotionTitle: "各自獨立移動", featureMotionBody: "每個字元都有自己的方向和持續改變的速度。", featureWindowTitle: "難以預測的窗口", featureWindowBody: "可見形狀會持續彎曲和改變，同時加速、減速和倒退。", featureUniqueTitle: "每次都不一樣", featureUniqueBody: "每次 CAPTCHA 的動畫長度、固定字色、移動、扭曲和時機都會改變。", featureCostTitle: "大幅提高破解成本", featureCostBody: "Bot 不能只讀一張圖片，而必須檢查許多畫面、追蹤片段並重組答案。",
+      skip: "跳到主要內容", languageLabel: "語言", navTop: "首頁", navFeatures: "運作方式", navExperiment: "測試結果", navSetup: "串接", navVerify: "檢查結果",
+      heroEyebrow: "不留簡單影格的人機驗證", heroTitleLine1: "人看得懂", heroTitleLine2: "機器沒那麼容易", heroLead: "真人跟著四種顏色就能讀出答案。自動化工具得先追蹤、分組，再把分散的筆畫拼回去。",
+      tryIt: "開啟示範", addToSite: "查看串接方式", noCleanFrame: "跟著動畫就能讀", changingMotion: "測試中模型成功率 24.7%", higherCost: "答錯兩次即失效",
+      liveDemo: "即時示範", tryNexa: "試用 NexaCAPTCHA", ready: "可以開始", demoHelp: "跟著每個顏色看完整段動畫，準備好後輸入四個字元。", demoOutput: "驗證結果會顯示在這裡。",
+      featuresEyebrow: "運作方式", featuresTitle: "真人跟著顏色看，機器得自己拼答案", featuresLead: "這段驗證是拿來看的，不是拿來截圖的。真人能持續追蹤顏色；自動化工具則得跨時間拼回不斷改變的片段。",
+      experimentEyebrow: "驗證測試", experimentTitle: "我們實際測到的結果", experimentLead: "我們讓真人與 GPT 5.6 Sol - Medium 分別完成三種驗證。表格列出這些測試的平均結果。", experimentVersion: "測試版本", experimentHumanLabel: "真人", verificationSystem: "驗證系統", secondsAverage: "秒平均完成", successRate: "成功率", experimentNote: "這是已記錄的測試結果，不代表每個模型、每次執行都會得到相同數字。",
+      featureIncompleteTitle: "沒有一張幸運截圖", featureIncompleteBody: "任何單一影格都不會直接交出完整字元。跟著看一小段時間，字才會在腦中成形。", featureDistortionTitle: "同時不只一個字在動", featureDistortionBody: "畫面中至少會有兩個字元保持活動，不會排好隊讓工具逐字擷取。", featureMotionTitle: "顏色幫你認路", featureMotionBody: "每個字元維持自己的顏色。路徑交錯時，真人仍能知道自己正在追哪一個字。", featureWindowTitle: "片段不會整齊對上", featureWindowBody: "可見部分會改變位置、角度和大小。直接把影格疊起來，只會得到一團混亂。", featureUniqueTitle: "難辨字形拆開出現", featureUniqueBody: "長直線與封閉圓環分成不同階段，不會一次露出整個關鍵結構。", featureCostTitle: "每次重新產生", featureCostBody: "時間、路徑和呈現方式會在每次驗證重新生成。",
       setupEyebrow: "串接", setupTitle: "把 NexaCAPTCHA 加入你的網站", setupLead: "複製下面兩段即可，不需要前端框架。",
       loadTitle: "貼到你的 HTML", loadBody: "Script 載入 NexaCAPTCHA，Div 決定顯示位置。", sendTitle: "和表單一起送出結果", sendBody: "這段放在前端 JavaScript。將 yourSubmitFunction 換成你現有的表單提交函式。",
       htmlLocation: "HTML · 頁面", frontendLocation: "JavaScript · 前端", backendLocation: "Node.js · 後端", valuesTitle: "完成後會取得兩個值", idMeaning: "這次已完成 CAPTCHA 的 ID。", tokenMeaning: "完成驗證的證明，只能使用一次。",
       verifyEyebrow: "伺服器檢查", verifyTitle: "在你的伺服器確認結果", verifyLead: "接受表單、註冊或登入前，把兩個值傳給 NexaCAPTCHA。", request: "輸入", successResponse: "輸出 · 成功", failureResponse: "輸出 · 失敗", important: "只有回傳 success: true 才能繼續。responseToken 只能使用一次，並在五分鐘後失效。",
-      copy: "複製", copied: "已複製", copySuccess: "程式碼已複製。", copyFailure: "無法複製，請手動選取。", completed: "驗證完成", footerTagline: "讓 Bot 必須付出更多成本的人類驗證。"
+      copy: "複製", copied: "已複製", copySuccess: "程式碼已複製。", copyFailure: "無法複製，請手動選取。", completed: "驗證完成", footerTagline: "跟著顏色就能完成的人機驗證。"
     },
     ja: {
-      skip: "メインコンテンツへ移動", languageLabel: "言語", navTop: "ホーム", navFeatures: "特徴", navExperiment: "実験", navSetup: "導入", navVerify: "結果を確認",
-      heroEyebrow: "人にやさしく、自動化には高コスト", heroTitle: "人にはスムーズに。自動化には高い壁を。", heroLead: "NexaCAPTCHA は、正規ユーザーがすばやく認証できる使いやすさを保ちながら、自動解読の成功率を抑え、大量試行にかかるコストを大幅に引き上げます。",
-      tryIt: "試してみる", addToSite: "サイトに追加", noCleanFrame: "人に配慮した読みやすさ", changingMotion: "自動解読の成功率を低減", higherCost: "大規模な解読コストを増大",
-      liveDemo: "ライブデモ", tryNexa: "NexaCAPTCHA を試す", ready: "準備完了", demoHelp: "移動する窓を追い、4文字すべてを入力してください。", demoOutput: "認証結果がここに表示されます。",
-      featuresEyebrow: "特徴", featuresTitle: "NexaCAPTCHA を使う理由", featuresLead: "ランダムな歪み、独立した動き、不完全な表示により、自動解読の処理コストが大幅に増えます。",
-      experimentEyebrow: "検証テスト", experimentTitle: "人には速く、AI には高コスト。", experimentLead: "3種類の認証システムで、人間と GPT 5.6 Sol - Medium の平均完了結果を比較しました。", experimentVersion: "テスト版", experimentHumanLabel: "人間", verificationSystem: "認証システム", secondsAverage: "秒（平均）", successRate: "成功率", experimentNote: "テスト版について記録した検証テストです。結果は今回の試行のみを示し、安全性を保証するものではありません。",
-      featureIncompleteTitle: "完全なフレームなし", featureIncompleteBody: "完全でそのまま読める文字を含むフレームはなく、アニメーション全体ですべての部分を走査します。", featureDistortionTitle: "変化し続ける歪み", featureDistortionBody: "文字は曲がり、伸び、回転し、形を変え続けます。", featureMotionTitle: "独立した動き", featureMotionBody: "各文字は独自の方向と変化する速度で動きます。", featureWindowTitle: "予測しにくい表示窓", featureWindowBody: "表示形状は曲がり続け、加速、減速、後退しながら変化します。", featureUniqueTitle: "毎回異なる", featureUniqueBody: "アニメーション時間、固定文字色、動き、歪み、タイミングが CAPTCHA ごとに変わります。", featureCostTitle: "解読コストを大幅に増加", featureCostBody: "Bot は一枚の画像では足りず、多数の画面を調べ、断片を追跡して答えを再構成します。",
+      skip: "メインコンテンツへ移動", languageLabel: "言語", navTop: "ホーム", navFeatures: "仕組み", navExperiment: "テスト結果", navSetup: "導入", navVerify: "結果を確認",
+      heroEyebrow: "簡単な一枚を残さない本人確認", heroTitleLine1: "人には追いやすく", heroTitleLine2: "自動化には手強く", heroLead: "人は4色を追えば答えを読めます。自動解読には、動きを追跡し、断片を分け、文字を組み直す処理が必要です。",
+      tryIt: "デモを開く", addToSite: "導入方法を見る", noCleanFrame: "動きを追えば読める", changingMotion: "テスト時のモデル成功率 24.7%", higherCost: "2回間違えると失効",
+      liveDemo: "ライブデモ", tryNexa: "NexaCAPTCHA を試す", ready: "準備完了", demoHelp: "色ごとに動きを追い、分かった4文字を入力してください。", demoOutput: "認証結果がここに表示されます。",
+      featuresEyebrow: "仕組み", featuresTitle: "人は色を追い、自動化は断片を組み直す", featuresLead: "この認証は、一枚を止めて読むのではなく、流れを見て解く設計です。人は色を手掛かりにできますが、自動化には時間をまたいだ再構成が必要です。",
+      experimentEyebrow: "検証テスト", experimentTitle: "実際のテスト結果", experimentLead: "人と GPT 5.6 Sol - Medium が3種類の認証を行い、その平均をまとめました。", experimentVersion: "テスト版", experimentHumanLabel: "人", verificationSystem: "認証システム", secondsAverage: "秒（平均）", successRate: "成功率", experimentNote: "記録したテストの結果であり、すべてのモデルや実行で同じ数値になることを保証するものではありません。",
+      featureIncompleteTitle: "一枚だけでは読めない", featureIncompleteBody: "どのフレームにも文字全体は出ません。少しの間、色を追って初めて形が見えてきます。", featureDistortionTitle: "複数の文字が同時に動く", featureDistortionBody: "常に少なくとも2文字が動き、順番に一文字ずつ収集できる流れを作りません。", featureMotionTitle: "色が目印になる", featureMotionBody: "文字ごとに色を保つため、軌跡が交差しても人は追う対象を見失いにくくなります。", featureWindowTitle: "断片がきれいに重ならない", featureWindowBody: "見える位置、角度、大きさが変わり、単純なフレーム合成では形が崩れます。", featureUniqueTitle: "決め手になる形を分割", featureUniqueBody: "長い直線や閉じた輪は別々の段階で現れ、構造を一度に見せません。", featureCostTitle: "毎回作り直す", featureCostBody: "時間、軌跡、見せ方は認証のたびに生成し直されます。",
       setupEyebrow: "導入", setupTitle: "NexaCAPTCHA をサイトに追加", setupLead: "次の二つをコピーするだけです。フロントエンドフレームワークは不要です。",
       loadTitle: "HTML に貼り付ける", loadBody: "Script が NexaCAPTCHA を読み込み、Div が表示位置を決めます。", sendTitle: "フォームと一緒に結果を送る", sendBody: "フロントエンド JavaScript に置き、yourSubmitFunction を既存の送信関数に置き換えます。",
       htmlLocation: "HTML · ページ", frontendLocation: "JavaScript · フロントエンド", backendLocation: "Node.js · バックエンド", valuesTitle: "完了後に二つの値を取得", idMeaning: "完了した CAPTCHA の ID です。", tokenMeaning: "完了した証明で、一度だけ使えます。",
       verifyEyebrow: "サーバー確認", verifyTitle: "サーバーで結果を確認", verifyLead: "フォーム、登録、ログインを受け付ける前に二つの値を NexaCAPTCHA へ送ります。", request: "リクエスト", successResponse: "レスポンス · 成功", failureResponse: "レスポンス · 失敗", important: "success: true の場合だけ続行してください。responseToken は一度だけ使用でき、5分で失効します。",
-      copy: "コピー", copied: "コピー済み", copySuccess: "コードをコピーしました。", copyFailure: "コピーできませんでした。手動で選択してください。", completed: "認証完了", footerTagline: "Bot により多くの処理を要求する人間認証。"
+      copy: "コピー", copied: "コピー済み", copySuccess: "コードをコピーしました。", copyFailure: "コピーできませんでした。手動で選択してください。", completed: "認証完了", footerTagline: "色を追って解く、人のための CAPTCHA。"
     }
   };
 
@@ -85,10 +85,10 @@
       if (key) element.textContent = text(key);
     });
     document.title = language === "zh-Hant"
-      ? "NexaCAPTCHA — 讓人類通過，讓 Bot 付出代價"
+      ? "NexaCAPTCHA — 人看得懂，機器沒那麼容易"
       : language === "ja"
-        ? "NexaCAPTCHA — 人を通す、Bot には代償を"
-        : "NexaCAPTCHA — Let humans through. Make bots pay.";
+        ? "NexaCAPTCHA — 人には追いやすく、自動化には手強く"
+        : "NexaCAPTCHA — Easy to follow. Hard to fake.";
   }
 
   languageSelect.addEventListener("change", function () {
