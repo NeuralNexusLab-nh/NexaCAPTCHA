@@ -2,9 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   compositeCharacterWithinAreaLimit,
   createDistinctColorIndices,
-  fragmentStateForFrame,
-  lineSectionFor,
-  type RenderFrameStats,
+  createRevealSegments,
+  revealStateForFrame,
   renderVerificationAnimation
 } from "../src/renderer.js";
 
@@ -60,48 +59,50 @@ describe("verification animation", () => {
     expect(visibleCount).toBe(40);
   });
 
-  it("keeps all four color tracks active without exposing a near-complete glyph", () => {
-    const stats: RenderFrameStats[] = [];
-    renderVerificationAnimation("B8LZ", {
-      seedBytes: new Uint8Array([9, 7, 5, 3, 2, 1, 8, 6]),
-      onFrame: (frame) => stats.push(frame)
-    });
-
-    expect(stats.length).toBeGreaterThanOrEqual(130);
-    expect(stats.every((frame) => frame.activeCharacterCount >= 2)).toBe(true);
-    expect(
-      stats.every((frame) => frame.visibleRatios.every((ratio) => ratio <= 0.285))
-    ).toBe(true);
+  it("scans every character fully with uneven per-character timing", () => {
+    let state = 0x13579bdf;
+    const random = () => {
+      state = (Math.imul(state, 1_664_525) + 1_013_904_223) >>> 0;
+      return state / 0x1_0000_0000;
+    };
+    const segments = createRevealSegments(4, 165, 66, 62, random);
+    const dwellSegments = segments.filter((segment) => segment.kind === "dwell");
+    expect(segments.reduce((total, segment) => total + segment.frames, 0)).toBe(165);
+    expect(dwellSegments).toHaveLength(8);
+    expect(dwellSegments.every((segment) => segment.frames >= 12)).toBe(true);
     for (let characterIndex = 0; characterIndex < 4; characterIndex += 1) {
       expect(
-        new Set(stats.map((frame) => frame.fragmentStates[characterIndex]?.block)).size
-      ).toBeGreaterThan(8);
+        dwellSegments.filter((segment) => segment.characterIndex === characterIndex)
+      ).toHaveLength(2);
     }
+    expect(dwellSegments.every((segment) => segment.toX - segment.fromX === 100)).toBe(
+      true
+    );
+    const dwellDurations = dwellSegments.map((segment) => segment.frames);
+    expect(Math.max(...dwellDurations)).toBeLessThanOrEqual(18);
+    expect(new Set(dwellDurations).size).toBeGreaterThan(1);
   });
 
-  it("splits straight trunks and closed loops across short time windows", () => {
-    for (const character of "LTZF") {
-      for (let start = 0; start < 130; start += 1) {
-        const states = Array.from({ length: 5 }, (_value, offset) =>
-          fragmentStateForFrame(character, start + offset, 7)
-        );
-        expect(new Set(states.map((state) => state.sliceStage)).size).toBeLessThanOrEqual(2);
-        expect(
-          states.every((state) => {
-            const section = lineSectionFor(character, state.sliceStage);
-            return section.end - section.start < 0.38;
-          })
-        ).toBe(true);
-      }
-    }
-
-    for (const character of "68B") {
-      for (let start = 0; start < 130; start += 1) {
-        const stages = Array.from({ length: 5 }, (_value, offset) =>
-          fragmentStateForFrame(character, start + offset, 11).strokeStage
-        );
-        expect(new Set(stages).size).toBeLessThanOrEqual(2);
-      }
+  it("covers the full character scan without gaps at minimum dwell time", () => {
+    for (let phaseStep = 0; phaseStep < 16; phaseStep += 1) {
+      const segment = {
+        kind: "dwell" as const,
+        frames: 12,
+        fromX: 0,
+        toX: 100,
+        phase: (phaseStep / 16) * Math.PI * 2,
+        backtrackAmplitude: 7,
+        characterIndex: 0
+      };
+      const centers = Array.from({ length: segment.frames }, (_value, frame) =>
+        revealStateForFrame(frame, [segment]).centerX
+      );
+      const maximumGap = Math.max(
+        ...centers.slice(1).map((center, index) => Math.abs(center - (centers[index] ?? 0)))
+      );
+      expect(centers[0]).toBeLessThanOrEqual(9);
+      expect(centers.at(-1)).toBeGreaterThanOrEqual(91);
+      expect(maximumGap).toBeLessThan(18);
     }
   });
 });

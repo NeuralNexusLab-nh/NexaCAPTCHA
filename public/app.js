@@ -5,7 +5,7 @@
     en: {
       skip: "Skip to content", languageLabel: "Language", navTop: "Home", navFeatures: "How it works", navExperiment: "Results", navSetup: "Setup", navVerify: "Check the result",
       heroEyebrow: "HUMAN CHECKS, WITHOUT THE EASY FRAMES", heroTitleLine1: "Easy to follow", heroTitleLine2: "Hard to fake", heroLead: "People follow four colors. Automated solvers have to track the motion, separate the fragments and rebuild the answer.",
-      tryIt: "Open the demo", addToSite: "Read the setup", noCleanFrame: "Readable in motion", changingMotion: "24.7% model success in our test", higherCost: "Two tries, then it expires",
+      tryIt: "Open the demo", addToSite: "Read the setup", noCleanFrame: "Readable in motion", changingMotion: "45.8% model success in our test", higherCost: "Two tries, then it expires",
       liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA", ready: "Ready", demoHelp: "Follow each color through the animation. Enter the four characters when you're ready.", demoOutput: "Your result will appear here.",
       featuresEyebrow: "HOW IT WORKS", featuresTitle: "Four colors for people. A reconstruction problem for bots.", featuresLead: "The check is meant to be watched, not frozen. People keep track of each color; a solver has to piece changing fragments together across time.",
       experimentEyebrow: "VERIFICATION TEST", experimentTitle: "What we saw in testing", experimentLead: "We timed people and GPT 5.6 Sol - Medium on three verification systems. These are the averages from those runs.", experimentVersion: "Tested build", experimentHumanLabel: "Human", verificationSystem: "Verification system", secondsAverage: "seconds average", successRate: "success rate", experimentNote: "This is a recorded test, not a promise that every model or every run will behave the same way.",
@@ -19,7 +19,7 @@
     "zh-Hant": {
       skip: "跳到主要內容", languageLabel: "語言", navTop: "首頁", navFeatures: "運作方式", navExperiment: "測試結果", navSetup: "串接", navVerify: "檢查結果",
       heroEyebrow: "不留簡單影格的人機驗證", heroTitleLine1: "人看得懂", heroTitleLine2: "機器沒那麼容易", heroLead: "真人跟著四種顏色就能讀出答案。自動化工具得先追蹤、分組，再把分散的筆畫拼回去。",
-      tryIt: "開啟示範", addToSite: "查看串接方式", noCleanFrame: "跟著動畫就能讀", changingMotion: "測試中模型成功率 24.7%", higherCost: "答錯兩次即失效",
+      tryIt: "開啟示範", addToSite: "查看串接方式", noCleanFrame: "跟著動畫就能讀", changingMotion: "測試中模型成功率 45.8%", higherCost: "答錯兩次即失效",
       liveDemo: "即時示範", tryNexa: "試用 NexaCAPTCHA", ready: "可以開始", demoHelp: "跟著每個顏色看完整段動畫，準備好後輸入四個字元。", demoOutput: "驗證結果會顯示在這裡。",
       featuresEyebrow: "運作方式", featuresTitle: "真人跟著顏色看，機器得自己拼答案", featuresLead: "這段驗證是拿來看的，不是拿來截圖的。真人能持續追蹤顏色；自動化工具則得跨時間拼回不斷改變的片段。",
       experimentEyebrow: "驗證測試", experimentTitle: "我們實際測到的結果", experimentLead: "我們讓真人與 GPT 5.6 Sol - Medium 分別完成三種驗證。表格列出這些測試的平均結果。", experimentVersion: "測試版本", experimentHumanLabel: "真人", verificationSystem: "驗證系統", secondsAverage: "秒平均完成", successRate: "成功率", experimentNote: "這是已記錄的測試結果，不代表每個模型、每次執行都會得到相同數字。",
@@ -33,7 +33,7 @@
     ja: {
       skip: "メインコンテンツへ移動", languageLabel: "言語", navTop: "ホーム", navFeatures: "仕組み", navExperiment: "テスト結果", navSetup: "導入", navVerify: "結果を確認",
       heroEyebrow: "簡単な一枚を残さない本人確認", heroTitleLine1: "人には追いやすく", heroTitleLine2: "自動化には手強く", heroLead: "人は4色を追えば答えを読めます。自動解読には、動きを追跡し、断片を分け、文字を組み直す処理が必要です。",
-      tryIt: "デモを開く", addToSite: "導入方法を見る", noCleanFrame: "動きを追えば読める", changingMotion: "テスト時のモデル成功率 24.7%", higherCost: "2回間違えると失効",
+      tryIt: "デモを開く", addToSite: "導入方法を見る", noCleanFrame: "動きを追えば読める", changingMotion: "テスト時のモデル成功率 45.8%", higherCost: "2回間違えると失効",
       liveDemo: "ライブデモ", tryNexa: "NexaCAPTCHA を試す", ready: "準備完了", demoHelp: "色ごとに動きを追い、分かった4文字を入力してください。", demoOutput: "認証結果がここに表示されます。",
       featuresEyebrow: "仕組み", featuresTitle: "人は色を追い、自動化は断片を組み直す", featuresLead: "この認証は、一枚を止めて読むのではなく、流れを見て解く設計です。人は色を手掛かりにできますが、自動化には時間をまたいだ再構成が必要です。",
       experimentEyebrow: "検証テスト", experimentTitle: "実際のテスト結果", experimentLead: "人と GPT 5.6 Sol - Medium が3種類の認証を行い、その平均をまとめました。", experimentVersion: "テスト版", experimentHumanLabel: "人", verificationSystem: "認証システム", secondsAverage: "秒（平均）", successRate: "成功率", experimentNote: "記録したテストの結果であり、すべてのモデルや実行で同じ数値になることを保証するものではありません。",

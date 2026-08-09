@@ -44,30 +44,16 @@ interface MotionProfile {
   jitterCyclesY: number;
   jitterPhase: number;
   colorIndex: number;
-  maskPhase: number;
-  maskCycles: number;
-  stageOffset: number;
-  overlapPhase: number;
-  overlapDirection: number;
 }
 
-export interface FragmentState {
-  block: number;
-  strokeStage: number;
-  strokeStageCount: number;
-  sliceStage: number;
-  sliceCount: number;
-}
-
-export interface RenderFrameStats {
-  activeCharacterCount: number;
-  visibleRatios: number[];
-  fragmentStates: FragmentState[];
-}
-
-export interface RenderOptions {
-  seedBytes?: Uint8Array;
-  onFrame?: (stats: RenderFrameStats) => void;
+export interface RevealSegment {
+  kind: "transition" | "dwell";
+  frames: number;
+  fromX: number;
+  toX: number;
+  phase: number;
+  backtrackAmplitude: number;
+  characterIndex?: number;
 }
 
 interface RevealShapeProfile {
@@ -118,14 +104,9 @@ function horizontalDrift(
   const motion = frameProgress * Math.PI * 2;
   const horizontalMotion =
     motion * motionProfile.horizontalCycles + motionProfile.phaseX;
-  const approach = Math.max(
-    0,
-    Math.sin(motion * 1.35 + motionProfile.overlapPhase)
-  );
   return (
     motionProfile.driftX * Math.sin(horizontalMotion) +
-    2.6 * Math.sin(horizontalMotion * 2 + motionProfile.phaseY) +
-    motionProfile.overlapDirection * 10 * approach * approach
+    2.6 * Math.sin(horizontalMotion * 2 + motionProfile.phaseY)
   );
 }
 
@@ -212,96 +193,13 @@ function drawLine(
   }
 }
 
-function pointBetween(from: Point, to: Point, progress: number): Point {
-  return [
-    from[0] + (to[0] - from[0]) * progress,
-    from[1] + (to[1] - from[1]) * progress
-  ];
-}
-
-function drawLineSection(
-  pixels: Uint8Array,
-  width: number,
-  height: number,
-  from: Point,
-  to: Point,
-  startProgress: number,
-  endProgress: number,
-  thickness: number,
-  color: number,
-  revealMask: RevealMask,
-  characterClipLeft: number,
-  characterClipRight: number
-): void {
-  drawLine(
-    pixels,
-    width,
-    height,
-    pointBetween(from, to, startProgress),
-    pointBetween(from, to, endProgress),
-    thickness,
-    color,
-    revealMask,
-    characterClipLeft,
-    characterClipRight
-  );
-}
-
-function strokeStageCountFor(character: string): number {
-  return "68B".includes(character) ? 4 : 3;
-}
-
-function sliceCountFor(character: string): number {
-  return "LTZF".includes(character) ? 3 : 2;
-}
-
-export function fragmentStateForFrame(
-  character: string,
-  frame: number,
-  stageOffset: number
-): FragmentState {
-  const block = Math.floor((frame + stageOffset) / 6);
-  const strokeStageCount = strokeStageCountFor(character);
-  const sliceCount = sliceCountFor(character);
-  return {
-    block,
-    strokeStage: block % strokeStageCount,
-    strokeStageCount,
-    sliceStage: Math.floor(block / strokeStageCount) % sliceCount,
-    sliceCount
-  };
-}
-
-export function lineSectionFor(
-  character: string,
-  sliceStage: number
-): { start: number; end: number } {
-  const sliceCount = sliceCountFor(character);
-  const overlap = "LTZF".includes(character) ? 0.018 : 0.04;
-  return {
-    start: Math.max(0, sliceStage / sliceCount - overlap),
-    end: Math.min(1, (sliceStage + 1) / sliceCount + overlap)
-  };
-}
-
-function strokeBucket(
-  character: string,
-  pathIndex: number,
-  pointIndex: number,
-  bucketCount: number
-): number {
-  const characterCode = character.charCodeAt(0) || 0;
-  return Math.abs(characterCode + pathIndex * 5 + pointIndex * 7) % bucketCount;
-}
-
 function transformPoint(
   point: Point,
   glyph: Glyph,
   characterIndex: number,
   frameProgress: number,
   baseX: number,
-  motionProfile: MotionProfile,
-  fragmentBlock = 0
+  motionProfile: MotionProfile
 ): Point {
   const glyphWidth = Math.max(1, glyph.maxX - glyph.minX);
   const glyphHeight = Math.max(1, glyph.maxY - glyph.minY);
@@ -318,9 +216,6 @@ function transformPoint(
     normalizedY *
     motionProfile.shearAmplitude *
     Math.sin(distortionMotion * 2 + characterIndex);
-  const fragmentPhase =
-    fragmentBlock * 1.618 + motionProfile.phaseDistortion * 0.7;
-  const fragmentScale = 1 + 0.065 * Math.sin(fragmentPhase);
   const localX =
     normalizedX * 40 * scaleX + wave * motionProfile.waveAmplitude + shear;
   // Hershey paths use an upward Y axis; browser pixels use a downward Y axis.
@@ -329,9 +224,8 @@ function transformPoint(
     Math.sin(normalizedX * 6 + distortionMotion) * motionProfile.waveAmplitude * 0.55;
   const rotation =
     (Math.PI / 180) *
-    (motionProfile.rotationDegrees *
-      Math.sin(distortionMotion + characterIndex * 0.7) +
-      4.5 * Math.sin(fragmentPhase));
+    motionProfile.rotationDegrees *
+    Math.sin(distortionMotion + characterIndex * 0.7);
   const cosine = Math.cos(rotation);
   const sine = Math.sin(rotation);
   const floatX = horizontalDrift(motionProfile, frameProgress);
@@ -346,19 +240,109 @@ function transformPoint(
     Math.cos(motion * motionProfile.jitterCyclesY + motionProfile.jitterPhase * 1.3);
 
   return [
-    baseX +
-      localX * fragmentScale * cosine -
-      localY * sine +
-      floatX +
-      jitterX +
-      4.5 * Math.sin(fragmentPhase * 1.3),
-    config.animation.height / 2 +
-      localX * sine +
-      localY * fragmentScale * cosine +
-      floatY +
-      jitterY +
-      3.5 * Math.cos(fragmentPhase * 1.1)
+    baseX + localX * cosine - localY * sine + floatX + jitterX,
+    config.animation.height / 2 + localX * sine + localY * cosine + floatY + jitterY
   ];
+}
+
+export function createRevealSegments(
+  glyphCount: number,
+  frames: number,
+  textStart: number,
+  characterSpacing: number,
+  random: () => number
+): RevealSegment[] {
+  const initialOrder = Array.from({ length: glyphCount }, (_value, index) => index);
+  const revisitOrder = [...initialOrder];
+  for (let index = revisitOrder.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [revisitOrder[index], revisitOrder[swapIndex]] = [
+      revisitOrder[swapIndex]!,
+      revisitOrder[index]!
+    ];
+  }
+  const visitOrder = [...initialOrder, ...revisitOrder];
+  const visitCount = visitOrder.length;
+  const minimumDwellFrames = 12;
+  const dwellFrames = Array.from(
+    { length: visitCount },
+    () => minimumDwellFrames
+  );
+  const transitionCount = visitCount + 1;
+  const minimumTransitionFrames = 3;
+  const transitionFrames = Array.from(
+    { length: transitionCount },
+    () => minimumTransitionFrames
+  );
+  const dwellWeights = dwellFrames.map(() => 0.85 + random() * 0.3);
+  const transitionWeights = transitionFrames.map(() => 0.08 + random() * 0.06);
+  const weights = [...dwellWeights, ...transitionWeights];
+  const maximumDwellFrames = 18;
+  const minimumFrames =
+    visitCount * minimumDwellFrames + transitionCount * minimumTransitionFrames;
+  const extraFrames = Math.max(0, frames - minimumFrames);
+  for (let extra = 0; extra < extraFrames; extra += 1) {
+    const eligibleWeights = weights.map((weight, index) =>
+      index < visitCount && (dwellFrames[index] ?? 0) >= maximumDwellFrames
+        ? 0
+        : weight
+    );
+    const totalWeight = eligibleWeights.reduce((total, weight) => total + weight, 0);
+    let selection = random() * totalWeight;
+    let selectedIndex = eligibleWeights.length - 1;
+    for (let index = 0; index < eligibleWeights.length; index += 1) {
+      selection -= eligibleWeights[index] ?? 0;
+      if (selection <= 0) {
+        selectedIndex = index;
+        break;
+      }
+    }
+    if (selectedIndex < visitCount) {
+      dwellFrames[selectedIndex] =
+        (dwellFrames[selectedIndex] ?? minimumDwellFrames) + 1;
+    } else {
+      const transitionIndex = selectedIndex - visitCount;
+      transitionFrames[transitionIndex] =
+        (transitionFrames[transitionIndex] ?? minimumTransitionFrames) + 1;
+    }
+  }
+
+  const segments: RevealSegment[] = [];
+  const scanRadius = 50;
+  let currentX = textStart - scanRadius - 18;
+  for (let visitIndex = 0; visitIndex < visitCount; visitIndex += 1) {
+    const characterIndex = visitOrder[visitIndex] ?? 0;
+    const characterX = textStart + characterIndex * characterSpacing;
+    const scanStart = characterX - scanRadius;
+    const scanEnd = characterX + scanRadius;
+    segments.push({
+      kind: "transition",
+      frames: transitionFrames[visitIndex] ?? minimumTransitionFrames,
+      fromX: currentX,
+      toX: scanStart,
+      phase: random() * Math.PI * 2,
+      backtrackAmplitude: random() < 0.02 ? 3 + random() * 3 : 0
+    });
+    segments.push({
+      kind: "dwell",
+      frames: dwellFrames[visitIndex] ?? minimumDwellFrames,
+      fromX: scanStart,
+      toX: scanEnd,
+      phase: random() * Math.PI * 2,
+      backtrackAmplitude: random() < 0.05 ? 4 + random() * 3 : 0,
+      characterIndex
+    });
+    currentX = scanEnd;
+  }
+  segments.push({
+    kind: "transition",
+    frames: transitionFrames[visitCount] ?? minimumTransitionFrames,
+    fromX: currentX,
+    toX: textStart + (glyphCount - 1) * characterSpacing + scanRadius + 18,
+    phase: random() * Math.PI * 2,
+    backtrackAmplitude: random() < 0.02 ? 3 + random() * 3 : 0
+  });
+  return segments;
 }
 
 export function compositeCharacterWithinAreaLimit(
@@ -368,7 +352,7 @@ export function compositeCharacterWithinAreaLimit(
   width: number,
   revealCenter: number,
   maximumVisibleRatio = 0.4
-): number {
+): void {
   let fullPixelCount = 0;
   const visibleIndices: number[] = [];
   for (let index = 0; index < fullCharacter.length; index += 1) {
@@ -391,7 +375,43 @@ export function compositeCharacterWithinAreaLimit(
   for (const index of visibleIndices) {
     target[index] = visibleCharacter[index] ?? 0;
   }
-  return fullPixelCount === 0 ? 0 : visibleIndices.length / fullPixelCount;
+}
+
+export function revealStateForFrame(
+  frame: number,
+  segments: RevealSegment[]
+): { centerX: number; dwellCharacterIndex?: number } {
+  let segmentStart = 0;
+  for (const segment of segments) {
+    const segmentEnd = segmentStart + segment.frames;
+    if (frame < segmentEnd) {
+      const localFrame = frame - segmentStart;
+      const progress = (localFrame + 0.5) / segment.frames;
+      if (segment.kind === "dwell") {
+        const eased = progress * progress * (3 - 2 * progress);
+        const unevenMotion =
+          segment.backtrackAmplitude *
+          Math.sin(progress * Math.PI * 2 + segment.phase) *
+          Math.sin(progress * Math.PI);
+        const centerX =
+          segment.fromX + (segment.toX - segment.fromX) * eased + unevenMotion;
+        return {
+          centerX,
+          dwellCharacterIndex: segment.characterIndex
+        };
+      }
+      const eased = progress * progress * (3 - 2 * progress);
+      const unevenMotion =
+        segment.backtrackAmplitude *
+        Math.sin(progress * Math.PI * 2 + segment.phase) *
+        Math.sin(progress * Math.PI);
+      return {
+        centerX: segment.fromX + (segment.toX - segment.fromX) * eased + unevenMotion
+      };
+    }
+    segmentStart = segmentEnd;
+  }
+  return { centerX: segments.at(-1)?.toX ?? 0 };
 }
 
 export function createDistinctColorIndices(
@@ -409,19 +429,15 @@ export function createDistinctColorIndices(
   return colorIndices.slice(0, glyphCount);
 }
 
-export function renderVerificationAnimation(
-  answer: string,
-  options: RenderOptions = {}
-): Buffer {
+export function renderVerificationAnimation(answer: string): Buffer {
   const { width, height, minFrames, maxFrames, delayMs } = config.animation;
-  const seed = options.seedBytes ?? randomBytes(8);
+  const seed = randomBytes(8);
   const random = createPrng(seed);
   const frames = minFrames + Math.floor(random() * (maxFrames - minFrames + 1));
   const glyphs = answer.split("").map(glyphFor);
   const motionCycles = [2, 3, 4, 5, 6, 7, 8];
   const questionDistortion = (0.95 + random() * 0.35) * 0.83;
   const colorIndices = createDistinctColorIndices(glyphs.length, random);
-  const overlapPhases = [random() * Math.PI * 2, random() * Math.PI * 2];
   const motionProfiles: MotionProfile[] = glyphs.map((_glyph, characterIndex) => ({
     phaseX: random() * Math.PI * 2,
     phaseY: random() * Math.PI * 2,
@@ -429,8 +445,8 @@ export function renderVerificationAnimation(
     horizontalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 4,
     verticalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 5,
     distortionCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 3,
-    driftX: 14 + random() * 10,
-    driftY: 8 + random() * 8,
+    driftX: 8 + random() * 8,
+    driftY: 6.5 + random() * 7,
     stretchX: (0.15 + random() * 0.13) * questionDistortion,
     stretchY: (0.12 + random() * 0.13) * questionDistortion,
     waveAmplitude: (3.4 + random() * 2.6) * questionDistortion,
@@ -440,25 +456,27 @@ export function renderVerificationAnimation(
     jitterCyclesX: 18 + Math.floor(random() * 15),
     jitterCyclesY: 18 + Math.floor(random() * 15),
     jitterPhase: random() * Math.PI * 2,
-    colorIndex: colorIndices[characterIndex] ?? 4,
-    maskPhase: random() * Math.PI * 2,
-    maskCycles: 1.8 + random() * 2.2,
-    stageOffset: Math.floor(random() * 18),
-    overlapPhase: overlapPhases[Math.floor(characterIndex / 2)] ?? 0,
-    overlapDirection: characterIndex % 2 === 0 ? 1 : -1
+    colorIndex: colorIndices[characterIndex] ?? 4
   }));
-  const partialRevealWidth = 26 + random() * 5;
-  const maximumVisibleRatio = 0.25 + random() * 0.035;
+  const partialRevealWidth = 22.6 + random() * 4.7;
+  const maximumVisibleRatio = 0.281 + random() * 0.047;
   const revealShapeProfile: RevealShapeProfile = {
     phase: random() * Math.PI * 2,
     cycles: 2 + Math.floor(random() * 5),
-    height: 78 + random() * 12,
+    height: 94 + random() * 14,
     bend: 1.83 + random() * 4.27,
     pinch: 0.061 + random() * 0.171,
     edgeWaves: 4.88 + random() * 4.88
   };
-  const textStart = 72;
-  const characterSpacing = 58;
+  const textStart = 66;
+  const characterSpacing = 62;
+  const revealSegments = createRevealSegments(
+    glyphs.length,
+    frames,
+    textStart,
+    characterSpacing,
+    random
+  );
   const gif = GIFEncoder({ initialCapacity: 192 * 1024 });
   const pixels = new Uint8Array(width * height);
   const visibleCharacter = new Uint8Array(width * height);
@@ -466,23 +484,31 @@ export function renderVerificationAnimation(
 
   for (let frame = 0; frame < frames; frame += 1) {
     pixels.fill(0);
-    const progress = frame / Math.max(1, frames - 1);
-    const visibleRatios = Array.from({ length: glyphs.length }, () => 0);
-    const fragmentStates: FragmentState[] = [];
+    const progress = frame / Math.max(1, frames);
+    const revealState = revealStateForFrame(frame, revealSegments);
+    let revealCenter = revealState.centerX;
+    if (revealState.dwellCharacterIndex !== undefined) {
+      const dwellMotionProfile = motionProfiles[revealState.dwellCharacterIndex];
+      if (dwellMotionProfile) {
+        revealCenter += horizontalDrift(dwellMotionProfile, progress);
+      }
+    }
+    const widthPulse =
+      partialRevealWidth + (revealState.dwellCharacterIndex !== undefined ? 2.3 : 0);
+    const revealMask: RevealMask = {
+      ...revealShapeProfile,
+      centerX: revealCenter,
+      centerY:
+        height / 2 +
+        4 * Math.sin(progress * Math.PI * 2 * revealShapeProfile.cycles + revealShapeProfile.phase),
+      width: widthPulse,
+      animatedPhase:
+        revealShapeProfile.phase + progress * Math.PI * 2 * revealShapeProfile.cycles
+    };
 
     for (let y = 0; y < height; y += 1) {
       const vignette = Math.abs(y - height / 2) / (height / 2);
       if (vignette > 0.86) pixels.fill(7, y * width, (y + 1) * width);
-    }
-
-    for (let characterIndex = 0; characterIndex < glyphs.length; characterIndex += 1) {
-      const anchorX = Math.round(textStart + characterIndex * characterSpacing);
-      const color = colorIndices[characterIndex] ?? 4;
-      for (let y = height - 7; y <= height - 5; y += 1) {
-        for (let x = anchorX - 1; x <= anchorX + 1; x += 1) {
-          pixels[y * width + x] = color;
-        }
-      }
     }
 
     glyphs.forEach((glyph, characterIndex) => {
@@ -491,35 +517,6 @@ export function renderVerificationAnimation(
       const baseX = textStart + characterIndex * characterSpacing;
       const motionProfile = motionProfiles[characterIndex];
       if (!motionProfile) return;
-      const character = answer[characterIndex] ?? "";
-      const rawFragmentState = fragmentStateForFrame(
-        character,
-        frame,
-        motionProfile.stageOffset
-      );
-      const availableBuckets = new Set<number>();
-      glyph.paths.forEach((path, pathIndex) => {
-        for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
-          availableBuckets.add(
-            strokeBucket(
-              character,
-              pathIndex,
-              pointIndex,
-              rawFragmentState.strokeStageCount
-            )
-          );
-        }
-      });
-      const bucketList = [...availableBuckets].sort((left, right) => left - right);
-      const selectedBucket =
-        bucketList[rawFragmentState.strokeStage % Math.max(1, bucketList.length)] ?? 0;
-      const fragmentState: FragmentState = {
-        ...rawFragmentState,
-        strokeStage: selectedBucket,
-        strokeStageCount: Math.max(1, bucketList.length)
-      };
-      fragmentStates.push(fragmentState);
-      const lineSection = lineSectionFor(character, fragmentState.sliceStage);
       const characterRevealLeft = Number.NEGATIVE_INFINITY;
       const characterRevealRight = Number.POSITIVE_INFINITY;
       const color = motionProfile.colorIndex;
@@ -535,46 +532,7 @@ export function renderVerificationAnimation(
         width: width * 2,
         animatedPhase: 0
       };
-
-      let focusPoint: Point | undefined;
-      glyph.paths.forEach((path, pathIndex) => {
-        if (focusPoint) return;
-        for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
-          if (
-            strokeBucket(
-              character,
-              pathIndex,
-              pointIndex,
-              rawFragmentState.strokeStageCount
-            ) !== selectedBucket
-          ) continue;
-          const previous = path[pointIndex - 1];
-          const current = path[pointIndex];
-          if (!previous || !current) continue;
-          focusPoint = transformPoint(
-            pointBetween(previous, current, (lineSection.start + lineSection.end) / 2),
-            glyph,
-            characterIndex,
-            progress,
-            baseX,
-            motionProfile,
-            fragmentState.block
-          );
-          break;
-        }
-      });
-      const maskMotion =
-        progress * Math.PI * 2 * motionProfile.maskCycles + motionProfile.maskPhase;
-      const revealCenter = (focusPoint?.[0] ?? baseX) + 4 * Math.sin(maskMotion);
-      const revealMask: RevealMask = {
-        ...revealShapeProfile,
-        centerX: revealCenter,
-        centerY: (focusPoint?.[1] ?? height / 2) + 5 * Math.cos(maskMotion * 0.8),
-        width: partialRevealWidth + 2 * Math.sin(maskMotion * 1.2),
-        animatedPhase: revealShapeProfile.phase + maskMotion + characterIndex * 0.9
-      };
-
-      glyph.paths.forEach((path, pathIndex) => {
+      glyph.paths.forEach((path) => {
         for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
           const previous = path[pointIndex - 1];
           const current = path[pointIndex];
@@ -585,8 +543,7 @@ export function renderVerificationAnimation(
             characterIndex,
             progress,
             baseX,
-            motionProfile,
-            fragmentState.block
+            motionProfile
           );
           const to = transformPoint(
             current,
@@ -594,32 +551,20 @@ export function renderVerificationAnimation(
             characterIndex,
             progress,
             baseX,
-            motionProfile,
-            fragmentState.block
+            motionProfile
           );
-          if (
-            strokeBucket(
-              character,
-              pathIndex,
-              pointIndex,
-              rawFragmentState.strokeStageCount
-            ) === selectedBucket
-          ) {
-            drawLineSection(
-              visibleCharacter,
-              width,
-              height,
-              from,
-              to,
-              lineSection.start,
-              lineSection.end,
-              2.05,
-              color,
-              revealMask,
-              characterRevealLeft,
-              characterRevealRight
-            );
-          }
+          drawLine(
+            visibleCharacter,
+            width,
+            height,
+            from,
+            to,
+            2.05,
+            color,
+            revealMask,
+            characterRevealLeft,
+            characterRevealRight
+          );
           drawLine(
             fullCharacter,
             width,
@@ -634,7 +579,7 @@ export function renderVerificationAnimation(
           );
         }
       });
-      visibleRatios[characterIndex] = compositeCharacterWithinAreaLimit(
+      compositeCharacterWithinAreaLimit(
         pixels,
         visibleCharacter,
         fullCharacter,
@@ -642,12 +587,6 @@ export function renderVerificationAnimation(
         revealCenter,
         maximumVisibleRatio
       );
-    });
-
-    options.onFrame?.({
-      activeCharacterCount: visibleRatios.filter((ratio) => ratio > 0).length,
-      visibleRatios,
-      fragmentStates
     });
 
     gif.writeFrame(pixels, width, height, {
