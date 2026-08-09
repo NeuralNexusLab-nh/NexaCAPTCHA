@@ -72,6 +72,12 @@ interface RevealMask extends RevealShapeProfile {
   animatedPhase: number;
 }
 
+export interface GlyphVisibilityEstimate {
+  strokeCount: number;
+  cornerCount: number;
+  visibleRatio: number;
+}
+
 function createPrng(seedBytes: Uint8Array): () => number {
   let state = new DataView(
     seedBytes.buffer,
@@ -94,6 +100,75 @@ function glyphFor(character: string): Glyph {
     maxX: result.bounds.maxX,
     minY: result.bounds.minY,
     maxY: result.bounds.maxY
+  };
+}
+
+function median(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((left, right) => left - right);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2
+    : (sorted[middle] ?? 0);
+}
+
+/**
+ * Estimates how much of a glyph corresponds to roughly one drawn stroke plus
+ * one turn. Hershey paths are already separated into pen strokes, so the
+ * estimate can adapt to each glyph without maintaining character-specific
+ * rules or changing the answer distribution.
+ */
+export function estimateGlyphVisibility(paths: Point[][]): GlyphVisibilityEstimate {
+  const strokeLengths: number[] = [];
+  const cornerSpans: number[] = [];
+  let cornerCount = 0;
+
+  for (const path of paths) {
+    let strokeLength = 0;
+    const segmentLengths: number[] = [];
+    for (let index = 1; index < path.length; index += 1) {
+      const previous = path[index - 1];
+      const current = path[index];
+      if (!previous || !current) continue;
+      const length = Math.hypot(current[0] - previous[0], current[1] - previous[1]);
+      segmentLengths.push(length);
+      strokeLength += length;
+    }
+    if (strokeLength > 0) strokeLengths.push(strokeLength);
+
+    for (let index = 1; index < path.length - 1; index += 1) {
+      const before = path[index - 1];
+      const corner = path[index];
+      const after = path[index + 1];
+      if (!before || !corner || !after) continue;
+      const firstAngle = Math.atan2(corner[1] - before[1], corner[0] - before[0]);
+      const secondAngle = Math.atan2(after[1] - corner[1], after[0] - corner[0]);
+      const turn = Math.abs(
+        Math.atan2(Math.sin(secondAngle - firstAngle), Math.cos(secondAngle - firstAngle))
+      );
+      if (turn < Math.PI / 7) continue;
+      cornerCount += 1;
+      cornerSpans.push(
+        Math.min(segmentLengths[index - 1] ?? 0, segmentLengths[index] ?? 0)
+      );
+    }
+  }
+
+  const totalLength = strokeLengths.reduce((total, length) => total + length, 0);
+  const typicalStrokeLength = median(strokeLengths);
+  // Disconnected straight strokes can meet visually even without sharing a
+  // Hershey path, so reserve a small corner allowance when no turn is encoded.
+  const cornerAllowance = cornerSpans.length > 0
+    ? median(cornerSpans) * 0.7
+    : totalLength * 0.1;
+  const rawRatio = totalLength > 0
+    ? (typicalStrokeLength + cornerAllowance) / totalLength
+    : 0.4;
+
+  return {
+    strokeCount: strokeLengths.length,
+    cornerCount,
+    visibleRatio: Math.min(0.56, Math.max(0.34, rawRatio))
   };
 }
 
@@ -361,7 +436,7 @@ export function compositeCharacterWithinAreaLimit(
   }
 
   const visiblePixelLimit = Math.floor(
-    fullPixelCount * Math.min(0.42, Math.max(0.28, maximumVisibleRatio))
+    fullPixelCount * Math.min(0.58, Math.max(0.3, maximumVisibleRatio))
   );
   if (visibleIndices.length > visiblePixelLimit) {
     visibleIndices.sort((left, right) => {
@@ -458,8 +533,11 @@ export function renderVerificationAnimation(answer: string): Buffer {
     jitterPhase: random() * Math.PI * 2,
     colorIndex: colorIndices[characterIndex] ?? 4
   }));
-  const partialRevealWidth = 22.6 + random() * 4.7;
-  const maximumVisibleRatio = 0.281 + random() * 0.047;
+  const partialRevealWidth = 25.5 + random() * 4.8;
+  const maximumVisibleRatios = glyphs.map((glyph) => {
+    const estimate = estimateGlyphVisibility(glyph.paths);
+    return Math.min(0.58, Math.max(0.32, estimate.visibleRatio + (random() - 0.5) * 0.035));
+  });
   const revealShapeProfile: RevealShapeProfile = {
     phase: random() * Math.PI * 2,
     cycles: 2 + Math.floor(random() * 5),
@@ -585,7 +663,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
         fullCharacter,
         width,
         revealCenter,
-        maximumVisibleRatio
+        maximumVisibleRatios[characterIndex] ?? 0.42
       );
     });
 

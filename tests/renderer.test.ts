@@ -3,9 +3,11 @@ import {
   compositeCharacterWithinAreaLimit,
   createDistinctColorIndices,
   createRevealSegments,
+  estimateGlyphVisibility,
   revealStateForFrame,
   renderVerificationAnimation
 } from "../src/renderer.js";
+import { stringToPaths } from "hershey";
 
 function frameDelays(gif: Buffer): number[] {
   const delays: number[] = [];
@@ -57,6 +59,21 @@ describe("verification animation", () => {
     );
     const visibleCount = [...target].filter((pixel) => pixel !== 0).length;
     expect(visibleCount).toBe(40);
+  });
+
+  it("adapts the visible area to about one stroke and one corner", () => {
+    const simple = estimateGlyphVisibility(stringToPaths("E").paths);
+    const curved = estimateGlyphVisibility(stringToPaths("8").paths);
+    const mixed = estimateGlyphVisibility(stringToPaths("B").paths);
+
+    expect(simple.strokeCount).toBe(4);
+    expect(curved.strokeCount).toBe(1);
+    expect(mixed.strokeCount).toBe(3);
+    for (const estimate of [simple, curved, mixed]) {
+      expect(estimate.visibleRatio).toBeGreaterThanOrEqual(0.34);
+      expect(estimate.visibleRatio).toBeLessThanOrEqual(0.56);
+    }
+    expect(curved.visibleRatio).toBeGreaterThan(simple.visibleRatio);
   });
 
   it("scans every character fully with uneven per-character timing", () => {
