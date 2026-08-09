@@ -17,6 +17,9 @@ const PALETTE = [
 const GIFEncoder =
   typeof gifenc === "function" ? gifenc : gifenc.GIFEncoder;
 
+export const DWELL_BACKTRACK_PROBABILITY = 0.015;
+export const TRANSITION_BACKTRACK_PROBABILITY = 0.006;
+
 interface Glyph {
   paths: Point[][];
   landmarks: GlyphLandmark[];
@@ -491,7 +494,7 @@ export function createRevealSegments(
   }
   const visitOrder = [...initialOrder, ...revisitOrder];
   const visitCount = visitOrder.length;
-  const minimumDwellFrames = 18;
+  const minimumDwellFrames = 31;
   const dwellFrames = Array.from(
     { length: visitCount },
     () => minimumDwellFrames
@@ -505,7 +508,7 @@ export function createRevealSegments(
   const dwellWeights = dwellFrames.map(() => 0.85 + random() * 0.3);
   const transitionWeights = transitionFrames.map(() => 0.08 + random() * 0.06);
   const weights = [...dwellWeights, ...transitionWeights];
-  const maximumDwellFrames = 28;
+  const maximumDwellFrames = 48;
   const minimumFrames =
     visitCount * minimumDwellFrames + transitionCount * minimumTransitionFrames;
   const extraFrames = Math.max(0, frames - minimumFrames);
@@ -549,7 +552,8 @@ export function createRevealSegments(
       fromX: currentX,
       toX: scanStart,
       phase: random() * Math.PI * 2,
-      backtrackAmplitude: random() < 0.02 ? 3 + random() * 3 : 0
+      backtrackAmplitude:
+        random() < TRANSITION_BACKTRACK_PROBABILITY ? 3 + random() * 3 : 0
     });
     segments.push({
       kind: "dwell",
@@ -557,7 +561,8 @@ export function createRevealSegments(
       fromX: scanStart,
       toX: scanEnd,
       phase: random() * Math.PI * 2,
-      backtrackAmplitude: random() < 0.05 ? 4 + random() * 3 : 0,
+      backtrackAmplitude:
+        random() < DWELL_BACKTRACK_PROBABILITY ? 4 + random() * 3 : 0,
       characterIndex
     });
     currentX = scanEnd;
@@ -568,7 +573,8 @@ export function createRevealSegments(
     fromX: currentX,
     toX: textStart + (glyphCount - 1) * characterSpacing + scanRadius + 18,
     phase: random() * Math.PI * 2,
-    backtrackAmplitude: random() < 0.02 ? 3 + random() * 3 : 0
+    backtrackAmplitude:
+      random() < TRANSITION_BACKTRACK_PROBABILITY ? 3 + random() * 3 : 0
   });
   return segments;
 }

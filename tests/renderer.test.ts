@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  DWELL_BACKTRACK_PROBABILITY,
+  TRANSITION_BACKTRACK_PROBABILITY,
   ambiguityMultiplierForLandmarkRisk,
   compositeCharacterWithinAreaLimit,
   createGlyphLandmarks,
@@ -38,14 +40,14 @@ describe("verification animation", () => {
     expect(colors.every((color) => color >= 2 && color <= 6)).toBe(true);
   });
 
-  it("randomizes playback between 17.5 and 23.5 seconds", () => {
+  it("randomizes playback between 28 and 37 seconds", () => {
     const delays = frameDelays(renderVerificationAnimation("N3XA"));
-    expect(delays.length).toBeGreaterThanOrEqual(175);
-    expect(delays.length).toBeLessThanOrEqual(235);
+    expect(delays.length).toBeGreaterThanOrEqual(280);
+    expect(delays.length).toBeLessThanOrEqual(370);
     expect(delays.every((delay) => delay === 10)).toBe(true);
     const totalCentiseconds = delays.reduce((total, delay) => total + delay, 0);
-    expect(totalCentiseconds).toBeGreaterThanOrEqual(1750);
-    expect(totalCentiseconds).toBeLessThanOrEqual(2350);
+    expect(totalCentiseconds).toBeGreaterThanOrEqual(2800);
+    expect(totalCentiseconds).toBeLessThanOrEqual(3700);
   });
 
   it("limits a frame to the reduced visible area", () => {
@@ -104,11 +106,11 @@ describe("verification animation", () => {
       state = (Math.imul(state, 1_664_525) + 1_013_904_223) >>> 0;
       return state / 0x1_0000_0000;
     };
-    const segments = createRevealSegments(4, 205, 66, 62, random);
+    const segments = createRevealSegments(4, 325, 66, 62, random);
     const dwellSegments = segments.filter((segment) => segment.kind === "dwell");
-    expect(segments.reduce((total, segment) => total + segment.frames, 0)).toBe(205);
+    expect(segments.reduce((total, segment) => total + segment.frames, 0)).toBe(325);
     expect(dwellSegments).toHaveLength(8);
-    expect(dwellSegments.every((segment) => segment.frames >= 18)).toBe(true);
+    expect(dwellSegments.every((segment) => segment.frames >= 31)).toBe(true);
     for (let characterIndex = 0; characterIndex < 4; characterIndex += 1) {
       expect(
         dwellSegments.filter((segment) => segment.characterIndex === characterIndex)
@@ -118,7 +120,7 @@ describe("verification animation", () => {
       true
     );
     const dwellDurations = dwellSegments.map((segment) => segment.frames);
-    expect(Math.max(...dwellDurations)).toBeLessThanOrEqual(28);
+    expect(Math.max(...dwellDurations)).toBeLessThanOrEqual(48);
     expect(new Set(dwellDurations).size).toBeGreaterThan(1);
   });
 
@@ -126,7 +128,7 @@ describe("verification animation", () => {
     for (let phaseStep = 0; phaseStep < 16; phaseStep += 1) {
       const segment = {
         kind: "dwell" as const,
-        frames: 18,
+        frames: 31,
         fromX: 0,
         toX: 100,
         phase: (phaseStep / 16) * Math.PI * 2,
@@ -141,7 +143,12 @@ describe("verification animation", () => {
       );
       expect(centers[0]).toBeLessThanOrEqual(9);
       expect(centers.at(-1)).toBeGreaterThanOrEqual(91);
-      expect(maximumGap).toBeLessThan(13);
+      expect(maximumGap).toBeLessThan(9);
     }
+  });
+
+  it("reduces reveal backtracking probability by seventy percent", () => {
+    expect(DWELL_BACKTRACK_PROBABILITY).toBeCloseTo(0.05 * 0.3);
+    expect(TRANSITION_BACKTRACK_PROBABILITY).toBeCloseTo(0.02 * 0.3);
   });
 });
