@@ -203,11 +203,11 @@ input:disabled { cursor: not-allowed; opacity: .58; }
 
 .speed-button {
   flex: 0 0 auto;
-  min-width: 39px;
+  min-width: 46px;
   height: 40px;
   padding: 0 7px;
   border: 1px solid #31577f;
-  border-radius: 999px;
+  border-radius: 8px;
   background: #050d18;
   color: #68baff;
   cursor: pointer;
