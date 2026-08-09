@@ -78,6 +78,7 @@ describe("NexaCAPTCHA HTTP API", () => {
 
     const widget = await request(app).get("/widget").expect(200);
     expect(widget.headers["content-security-policy"]).toContain("frame-ancestors *");
+    expect(widget.headers["content-security-policy"]).toContain("img-src 'self' data: blob:");
     expect(widget.headers["x-frame-options"]).toBeUndefined();
     expect(widget.headers["cross-origin-opener-policy"]).toBe("unsafe-none");
   });

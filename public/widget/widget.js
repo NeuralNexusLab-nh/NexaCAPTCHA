@@ -18,11 +18,22 @@
   var input = document.getElementById("captcha-answer");
   var verifyButton = document.getElementById("verify-button");
   var newButton = document.getElementById("new-button");
+  var speedButton = document.getElementById("speed-button");
   var image = document.getElementById("verification-image");
   var placeholder = document.getElementById("stage-placeholder");
   var stage = document.getElementById("verification-stage");
   var message = document.getElementById("status-message");
   var pill = document.getElementById("status-pill");
+  var progressPercent = document.getElementById("progress-percent");
+  var progressTrack = document.getElementById("progress-track");
+  var progressMarker = document.getElementById("progress-marker");
+  var playbackSpeeds = [1, 0.75, 0.5, 0.25, 1.25, 1.5, 2];
+  var playbackSpeedIndex = 0;
+  var originalGifBytes = null;
+  var currentObjectUrl = null;
+  var playbackDurationMs = 0;
+  var playbackStartedAt = 0;
+  var progressTimer = null;
   var currentVerificationId = null;
   var expiryTimer = null;
   var cooldownTimer = null;
@@ -45,10 +56,13 @@
   function setPill(label, icon, kind) {
     pill.className = "status-pill" + (kind ? " " + kind : "");
     pill.replaceChildren();
-    var iconElement = document.createElement("i");
-    iconElement.className = "fa-solid " + icon;
-    iconElement.setAttribute("aria-hidden", "true");
-    pill.append(iconElement, document.createTextNode(label));
+    if (icon) {
+      var iconElement = document.createElement("i");
+      iconElement.className = "fa-solid " + icon;
+      iconElement.setAttribute("aria-hidden", "true");
+      pill.append(iconElement);
+    }
+    pill.append(document.createTextNode(label));
   }
 
   function setMessage(text, kind) {
@@ -62,6 +76,7 @@
     verifyButton.disabled = unavailable;
     input.disabled = unavailable;
     newButton.disabled = busy;
+    speedButton.disabled = busy || !originalGifBytes;
   }
 
   function clearTimers() {
@@ -69,6 +84,128 @@
     if (cooldownTimer) window.clearInterval(cooldownTimer);
     expiryTimer = null;
     cooldownTimer = null;
+  }
+
+  function speedLabel() {
+    return String(playbackSpeeds[playbackSpeedIndex]) + "x";
+  }
+
+  function updateSpeedButton() {
+    var label = speedLabel();
+    speedButton.textContent = label;
+    speedButton.setAttribute("aria-label", "Playback speed: " + label);
+  }
+
+  function setProgress(value) {
+    var normalized = Math.min(100, Math.max(0, value));
+    var rounded = Math.floor(normalized);
+    progressPercent.textContent = rounded + "%";
+    progressTrack.setAttribute("aria-valuenow", String(rounded));
+    progressMarker.style.left = normalized + "%";
+  }
+
+  function stopProgress() {
+    if (progressTimer) window.clearInterval(progressTimer);
+    progressTimer = null;
+  }
+
+  function startProgress(durationMs) {
+    stopProgress();
+    playbackDurationMs = Math.max(1, durationMs);
+    playbackStartedAt = performance.now();
+    setProgress(0);
+    progressTimer = window.setInterval(function () {
+      var elapsed = performance.now() - playbackStartedAt;
+      setProgress((elapsed % playbackDurationMs) / playbackDurationMs * 100);
+    }, 100);
+  }
+
+  function skipGifSubBlocks(bytes, offset) {
+    while (offset < bytes.length) {
+      var size = bytes[offset] || 0;
+      offset += 1;
+      if (size === 0) break;
+      offset += size;
+    }
+    return offset;
+  }
+
+  function gifForSpeed(sourceBytes, speed) {
+    var bytes = new Uint8Array(sourceBytes);
+    var packed = bytes[10] || 0;
+    var offset = 13;
+    if (packed & 0x80) offset += 3 * Math.pow(2, (packed & 0x07) + 1);
+    var durationMs = 0;
+
+    while (offset < bytes.length) {
+      var marker = bytes[offset];
+      if (marker === 0x3b) break;
+      if (marker === 0x21) {
+        var extensionType = bytes[offset + 1];
+        if (extensionType === 0xf9 && bytes[offset + 2] === 0x04) {
+          var delay = (bytes[offset + 5] || 0) * 256 + (bytes[offset + 4] || 0);
+          var adjustedDelay = Math.max(2, Math.round(Math.max(1, delay) / speed));
+          bytes[offset + 4] = adjustedDelay & 0xff;
+          bytes[offset + 5] = adjustedDelay >> 8 & 0xff;
+          durationMs += adjustedDelay * 10;
+          offset += 8;
+          continue;
+        }
+        offset = skipGifSubBlocks(bytes, offset + 2);
+        continue;
+      }
+      if (marker === 0x2c) {
+        var imagePacked = bytes[offset + 9] || 0;
+        offset += 10;
+        if (imagePacked & 0x80) {
+          offset += 3 * Math.pow(2, (imagePacked & 0x07) + 1);
+        }
+        offset += 1;
+        offset = skipGifSubBlocks(bytes, offset);
+        continue;
+      }
+      throw new Error("invalid-gif-data");
+    }
+
+    if (durationMs <= 0) throw new Error("gif-has-no-frames");
+    return { bytes: bytes, durationMs: durationMs };
+  }
+
+  function releasePlayback(resetSpeed) {
+    stopProgress();
+    originalGifBytes = null;
+    playbackDurationMs = 0;
+    playbackStartedAt = 0;
+    if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = null;
+    image.removeAttribute("src");
+    setProgress(0);
+    if (resetSpeed) {
+      playbackSpeedIndex = 0;
+      updateSpeedButton();
+    }
+  }
+
+  function playGif(onReady) {
+    if (!originalGifBytes) return;
+    stopProgress();
+    setProgress(0);
+    var playback = gifForSpeed(
+      originalGifBytes,
+      playbackSpeeds[playbackSpeedIndex] || 1
+    );
+    var nextObjectUrl = URL.createObjectURL(
+      new Blob([playback.bytes], { type: "image/gif" })
+    );
+    var previousObjectUrl = currentObjectUrl;
+    currentObjectUrl = nextObjectUrl;
+    if (previousObjectUrl) URL.revokeObjectURL(previousObjectUrl);
+    image.onload = function () {
+      image.onload = null;
+      startProgress(playback.durationMs);
+      if (onReady) onReady();
+    };
+    image.src = nextObjectUrl;
   }
 
   function showLoadingPlaceholder(text) {
@@ -132,6 +269,7 @@
     clearTimers();
     image.onload = null;
     image.onerror = null;
+    releasePlayback(true);
     completed = false;
     coolingDown = false;
     currentVerificationId = null;
@@ -141,14 +279,14 @@
     sendResult({ success: false, verificationId: null, responseToken: null });
 
     showLoadingPlaceholder("Preparing verification…");
-    setPill("Loading", "fa-circle-notch fa-spin", "");
+    setPill("Loading", "", "");
     setMessage("Loading a new verification…", "");
     void createVerification();
   }
 
   async function createVerification() {
     showLoadingPlaceholder("Preparing verification…");
-    setPill("Loading", "fa-circle-notch fa-spin", "");
+    setPill("Loading", "", "");
     setMessage("Loading a new verification…", "");
 
     try {
@@ -162,7 +300,17 @@
       if (!response.ok) throw new Error(result.errorCode || "verification-create-error");
 
       currentVerificationId = result.verificationId;
-      image.onload = function () {
+      image.onerror = function () {
+        currentVerificationId = null;
+        busy = false;
+        setPill("Error", "fa-circle-exclamation", "is-error");
+        setMessage("The verification animation could not be loaded. Try again.", "is-error");
+        updateControls();
+      };
+      var animationResponse = await fetch(result.animationUrl, { cache: "no-store" });
+      if (!animationResponse.ok) throw new Error("verification-animation-error");
+      originalGifBytes = new Uint8Array(await animationResponse.arrayBuffer());
+      playGif(function () {
         var playbackVerificationId = currentVerificationId;
         placeholder.hidden = true;
         image.classList.add("is-visible");
@@ -185,18 +333,11 @@
           // The conservative local timer remains armed when status sync fails.
         });
         input.focus();
-      };
-      image.onerror = function () {
-        currentVerificationId = null;
-        busy = false;
-        setPill("Error", "fa-circle-exclamation", "is-error");
-        setMessage("The verification animation could not be loaded. Try again.", "is-error");
-        updateControls();
-      };
-      image.src = result.animationUrl;
+      });
     } catch (_) {
       currentVerificationId = null;
       busy = false;
+      releasePlayback(false);
       setPill("Offline", "fa-triangle-exclamation", "is-error");
       setMessage("Unable to reach NexaCAPTCHA. Try again.", "is-error");
       updateControls();
@@ -216,7 +357,7 @@
 
     busy = true;
     updateControls();
-    setPill("Checking", "fa-circle-notch fa-spin", "");
+    setPill("Checking", "", "");
     setMessage("Checking your answer…", "");
     try {
       var response = await fetch(
@@ -280,11 +421,21 @@
   });
   form.addEventListener("submit", submitAnswer);
   newButton.addEventListener("click", scheduleVerification);
+  speedButton.addEventListener("click", function () {
+    if (busy || !originalGifBytes) return;
+    playbackSpeedIndex = (playbackSpeedIndex + 1) % playbackSpeeds.length;
+    updateSpeedButton();
+    playGif();
+  });
   window.addEventListener("message", function (event) {
     if (event.origin !== parentOrigin) return;
     var data = event.data;
     if (!data || data.namespace !== "NexaCAPTCHA" || data.widgetId !== widgetId) return;
     if (data.type === "reset") scheduleVerification();
+  });
+  window.addEventListener("beforeunload", function () {
+    stopProgress();
+    if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
   });
 
   if (window.ResizeObserver) {
@@ -294,6 +445,7 @@
   }
 
   busy = false;
+  updateSpeedButton();
   updateControls();
   scheduleVerification();
 })();

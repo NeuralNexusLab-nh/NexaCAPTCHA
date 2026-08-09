@@ -39,11 +39,48 @@ body { padding: 6px; }
 .captcha-home:hover { color: #68baff; }
 .captcha-brand img { display: block; filter: drop-shadow(0 0 9px rgba(22, 135, 255, .38)); }
 
+.status-area,
+.playback-progress,
+.footer-status {
+  display: flex;
+  align-items: center;
+}
+
+.status-area { min-width: 0; gap: 10px; margin-left: auto; }
+.playback-progress { gap: 7px; color: #68baff; }
+.playback-progress output { min-width: 31px; font-size: 10px; font-weight: 700; text-align: right; }
+
+.progress-track {
+  position: relative;
+  width: 76px;
+  height: 10px;
+  background: linear-gradient(#31577f, #31577f) center / 100% 1px no-repeat;
+}
+
+.progress-endpoint,
+.progress-marker {
+  position: absolute;
+  top: 50%;
+  translate: -50% -50%;
+}
+
+.progress-endpoint { width: 7px; height: 7px; border: 1px solid #07101e; border-radius: 50%; }
+.progress-start { left: 0; background: #1687ff; box-shadow: 0 0 7px rgba(22, 135, 255, .55); }
+.progress-end { left: 100%; background: #72dc9b; box-shadow: 0 0 7px rgba(114, 220, 155, .45); }
+.progress-marker {
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border: 1px solid #dff1ff;
+  background: #0d4f9a;
+  rotate: 45deg;
+  transition: left 90ms linear;
+}
+
 .status-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-left: auto;
   padding: 4px 8px;
   border: 1px solid #31577f;
   border-radius: 2px;
@@ -161,6 +198,28 @@ input:disabled { cursor: not-allowed; opacity: .58; }
   margin-top: 10px;
 }
 
+.footer-status { min-width: 0; gap: 8px; }
+.footer-status p { min-width: 0; overflow-wrap: anywhere; }
+
+.speed-button {
+  flex: 0 0 auto;
+  min-width: 39px;
+  height: 40px;
+  padding: 0 7px;
+  border: 1px solid #31577f;
+  border-radius: 999px;
+  background: #050d18;
+  color: #68baff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.speed-button:hover:not(:disabled) { border-color: #1687ff; background: #071426; }
+.speed-button:focus-visible { outline: 2px solid #1687ff; outline-offset: 2px; }
+.speed-button:disabled { cursor: not-allowed; opacity: .48; }
+
 .captcha-footer p {
   margin: 0;
   color: #89a9ca;
@@ -175,6 +234,11 @@ input:disabled { cursor: not-allowed; opacity: .58; }
   .captcha-shell { border-radius: 12px; }
   .verification-stage { margin-block: 11px; }
   .captcha-footer { align-items: flex-start; flex-direction: column; }
+  .captcha-brand { flex-wrap: wrap; gap: 9px; }
+  .status-area { width: 100%; margin-left: 0; gap: 7px; justify-content: space-between; }
+  .footer-status { width: 100%; }
+  .progress-track { width: 58px; }
+  .button, .speed-button { min-height: 44px; }
 }
 
 @media (max-width: 360px) {
@@ -182,7 +246,11 @@ input:disabled { cursor: not-allowed; opacity: .58; }
   .button-primary { width: 100%; }
 }
 
+@media (pointer: coarse) {
+  .button, .speed-button { min-height: 44px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .button, input { transition: none; }
+  .button, input, .progress-marker { transition: none; }
   .button:hover:not(:disabled) { transform: none; }
 }
