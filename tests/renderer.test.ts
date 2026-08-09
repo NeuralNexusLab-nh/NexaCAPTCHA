@@ -54,7 +54,7 @@ describe("verification animation", () => {
     const fullCharacter = new Uint8Array(100).fill(4);
     const visibleCharacter = new Uint8Array(100).fill(5);
     const target = new Uint8Array(100);
-    compositeCharacterWithinAreaLimit(
+    const compositedCount = compositeCharacterWithinAreaLimit(
       target,
       visibleCharacter,
       fullCharacter,
@@ -63,6 +63,7 @@ describe("verification animation", () => {
       0.2
     );
     const visibleCount = [...target].filter((pixel) => pixel !== 0).length;
+    expect(compositedCount).toBe(20);
     expect(visibleCount).toBe(20);
   });
 
@@ -82,9 +83,9 @@ describe("verification animation", () => {
   });
 
   it("keeps the enlarged visible area within the readability range", () => {
-    expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.1768);
-    expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.3472);
-    expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.285);
+    expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.1938);
+    expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.3808);
+    expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.3125);
   });
 
   it("shrinks frames around distinctive joined strokes", () => {
@@ -111,18 +112,18 @@ describe("verification animation", () => {
     expect(eightGaps).toHaveLength(0);
   });
 
-  it("scans every character fully with uneven per-character timing", () => {
+  it("splits the full scan time evenly across every character", () => {
     let state = 0x13579bdf;
     const random = () => {
       state = (Math.imul(state, 1_664_525) + 1_013_904_223) >>> 0;
       return state / 0x1_0000_0000;
     };
-    const segments = createRevealSegments(4, 325, 66, 62, random);
+    const segments = createRevealSegments(4, 197, 66, 62, random);
     const dwellSegments = segments.filter((segment) => segment.kind === "dwell");
     const transitionSegments = segments.filter((segment) => segment.kind === "transition");
-    expect(segments.reduce((total, segment) => total + segment.frames, 0)).toBe(325);
+    expect(segments.reduce((total, segment) => total + segment.frames, 0)).toBe(197);
     expect(dwellSegments).toHaveLength(4);
-    expect(dwellSegments.every((segment) => segment.frames >= 62)).toBe(true);
+    expect(dwellSegments.every((segment) => segment.frames >= 49)).toBe(true);
     for (let characterIndex = 0; characterIndex < 4; characterIndex += 1) {
       expect(
         dwellSegments.filter((segment) => segment.characterIndex === characterIndex)
@@ -132,20 +133,18 @@ describe("verification animation", () => {
       true
     );
     const dwellDurations = dwellSegments.map((segment) => segment.frames);
-    expect(Math.max(...dwellDurations)).toBeLessThanOrEqual(96);
+    expect(Math.max(...dwellDurations) - Math.min(...dwellDurations)).toBeLessThanOrEqual(1);
     expect(new Set(dwellDurations).size).toBeGreaterThan(1);
-    expect(
-      transitionSegments.every(
-        (segment) => Math.abs(segment.toX - segment.fromX) <= 18
-      )
-    ).toBe(true);
+    expect(transitionSegments).toHaveLength(0);
+    expect(revealStateForFrame(0, segments).centerX).toBe(35);
+    expect(revealStateForFrame(196, segments).centerX).toBe(283);
   });
 
   it("covers the full character scan without gaps at minimum dwell time", () => {
     for (let phaseStep = 0; phaseStep < 16; phaseStep += 1) {
       const segment = {
         kind: "dwell" as const,
-        frames: 62,
+        frames: 49,
         fromX: 0,
         toX: 100,
         phase: (phaseStep / 16) * Math.PI * 2,

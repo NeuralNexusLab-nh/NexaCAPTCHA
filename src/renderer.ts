@@ -258,8 +258,8 @@ export function reduceGlyphVisibility(
   estimatedVisibleRatio: number,
   randomValue: number
 ): number {
-  const reduction = 0.52 + Math.min(1, Math.max(0, randomValue)) * 0.1;
-  return Math.min(0.35, Math.max(0.17, estimatedVisibleRatio * reduction));
+  const reduction = 0.57 + Math.min(1, Math.max(0, randomValue)) * 0.11;
+  return Math.min(0.39, Math.max(0.19, estimatedVisibleRatio * reduction));
 }
 
 function horizontalDrift(
@@ -271,7 +271,7 @@ function horizontalDrift(
     motion * motionProfile.horizontalCycles + motionProfile.phaseX;
   return (
     motionProfile.driftX * Math.sin(horizontalMotion) +
-    2.6 * Math.sin(horizontalMotion * 2 + motionProfile.phaseY)
+    1.4 * Math.sin(horizontalMotion * 2 + motionProfile.phaseY)
   );
 }
 
@@ -396,7 +396,7 @@ function transformPoint(
   const floatX = horizontalDrift(motionProfile, frameProgress);
   const floatY =
     motionProfile.driftY * Math.sin(verticalMotion) +
-    2.4 * Math.sin(verticalMotion * 2 + motionProfile.phaseX);
+    1.4 * Math.sin(verticalMotion * 2 + motionProfile.phaseX);
   const jitterX =
     motionProfile.jitterAmplitude *
     Math.sin(motion * motionProfile.jitterCyclesX + motionProfile.jitterPhase);
@@ -408,6 +408,55 @@ function transformPoint(
     baseX + localX * cosine - localY * sine + floatX + jitterX,
     config.animation.height / 2 + localX * sine + localY * cosine + floatY + jitterY
   ];
+}
+
+function drawTransformedGlyph(
+  pixels: Uint8Array,
+  width: number,
+  height: number,
+  glyph: Glyph,
+  characterIndex: number,
+  frameProgress: number,
+  baseX: number,
+  motionProfile: MotionProfile,
+  color: number,
+  revealMask: RevealMask
+): void {
+  glyph.paths.forEach((path) => {
+    for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
+      const previous = path[pointIndex - 1];
+      const current = path[pointIndex];
+      if (!previous || !current) continue;
+      const from = transformPoint(
+        previous,
+        glyph,
+        characterIndex,
+        frameProgress,
+        baseX,
+        motionProfile
+      );
+      const to = transformPoint(
+        current,
+        glyph,
+        characterIndex,
+        frameProgress,
+        baseX,
+        motionProfile
+      );
+      drawLine(
+        pixels,
+        width,
+        height,
+        from,
+        to,
+        2.05,
+        color,
+        revealMask,
+        Number.NEGATIVE_INFINITY,
+        Number.POSITIVE_INFINITY
+      );
+    }
+  });
 }
 
 function visibleLandmarkRisk(
@@ -488,95 +537,40 @@ export function createRevealSegments(
   characterSpacing: number,
   random: () => number
 ): RevealSegment[] {
-  // A single ordered pass avoids the former shuffled revisit, which could
-  // relocate the reveal window two or three characters in only a few frames.
-  // The former two visits are merged into one longer dwell per character.
   const visitOrder = Array.from({ length: glyphCount }, (_value, index) => index);
   const visitCount = visitOrder.length;
-  const minimumDwellFrames = 62;
-  const dwellFrames = Array.from(
-    { length: visitCount },
-    () => minimumDwellFrames
-  );
-  const transitionCount = visitCount + 1;
-  const minimumTransitionFrames = 3;
-  const transitionFrames = Array.from(
-    { length: transitionCount },
-    () => minimumTransitionFrames
-  );
-  const dwellWeights = dwellFrames.map(() => 0.85 + random() * 0.3);
-  const transitionWeights = transitionFrames.map(() => 0.08 + random() * 0.06);
-  const weights = [...dwellWeights, ...transitionWeights];
-  const maximumDwellFrames = 96;
-  const minimumFrames =
-    visitCount * minimumDwellFrames + transitionCount * minimumTransitionFrames;
-  const extraFrames = Math.max(0, frames - minimumFrames);
-  for (let extra = 0; extra < extraFrames; extra += 1) {
-    const eligibleWeights = weights.map((weight, index) =>
-      index < visitCount && (dwellFrames[index] ?? 0) >= maximumDwellFrames
-        ? 0
-        : weight
-    );
-    const totalWeight = eligibleWeights.reduce((total, weight) => total + weight, 0);
-    let selection = random() * totalWeight;
-    let selectedIndex = eligibleWeights.length - 1;
-    for (let index = 0; index < eligibleWeights.length; index += 1) {
-      selection -= eligibleWeights[index] ?? 0;
-      if (selection <= 0) {
-        selectedIndex = index;
-        break;
-      }
-    }
-    if (selectedIndex < visitCount) {
-      dwellFrames[selectedIndex] =
-        (dwellFrames[selectedIndex] ?? minimumDwellFrames) + 1;
-    } else {
-      const transitionIndex = selectedIndex - visitCount;
-      transitionFrames[transitionIndex] =
-        (transitionFrames[transitionIndex] ?? minimumTransitionFrames) + 1;
-    }
+  if (visitCount === 0) return [];
+
+  // Give every character the same scan budget. Any remainder is distributed
+  // cyclically from a random start, so no position is systematically favored.
+  const baseDwellFrames = Math.floor(frames / visitCount);
+  const dwellFrames = Array.from({ length: visitCount }, () => baseDwellFrames);
+  const remainderStart = Math.floor(random() * visitCount);
+  for (let extra = 0; extra < frames % visitCount; extra += 1) {
+    const index = (remainderStart + extra) % visitCount;
+    dwellFrames[index] = (dwellFrames[index] ?? baseDwellFrames) + 1;
   }
 
   const segments: RevealSegment[] = [];
-  // Half the 62px character spacing keeps adjacent scan endpoints touching,
-  // so ordinary character transitions remain spatially continuous.
+  // Adjacent scans touch at their endpoints. There are no off-canvas lead-in
+  // or lead-out frames, which prevents empty frames and protects the last glyph.
   const scanRadius = characterSpacing / 2;
-  let currentX = textStart - scanRadius - 18;
   for (let visitIndex = 0; visitIndex < visitCount; visitIndex += 1) {
     const characterIndex = visitOrder[visitIndex] ?? 0;
     const characterX = textStart + characterIndex * characterSpacing;
     const scanStart = characterX - scanRadius;
     const scanEnd = characterX + scanRadius;
     segments.push({
-      kind: "transition",
-      frames: transitionFrames[visitIndex] ?? minimumTransitionFrames,
-      fromX: currentX,
-      toX: scanStart,
-      phase: random() * Math.PI * 2,
-      backtrackAmplitude:
-        random() < TRANSITION_BACKTRACK_PROBABILITY ? 3 + random() * 3 : 0
-    });
-    segments.push({
       kind: "dwell",
-      frames: dwellFrames[visitIndex] ?? minimumDwellFrames,
+      frames: dwellFrames[visitIndex] ?? baseDwellFrames,
       fromX: scanStart,
       toX: scanEnd,
       phase: random() * Math.PI * 2,
       backtrackAmplitude:
-        random() < DWELL_BACKTRACK_PROBABILITY ? 4 + random() * 3 : 0,
+        random() < DWELL_BACKTRACK_PROBABILITY ? 2 + random() * 2 : 0,
       characterIndex
     });
-    currentX = scanEnd;
   }
-  segments.push({
-    kind: "transition",
-    frames: transitionFrames[visitCount] ?? minimumTransitionFrames,
-    fromX: currentX,
-    toX: textStart + (glyphCount - 1) * characterSpacing + scanRadius + 18,
-    phase: random() * Math.PI * 2,
-    backtrackAmplitude:
-      random() < TRANSITION_BACKTRACK_PROBABILITY ? 3 + random() * 3 : 0
-  });
   return segments;
 }
 
@@ -587,7 +581,7 @@ export function compositeCharacterWithinAreaLimit(
   width: number,
   revealCenter: number,
   maximumVisibleRatio = 0.4
-): void {
+): number {
   let fullPixelCount = 0;
   const visibleIndices: number[] = [];
   for (let index = 0; index < fullCharacter.length; index += 1) {
@@ -596,7 +590,7 @@ export function compositeCharacterWithinAreaLimit(
   }
 
   const visiblePixelLimit = Math.floor(
-    fullPixelCount * Math.min(0.36, Math.max(0.065, maximumVisibleRatio))
+    fullPixelCount * Math.min(0.4, Math.max(0.065, maximumVisibleRatio))
   );
   if (visibleIndices.length > visiblePixelLimit) {
     visibleIndices.sort((left, right) => {
@@ -610,6 +604,7 @@ export function compositeCharacterWithinAreaLimit(
   for (const index of visibleIndices) {
     target[index] = visibleCharacter[index] ?? 0;
   }
+  return visibleIndices.length;
 }
 
 export function revealStateForFrame(
@@ -621,15 +616,14 @@ export function revealStateForFrame(
     const segmentEnd = segmentStart + segment.frames;
     if (frame < segmentEnd) {
       const localFrame = frame - segmentStart;
-      const progress = (localFrame + 0.5) / segment.frames;
+      const progress = segment.frames <= 1 ? 1 : localFrame / (segment.frames - 1);
       if (segment.kind === "dwell") {
-        const eased = progress * progress * (3 - 2 * progress);
         const unevenMotion =
           segment.backtrackAmplitude *
           Math.sin(progress * Math.PI * 2 + segment.phase) *
           Math.sin(progress * Math.PI);
         const centerX =
-          segment.fromX + (segment.toX - segment.fromX) * eased + unevenMotion;
+          segment.fromX + (segment.toX - segment.fromX) * progress + unevenMotion;
         return {
           centerX,
           dwellCharacterIndex: segment.characterIndex
@@ -670,7 +664,8 @@ export interface RenderedVerificationAnimation {
 }
 
 export function renderVerificationAnimationWithMetadata(
-  answer: string
+  answer: string,
+  renderAttempt = 0
 ): RenderedVerificationAnimation {
   const { width, height, minFrames, maxFrames, delayMs } = config.animation;
   const seed = randomBytes(8);
@@ -687,8 +682,8 @@ export function renderVerificationAnimationWithMetadata(
     horizontalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 4,
     verticalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 5,
     distortionCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 3,
-    driftX: 8 + random() * 8,
-    driftY: 6.5 + random() * 7,
+    driftX: 4.5 + random() * 4.5,
+    driftY: 3.5 + random() * 3.5,
     stretchX: (0.15 + random() * 0.13) * questionDistortion,
     stretchY: (0.12 + random() * 0.13) * questionDistortion,
     waveAmplitude: (3.4 + random() * 2.6) * questionDistortion,
@@ -700,7 +695,7 @@ export function renderVerificationAnimationWithMetadata(
     jitterPhase: random() * Math.PI * 2,
     colorIndex: colorIndices[characterIndex] ?? 4
   }));
-  const partialRevealWidth = 27 + random() * 5;
+  const partialRevealWidth = 32 + random() * 5;
   const maximumVisibleRatios = glyphs.map((glyph) => {
     const estimate = estimateGlyphVisibility(glyph.paths);
     return reduceGlyphVisibility(estimate.visibleRatio, random());
@@ -726,9 +721,11 @@ export function renderVerificationAnimationWithMetadata(
   const pixels = new Uint8Array(width * height);
   const visibleCharacter = new Uint8Array(width * height);
   const fullCharacter = new Uint8Array(width * height);
+  let containsBlankFrame = false;
 
   for (let frame = 0; frame < frames; frame += 1) {
     pixels.fill(0);
+    let frameVisiblePixels = 0;
     const progress = frame / Math.max(1, frames);
     const revealState = revealStateForFrame(frame, revealSegments);
     let revealCenter = revealState.centerX;
@@ -762,8 +759,6 @@ export function renderVerificationAnimationWithMetadata(
       const baseX = textStart + characterIndex * characterSpacing;
       const motionProfile = motionProfiles[characterIndex];
       if (!motionProfile) return;
-      const characterRevealLeft = Number.NEGATIVE_INFINITY;
-      const characterRevealRight = Number.POSITIVE_INFINITY;
       const color = motionProfile.colorIndex;
       const characterRevealMask = ambiguityAdjustedRevealMask(
         glyph,
@@ -785,54 +780,31 @@ export function renderVerificationAnimationWithMetadata(
         width: width * 2,
         animatedPhase: 0
       };
-      glyph.paths.forEach((path) => {
-        for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
-          const previous = path[pointIndex - 1];
-          const current = path[pointIndex];
-          if (!previous || !current) continue;
-          const from = transformPoint(
-            previous,
-            glyph,
-            characterIndex,
-            progress,
-            baseX,
-            motionProfile
-          );
-          const to = transformPoint(
-            current,
-            glyph,
-            characterIndex,
-            progress,
-            baseX,
-            motionProfile
-          );
-          drawLine(
-            visibleCharacter,
-            width,
-            height,
-            from,
-            to,
-            2.05,
-            color,
-            characterRevealMask,
-            characterRevealLeft,
-            characterRevealRight
-          );
-          drawLine(
-            fullCharacter,
-            width,
-            height,
-            from,
-            to,
-            2.05,
-            color,
-            fullRevealMask,
-            Number.NEGATIVE_INFINITY,
-            Number.POSITIVE_INFINITY
-          );
-        }
-      });
-      compositeCharacterWithinAreaLimit(
+      drawTransformedGlyph(
+        visibleCharacter,
+        width,
+        height,
+        glyph,
+        characterIndex,
+        progress,
+        baseX,
+        motionProfile,
+        color,
+        characterRevealMask
+      );
+      drawTransformedGlyph(
+        fullCharacter,
+        width,
+        height,
+        glyph,
+        characterIndex,
+        progress,
+        baseX,
+        motionProfile,
+        color,
+        fullRevealMask
+      );
+      frameVisiblePixels += compositeCharacterWithinAreaLimit(
         pixels,
         visibleCharacter,
         fullCharacter,
@@ -852,6 +824,43 @@ export function renderVerificationAnimationWithMetadata(
       );
     });
 
+    if (frameVisiblePixels === 0) {
+      const fallbackCharacterIndex = revealState.dwellCharacterIndex;
+      const fallbackGlyph = fallbackCharacterIndex === undefined
+        ? undefined
+        : glyphs[fallbackCharacterIndex];
+      const fallbackMotionProfile = fallbackCharacterIndex === undefined
+        ? undefined
+        : motionProfiles[fallbackCharacterIndex];
+      if (
+        fallbackCharacterIndex !== undefined &&
+        fallbackGlyph &&
+        fallbackMotionProfile
+      ) {
+        // A curved mask can miss a narrow terminal at the very edge of a scan.
+        // Keep the same continuous position and motion, but widen only that
+        // empty frame enough to retain a readable stroke fragment.
+        drawTransformedGlyph(
+          pixels,
+          width,
+          height,
+          fallbackGlyph,
+          fallbackCharacterIndex,
+          progress,
+          textStart + fallbackCharacterIndex * characterSpacing,
+          fallbackMotionProfile,
+          fallbackMotionProfile.colorIndex,
+          { ...revealMask, width: revealMask.width * 1.4 }
+        );
+      }
+    }
+    if (
+      frameVisiblePixels === 0 &&
+      !pixels.some((pixel) => pixel >= 2 && pixel <= 6)
+    ) {
+      containsBlankFrame = true;
+    }
+
     gif.writeFrame(pixels, width, height, {
       palette: frame === 0 ? PALETTE : undefined,
       delay: delayMs,
@@ -860,6 +869,12 @@ export function renderVerificationAnimationWithMetadata(
   }
 
   gif.finish();
+  if (containsBlankFrame) {
+    if (renderAttempt < 2) {
+      return renderVerificationAnimationWithMetadata(answer, renderAttempt + 1);
+    }
+    throw new Error("CAPTCHA rendering produced a blank frame after three attempts.");
+  }
   return {
     buffer: Buffer.from(gif.bytes()),
     durationMs: frames * delayMs
