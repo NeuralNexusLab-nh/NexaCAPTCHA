@@ -40,14 +40,14 @@ describe("verification animation", () => {
     expect(colors.every((color) => color >= 2 && color <= 6)).toBe(true);
   });
 
-  it("randomizes playback between 28 and 37 seconds", () => {
+  it("randomizes playback between 19.6 and 25.9 seconds", () => {
     const delays = frameDelays(renderVerificationAnimation("N3XA"));
-    expect(delays.length).toBeGreaterThanOrEqual(280);
-    expect(delays.length).toBeLessThanOrEqual(370);
+    expect(delays.length).toBeGreaterThanOrEqual(196);
+    expect(delays.length).toBeLessThanOrEqual(259);
     expect(delays.every((delay) => delay === 10)).toBe(true);
     const totalCentiseconds = delays.reduce((total, delay) => total + delay, 0);
-    expect(totalCentiseconds).toBeGreaterThanOrEqual(2800);
-    expect(totalCentiseconds).toBeLessThanOrEqual(3700);
+    expect(totalCentiseconds).toBeGreaterThanOrEqual(1960);
+    expect(totalCentiseconds).toBeLessThanOrEqual(2590);
   });
 
   it("limits a frame to the reduced visible area", () => {

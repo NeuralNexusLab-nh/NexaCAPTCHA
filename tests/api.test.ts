@@ -34,7 +34,7 @@ describe("NexaCAPTCHA HTTP API", () => {
     const created = await request(app).post("/api/verifications").send({}).expect(201);
     expect(created.body.verificationId).toMatch(/^ver_[A-Za-z0-9_-]{12}$/);
     expect(created.body.verificationId).toHaveLength(16);
-    expect(created.body.animationDurationMs).toBe(32_500);
+    expect(created.body.animationDurationMs).toBe(22_800);
     expect(created.body.expiresInMs).toBe(120_000);
 
     await request(app)
