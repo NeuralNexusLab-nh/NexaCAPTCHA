@@ -3,18 +3,19 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Follow four colors through a short animation. NexaCAPTCHA stays readable for people without leaving an easy frame for automated solvers.">
-    <meta name="theme-color" content="#090909">
-    <meta property="og:title" content="NexaCAPTCHA — Easy to follow. Hard to fake.">
-    <meta property="og:description" content="A four-color CAPTCHA made to be watched, not captured in one lucky frame.">
-    <title>NexaCAPTCHA — Easy to follow. Hard to fake.</title>
+    <meta name="description" content="Adaptive human verification designed to remain clear for legitimate users while increasing the cost and uncertainty of automated solving.">
+    <meta name="theme-color" content="#030914">
+    <meta property="og:title" content="NexaCAPTCHA — Human verification, engineered for resistance.">
+    <meta property="og:description" content="Clear human verification with server-enforced controls and motion-based visual protection.">
+    <title>NexaCAPTCHA — Human verification, engineered for resistance.</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="/site.webmanifest">
     <link rel="stylesheet" href="/vendor/fonts/inter/index.css">
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
+    <link rel="stylesheet" href="/vendor/fonts/oxanium/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=13">
-    <script src="/app.js?v=16" defer></script>
+    <link rel="stylesheet" href="/styles.css?v=17">
+    <script src="/app.js?v=19" defer></script>
     <script src="/captcha.js?v=8" defer></script>
   </head>
   <body>
@@ -24,11 +25,10 @@
       <span class="ambient-grid"></span>
       <span class="ambient-beam"></span>
     </div>
-    <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
     <header class="site-header">
       <nav class="nav shell" aria-label="Main navigation">
         <a class="brand" href="#top" aria-label="NexaCAPTCHA home">
-          <img src="/assets/logo.svg" alt="" width="32" height="32">
+          <img src="/assets/logo.svg?v=2" alt="" width="32" height="32">
           <span>NexaCAPTCHA</span>
         </a>
         <div class="nav-links">
@@ -54,17 +54,17 @@
     <main id="main">
       <section class="hero shell" id="top">
         <div class="hero-copy reveal">
-          <p class="eyebrow"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span data-i18n="heroEyebrow">HUMAN CHECKS, WITHOUT THE EASY FRAMES</span></p>
-          <h1><span data-i18n="heroTitleLine1">Easy to follow</span><em data-i18n="heroTitleLine2">Hard to fake</em></h1>
-          <p class="hero-lead" data-i18n="heroLead">People follow four colors. Automated solvers have to track the motion, separate the fragments and rebuild the answer.</p>
+          <p class="eyebrow"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span data-i18n="heroEyebrow">ADAPTIVE HUMAN VERIFICATION</span></p>
+          <h1><span data-i18n="heroTitleLine1">Human verification,</span><em data-i18n="heroTitleLine2">engineered for resistance.</em></h1>
+          <p class="hero-lead" data-i18n="heroLead">NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.</p>
           <div class="hero-actions">
             <a class="button button-primary" href="https://nexacaptchademo.zeabur.app/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i><span data-i18n="tryIt">Open the demo</span></a>
-            <a class="button button-secondary" href="#setup"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="addToSite">Read the setup</span></a>
+            <a class="button button-secondary" href="#setup"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="addToSite">View integration</span></a>
           </div>
           <ul class="hero-notes" aria-label="Product highlights">
-            <li><i class="fa-solid fa-eye" aria-hidden="true"></i><span data-i18n="noCleanFrame">Readable in motion</span></li>
+            <li><i class="fa-solid fa-eye" aria-hidden="true"></i><span data-i18n="noCleanFrame">Designed for human readability</span></li>
             <li><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span data-i18n="changingMotion">45.8% model success in our test</span></li>
-            <li><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i><span data-i18n="higherCost">Two tries, then it expires</span></li>
+            <li><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i><span data-i18n="higherCost">Two attempts before expiry</span></li>
           </ul>
         </div>
 
@@ -89,39 +89,39 @@
       <section class="section shell" id="features" aria-labelledby="features-title">
         <div class="section-heading reveal">
           <p class="eyebrow eyebrow-purple"><i class="fa-solid fa-star" aria-hidden="true"></i><span data-i18n="featuresEyebrow">HOW IT WORKS</span></p>
-          <h2 id="features-title" data-i18n="featuresTitle">Four colors for people. A reconstruction problem for bots.</h2>
-          <p data-i18n="featuresLead">The check is meant to be watched, not frozen. People keep track of each color; a solver has to piece changing fragments together across time.</p>
+          <h2 id="features-title" data-i18n="featuresTitle">Security that remains usable.</h2>
+          <p data-i18n="featuresLead">NexaCAPTCHA distributes visual information across time. People follow a clear sequence, while automated systems must reconstruct it from changing frames.</p>
         </div>
         <div class="feature-grid">
           <article class="feature-card reveal">
             <i class="fa-solid fa-eye-slash" aria-hidden="true"></i>
-            <h3 data-i18n="featureIncompleteTitle">No lucky screenshot</h3>
-            <p data-i18n="featureIncompleteBody">A single frame never gives away a whole character. It only makes sense after you follow it for a moment.</p>
+            <h3 data-i18n="featureIncompleteTitle">No complete still image</h3>
+            <p data-i18n="featureIncompleteBody">The answer is revealed over time instead of being exposed in a single frame.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
-            <h3 data-i18n="featureDistortionTitle">More than one thing moves</h3>
-            <p data-i18n="featureDistortionBody">At least two characters stay active, so there is no tidy one-by-one sequence to collect.</p>
+            <h3 data-i18n="featureDistortionTitle">Independent motion profiles</h3>
+            <p data-i18n="featureDistortionBody">Each character moves and rotates on its own schedule, complicating frame-by-frame alignment.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-arrows-up-down-left-right" aria-hidden="true"></i>
-            <h3 data-i18n="featureMotionTitle">Color keeps your place</h3>
-            <p data-i18n="featureMotionBody">Each character keeps its own color, giving people a steady cue even when paths cross.</p>
+            <h3 data-i18n="featureMotionTitle">Stable visual anchors</h3>
+            <p data-i18n="featureMotionBody">Distinct colors help people track characters through motion without exposing the answer in metadata.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
-            <h3 data-i18n="featureWindowTitle">The pieces do not line up</h3>
-            <p data-i18n="featureWindowBody">Visible fragments shift in position, angle and scale. Simple frame stacking leaves a messy result.</p>
+            <h3 data-i18n="featureWindowTitle">Variable reveal path</h3>
+            <p data-i18n="featureWindowBody">The visible region changes direction and pace, reducing the value of fixed-window extraction.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-fingerprint" aria-hidden="true"></i>
-            <h3 data-i18n="featureUniqueTitle">Hard shapes stay split</h3>
-            <p data-i18n="featureUniqueBody">Long strokes and closed loops appear in separate stages instead of revealing the shape at once.</p>
+            <h3 data-i18n="featureUniqueTitle">Per-verification rendering</h3>
+            <p data-i18n="featureUniqueBody">Timing, distortion, placement, and masking are regenerated for every verification.</p>
           </article>
           <article class="feature-card reveal">
             <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
-            <h3 data-i18n="featureCostTitle">Different every run</h3>
-            <p data-i18n="featureCostBody">Timing, paths and presentation are generated again for every verification.</p>
+            <h3 data-i18n="featureCostTitle">Server-enforced controls</h3>
+            <p data-i18n="featureCostBody">Retry limits, expiry, cooldowns, and one-time response tokens are enforced by the server.</p>
           </article>
         </div>
 
@@ -129,8 +129,8 @@
           <div class="experiment-heading">
             <div>
               <p class="eyebrow"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="experimentEyebrow">VERIFICATION TEST</span></p>
-              <h3 id="experiment-title" data-i18n="experimentTitle">What we saw in testing</h3>
-              <p class="experiment-lead" data-i18n="experimentLead">We timed people and GPT 5.6 Sol - Medium on three verification systems. These are the averages from those runs.</p>
+              <h3 id="experiment-title" data-i18n="experimentTitle">Verification performance, measured.</h3>
+              <p class="experiment-lead" data-i18n="experimentLead">Recorded mean completion time and success rate for human participants and GPT 5.6 Sol - Medium across three verification systems.</p>
             </div>
             <span class="experiment-version"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span data-i18n="experimentVersion">Tested build</span></span>
           </div>
@@ -145,7 +145,7 @@
               </thead>
               <tbody>
                 <tr class="nexa-result">
-                  <th scope="row"><img src="/assets/logo.svg" alt="" width="24" height="24"><span>NexaCAPTCHA</span></th>
+                  <th scope="row"><img src="/assets/logo.svg?v=2" alt="" width="24" height="24"><span>NexaCAPTCHA</span></th>
                   <td><strong>15.3</strong> <span data-i18n="secondsAverage">seconds average</span></td>
                   <td><strong>45.8%</strong> <span data-i18n="successRate">success rate</span> · <strong>49.4</strong> <span data-i18n="secondsAverage">seconds average</span></td>
                 </tr>
@@ -170,14 +170,14 @@
         <div class="shell">
           <div class="section-heading reveal">
             <p class="eyebrow"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="setupEyebrow">SETUP</span></p>
-            <h2 id="setup-title" data-i18n="setupTitle">Add NexaCAPTCHA to your site</h2>
-            <p data-i18n="setupLead">Copy these two pieces. No frontend framework is required.</p>
+            <h2 id="setup-title" data-i18n="setupTitle">Integrate NexaCAPTCHA.</h2>
+            <p data-i18n="setupLead">Add the client script and verify completed responses on your server. No frontend framework is required.</p>
           </div>
 
           <article class="setup-row reveal">
             <div class="setup-copy">
               <span class="step-number">1</span>
-              <div><h3><i class="fa-solid fa-download" aria-hidden="true"></i><span data-i18n="loadTitle">Paste this into your HTML</span></h3><p data-i18n="loadBody">The Script loads NexaCAPTCHA. The Div chooses where it appears.</p></div>
+              <div><h3><i class="fa-solid fa-download" aria-hidden="true"></i><span data-i18n="loadTitle">Add the client script.</span></h3><p data-i18n="loadBody">Load NexaCAPTCHA and place the container where the verification should appear.</p></div>
             </div>
             <div class="code-window">
               <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span><button class="copy-button" type="button" data-copy="embed-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
@@ -190,7 +190,7 @@
           <article class="setup-row reveal">
             <div class="setup-copy">
               <span class="step-number">2</span>
-              <div><h3><i class="fa-solid fa-arrow-right" aria-hidden="true"></i><span data-i18n="sendTitle">Send the result with your form</span></h3><p data-i18n="sendBody">Put this in your frontend JavaScript. Replace yourSubmitFunction with your existing submit function.</p></div>
+              <div><h3><i class="fa-solid fa-arrow-right" aria-hidden="true"></i><span data-i18n="sendTitle">Submit the completed result.</span></h3><p data-i18n="sendBody">Add this to your frontend JavaScript and replace yourSubmitFunction with your existing submission handler.</p></div>
             </div>
             <div class="code-window">
               <div class="code-toolbar"><span><i class="fa-brands fa-js" aria-hidden="true"></i><span data-i18n="frontendLocation">JavaScript · frontend</span></span><button class="copy-button" type="button" data-copy="callback-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
@@ -218,8 +218,8 @@
       <section class="section shell" id="verify" aria-labelledby="verify-title">
         <div class="section-heading reveal">
           <p class="eyebrow eyebrow-purple"><i class="fa-solid fa-server" aria-hidden="true"></i><span data-i18n="verifyEyebrow">BACKEND VERIFICATION</span></p>
-          <h2 id="verify-title" data-i18n="verifyTitle">Check it on your server</h2>
-          <p data-i18n="verifyLead">Before accepting the form, signup, or login, send both values to NexaCAPTCHA.</p>
+          <h2 id="verify-title" data-i18n="verifyTitle">Validate every response server-side.</h2>
+          <p data-i18n="verifyLead">Before accepting a form submission, registration, or login, send both values to NexaCAPTCHA.</p>
         </div>
 
         <div class="verify-layout">
@@ -269,7 +269,7 @@ if (!result.success) {
 
     <footer class="site-footer">
       <div class="shell footer-grid">
-        <div class="footer-brand"><img src="/assets/logo.svg" alt="" width="30" height="30"><div><strong>NexaCAPTCHA</strong><span data-i18n="footerTagline">Simple motion-based human verification.</span></div></div>
+        <div class="footer-brand"><img src="/assets/logo.svg?v=2" alt="" width="30" height="30"><div><strong>NexaCAPTCHA</strong><span data-i18n="footerTagline">Motion-based verification with server-enforced controls.</span></div></div>
         <div class="footer-links">
           <span class="footer-coordinate"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>25.0330° N · 121.5654° E</span>
           <a class="footer-link" href="https://nxlab.zone.id" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-code" aria-hidden="true"></i><span>Made By NeuralNexusLab</span></a>

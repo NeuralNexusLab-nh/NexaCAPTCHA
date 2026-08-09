@@ -199,6 +199,15 @@ export function createApp(store: VerificationStore) {
     )
   );
 
+  app.use(
+    "/vendor/fonts/oxanium",
+    websiteHeaders,
+    express.static(path.resolve("node_modules", "@fontsource-variable", "oxanium"), {
+      fallthrough: false,
+      maxAge: "1d"
+    })
+  );
+
   app.use(websiteHeaders);
   app.use(express.static(config.publicDirectory, { extensions: ["html"], maxAge: "5m" }));
   app.get("/", (_request, response) => {
