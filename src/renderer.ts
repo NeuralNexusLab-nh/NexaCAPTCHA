@@ -491,7 +491,7 @@ export function createRevealSegments(
   }
   const visitOrder = [...initialOrder, ...revisitOrder];
   const visitCount = visitOrder.length;
-  const minimumDwellFrames = 12;
+  const minimumDwellFrames = 18;
   const dwellFrames = Array.from(
     { length: visitCount },
     () => minimumDwellFrames
@@ -505,7 +505,7 @@ export function createRevealSegments(
   const dwellWeights = dwellFrames.map(() => 0.85 + random() * 0.3);
   const transitionWeights = transitionFrames.map(() => 0.08 + random() * 0.06);
   const weights = [...dwellWeights, ...transitionWeights];
-  const maximumDwellFrames = 18;
+  const maximumDwellFrames = 28;
   const minimumFrames =
     visitCount * minimumDwellFrames + transitionCount * minimumTransitionFrames;
   const extraFrames = Math.max(0, frames - minimumFrames);
