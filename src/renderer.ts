@@ -19,6 +19,8 @@ const GIFEncoder =
 
 export const DWELL_BACKTRACK_PROBABILITY = 0.015;
 export const TRANSITION_BACKTRACK_PROBABILITY = 0.006;
+export const CAPTCHA_DIFFICULTY_POINTS = 2;
+const DIFFICULTY_MULTIPLIER = 1 + CAPTCHA_DIFFICULTY_POINTS * 0.05;
 
 interface Glyph {
   paths: Point[][];
@@ -258,8 +260,13 @@ export function reduceGlyphVisibility(
   estimatedVisibleRatio: number,
   randomValue: number
 ): number {
-  const reduction = 0.55 + Math.min(1, Math.max(0, randomValue)) * 0.09;
-  return Math.min(0.36, Math.max(0.18, estimatedVisibleRatio * reduction));
+  const reduction =
+    (0.55 + Math.min(1, Math.max(0, randomValue)) * 0.09) /
+    DIFFICULTY_MULTIPLIER;
+  return Math.min(
+    0.36 / DIFFICULTY_MULTIPLIER,
+    Math.max(0.18 / DIFFICULTY_MULTIPLIER, estimatedVisibleRatio * reduction)
+  );
 }
 
 function horizontalDrift(
@@ -590,7 +597,10 @@ export function compositeCharacterWithinAreaLimit(
   }
 
   const visiblePixelLimit = Math.floor(
-    fullPixelCount * Math.min(0.37, Math.max(0.065, maximumVisibleRatio))
+    fullPixelCount * Math.min(
+      0.37 / DIFFICULTY_MULTIPLIER,
+      Math.max(0.065, maximumVisibleRatio)
+    )
   );
   if (visibleIndices.length > visiblePixelLimit) {
     visibleIndices.sort((left, right) => {
@@ -667,18 +677,22 @@ function renderVerificationAnimationAttempt(
   const random = createPrng(seed);
   const frames = minFrames + Math.floor(random() * (maxFrames - minFrames + 1));
   const glyphs = answer.split("").map(glyphFor);
-  const motionCycles = [2, 3, 4, 5, 6, 7, 8];
-  const questionDistortion = (0.95 + random() * 0.35) * 0.83;
+  const cycleOffset = Math.ceil(CAPTCHA_DIFFICULTY_POINTS / 2);
+  const motionCycles = [2, 3, 4, 5, 6, 7, 8].map(
+    (cycles) => cycles + cycleOffset
+  );
+  const questionDistortion =
+    (0.95 + random() * 0.35) * 0.83 * DIFFICULTY_MULTIPLIER;
   const colorIndices = createDistinctColorIndices(glyphs.length, random);
   const motionProfiles: MotionProfile[] = glyphs.map((_glyph, characterIndex) => ({
     phaseX: random() * Math.PI * 2,
     phaseY: random() * Math.PI * 2,
     phaseDistortion: random() * Math.PI * 2,
-    horizontalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 4,
-    verticalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 5,
-    distortionCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 3,
-    driftX: 4.5 + random() * 4.5,
-    driftY: 3.5 + random() * 3.5,
+    horizontalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 5,
+    verticalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 6,
+    distortionCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 4,
+    driftX: (4.5 + random() * 4.5) * DIFFICULTY_MULTIPLIER,
+    driftY: (3.5 + random() * 3.5) * DIFFICULTY_MULTIPLIER,
     stretchX: (0.15 + random() * 0.13) * questionDistortion,
     stretchY: (0.12 + random() * 0.13) * questionDistortion,
     waveAmplitude: (3.4 + random() * 2.6) * questionDistortion,
@@ -690,7 +704,7 @@ function renderVerificationAnimationAttempt(
     jitterPhase: random() * Math.PI * 2,
     colorIndex: colorIndices[characterIndex] ?? 4
   }));
-  const partialRevealWidth = 29 + random() * 4;
+  const partialRevealWidth = (29 + random() * 4) / DIFFICULTY_MULTIPLIER;
   const maximumVisibleRatios = glyphs.map((glyph) => {
     const estimate = estimateGlyphVisibility(glyph.paths);
     return reduceGlyphVisibility(estimate.visibleRatio, random());
@@ -845,7 +859,15 @@ function renderVerificationAnimationAttempt(
           textStart + fallbackCharacterIndex * characterSpacing,
           fallbackMotionProfile,
           fallbackMotionProfile.colorIndex,
-          { ...revealMask, width: revealMask.width * 1.4 }
+          {
+            ...revealMask,
+            centerY: height / 2,
+            width: revealMask.width * 1.4,
+            height: height * 2,
+            bend: 0,
+            pinch: 0,
+            edgeWaves: 0
+          }
         );
       }
     }
