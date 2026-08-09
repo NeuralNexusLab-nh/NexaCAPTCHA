@@ -252,8 +252,8 @@ export function reduceGlyphVisibility(
   estimatedVisibleRatio: number,
   randomValue: number
 ): number {
-  const reduction = 0.4 + Math.min(1, Math.max(0, randomValue)) * 0.1;
-  return Math.min(0.29, Math.max(0.13, estimatedVisibleRatio * reduction));
+  const reduction = 0.52 + Math.min(1, Math.max(0, randomValue)) * 0.1;
+  return Math.min(0.35, Math.max(0.17, estimatedVisibleRatio * reduction));
 }
 
 function horizontalDrift(
@@ -589,7 +589,7 @@ export function compositeCharacterWithinAreaLimit(
   }
 
   const visiblePixelLimit = Math.floor(
-    fullPixelCount * Math.min(0.3, Math.max(0.065, maximumVisibleRatio))
+    fullPixelCount * Math.min(0.36, Math.max(0.065, maximumVisibleRatio))
   );
   if (visibleIndices.length > visiblePixelLimit) {
     visibleIndices.sort((left, right) => {
@@ -686,7 +686,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
     jitterPhase: random() * Math.PI * 2,
     colorIndex: colorIndices[characterIndex] ?? 4
   }));
-  const partialRevealWidth = 25.5 + random() * 4.8;
+  const partialRevealWidth = 27 + random() * 5;
   const maximumVisibleRatios = glyphs.map((glyph) => {
     const estimate = estimateGlyphVisibility(glyph.paths);
     return reduceGlyphVisibility(estimate.visibleRatio, random());

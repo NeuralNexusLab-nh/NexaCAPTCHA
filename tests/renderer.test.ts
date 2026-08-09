@@ -79,10 +79,10 @@ describe("verification animation", () => {
     expect(curved.visibleRatio).toBeGreaterThan(simple.visibleRatio);
   });
 
-  it("reduces the estimated stroke area to 40-50 percent of its former size", () => {
-    expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.136);
-    expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.28);
-    expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.225);
+  it("keeps the enlarged visible area within the readability range", () => {
+    expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.1768);
+    expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.3472);
+    expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.285);
   });
 
   it("shrinks frames around distinctive joined strokes", () => {
