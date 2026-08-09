@@ -11,7 +11,7 @@ NexaCAPTCHA keeps verification clear for legitimate users while increasing the t
 [Open the demo](https://nexacaptchademo.zeabur.app/) · [View integration](#integrate-nexacaptcha)
 
 - Designed for human readability
-- 45.8% model success in our test
+- 24.3% model success in our test
 - Two attempts before expiry
 
 **LIVE DEMO · Ready**
@@ -60,7 +60,7 @@ Recorded mean completion time and success rate for human participants and GPT 5.
 
 | Verification system | Human | GPT 5.6 Sol - Medium |
 | --- | --- | --- |
-| **NexaCAPTCHA** | **15.3** seconds average | **45.8%** success rate · **49.4** seconds average |
+| **NexaCAPTCHA** | **7.3** seconds average | **24.3%** success rate · **60.3** seconds average |
 | **Google reCAPTCHA** | **1.9** seconds average | **99%** success rate · **42.9** seconds average |
 | **hCaptcha** | **11.8** seconds average | **83.7%** success rate · **48.3** seconds average |
 
