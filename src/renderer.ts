@@ -19,6 +19,7 @@ const GIFEncoder =
 
 interface Glyph {
   paths: Point[][];
+  landmarks: GlyphLandmark[];
   minX: number;
   maxX: number;
   minY: number;
@@ -72,6 +73,11 @@ interface RevealMask extends RevealShapeProfile {
   animatedPhase: number;
 }
 
+export interface GlyphLandmark {
+  point: Point;
+  weight: number;
+}
+
 export interface GlyphVisibilityEstimate {
   strokeCount: number;
   cornerCount: number;
@@ -96,11 +102,81 @@ function glyphFor(character: string): Glyph {
   const result = stringToPaths(character);
   return {
     paths: result.paths,
+    landmarks: createGlyphLandmarks(result.paths),
     minX: result.bounds.minX,
     maxX: result.bounds.maxX,
     minY: result.bounds.minY,
     maxY: result.bounds.maxY
   };
+}
+
+export function createGlyphLandmarks(paths: Point[][]): GlyphLandmark[] {
+  const endpoints: Point[] = [];
+  const corners: Point[] = [];
+
+  for (const path of paths) {
+    const first = path[0];
+    const last = path.at(-1);
+    if (first) endpoints.push(first);
+    if (last) endpoints.push(last);
+
+    for (let index = 1; index < path.length - 1; index += 1) {
+      const before = path[index - 1];
+      const corner = path[index];
+      const after = path[index + 1];
+      if (!before || !corner || !after) continue;
+      const firstAngle = Math.atan2(corner[1] - before[1], corner[0] - before[0]);
+      const secondAngle = Math.atan2(after[1] - corner[1], after[0] - corner[0]);
+      const turn = Math.abs(
+        Math.atan2(Math.sin(secondAngle - firstAngle), Math.cos(secondAngle - firstAngle))
+      );
+      if (turn >= Math.PI / 5) corners.push(corner);
+    }
+  }
+
+  const groups: Array<{ point: Point; count: number }> = [];
+  for (const endpoint of endpoints) {
+    const group = groups.find(
+      (candidate) => Math.hypot(
+        candidate.point[0] - endpoint[0],
+        candidate.point[1] - endpoint[1]
+      ) <= 0.75
+    );
+    if (group) {
+      group.point = [
+        (group.point[0] * group.count + endpoint[0]) / (group.count + 1),
+        (group.point[1] * group.count + endpoint[1]) / (group.count + 1)
+      ];
+      group.count += 1;
+    } else {
+      groups.push({ point: [...endpoint], count: 1 });
+    }
+  }
+
+  const landmarks: GlyphLandmark[] = groups.map((group) => ({
+    point: group.point,
+    // Joined endpoints expose topology (for example the vertex in W or 7),
+    // while a lone endpoint contains much less identifying information.
+    weight: group.count >= 2 ? 1.35 : 0.28
+  }));
+  for (const corner of corners) {
+    const existing = landmarks.find(
+      (landmark) => Math.hypot(
+        landmark.point[0] - corner[0],
+        landmark.point[1] - corner[1]
+      ) <= 0.75
+    );
+    if (existing) existing.weight = Math.max(existing.weight, 1.15);
+    else landmarks.push({ point: [...corner], weight: 0.78 });
+  }
+  return landmarks;
+}
+
+export function ambiguityMultiplierForLandmarkRisk(risk: number): number {
+  if (risk >= 1.25) return 0.82;
+  if (risk >= 0.72) return 0.9;
+  if (risk >= 0.28) return 0.96;
+  return 1;
 }
 
 function median(values: number[]): number {
@@ -328,6 +404,75 @@ function transformPoint(
   ];
 }
 
+function visibleLandmarkRisk(
+  glyph: Glyph,
+  characterIndex: number,
+  frameProgress: number,
+  baseX: number,
+  motionProfile: MotionProfile,
+  revealMask: RevealMask
+): number {
+  let risk = 0;
+  for (const landmark of glyph.landmarks) {
+    const transformed = transformPoint(
+      landmark.point,
+      glyph,
+      characterIndex,
+      frameProgress,
+      baseX,
+      motionProfile
+    );
+    if (isInsideRevealMask(transformed[0], transformed[1], revealMask)) {
+      risk += landmark.weight;
+    }
+  }
+  return risk;
+}
+
+function ambiguityAdjustedRevealMask(
+  glyph: Glyph,
+  characterIndex: number,
+  frameProgress: number,
+  baseX: number,
+  motionProfile: MotionProfile,
+  revealMask: RevealMask
+): RevealMask {
+  const visibleLandmarks = glyph.landmarks
+    .filter((landmark) => landmark.weight >= 0.72)
+    .map((landmark) => ({
+      landmark,
+      point: transformPoint(
+        landmark.point,
+        glyph,
+        characterIndex,
+        frameProgress,
+        baseX,
+        motionProfile
+      )
+    }))
+    .filter(({ point }) => isInsideRevealMask(point[0], point[1], revealMask))
+    .sort((left, right) => right.landmark.weight - left.landmark.weight);
+  const highestRisk = visibleLandmarks[0];
+  if (!highestRisk) return revealMask;
+
+  const offset = revealMask.centerX - highestRisk.point[0];
+  const direction = Math.abs(offset) > 1
+    ? Math.sign(offset)
+    : Math.sin(revealMask.animatedPhase + characterIndex * 1.7) >= 0 ? 1 : -1;
+  const joinedStroke = highestRisk.landmark.weight >= 1.25;
+
+  // Move the window to one side of a high-information junction instead of
+  // reducing the whole frame to a dot. The viewer still receives a useful
+  // stroke fragment, but the junction's branch relationship is not exposed.
+  return {
+    ...revealMask,
+    centerX:
+      revealMask.centerX +
+      direction * revealMask.width * (joinedStroke ? 0.44 : 0.32),
+    width: revealMask.width * (joinedStroke ? 0.78 : 0.88)
+  };
+}
+
 export function createRevealSegments(
   glyphCount: number,
   frames: number,
@@ -444,7 +589,7 @@ export function compositeCharacterWithinAreaLimit(
   }
 
   const visiblePixelLimit = Math.floor(
-    fullPixelCount * Math.min(0.3, Math.max(0.12, maximumVisibleRatio))
+    fullPixelCount * Math.min(0.3, Math.max(0.065, maximumVisibleRatio))
   );
   if (visibleIndices.length > visiblePixelLimit) {
     visibleIndices.sort((left, right) => {
@@ -606,6 +751,14 @@ export function renderVerificationAnimation(answer: string): Buffer {
       const characterRevealLeft = Number.NEGATIVE_INFINITY;
       const characterRevealRight = Number.POSITIVE_INFINITY;
       const color = motionProfile.colorIndex;
+      const characterRevealMask = ambiguityAdjustedRevealMask(
+        glyph,
+        characterIndex,
+        progress,
+        baseX,
+        motionProfile,
+        revealMask
+      );
       const fullRevealMask: RevealMask = {
         phase: 0,
         cycles: 0,
@@ -647,7 +800,7 @@ export function renderVerificationAnimation(answer: string): Buffer {
             to,
             2.05,
             color,
-            revealMask,
+            characterRevealMask,
             characterRevealLeft,
             characterRevealRight
           );
@@ -670,8 +823,18 @@ export function renderVerificationAnimation(answer: string): Buffer {
         visibleCharacter,
         fullCharacter,
         width,
-        revealCenter,
-        maximumVisibleRatios[characterIndex] ?? 0.2
+        characterRevealMask.centerX,
+        (maximumVisibleRatios[characterIndex] ?? 0.2) *
+          ambiguityMultiplierForLandmarkRisk(
+            visibleLandmarkRisk(
+              glyph,
+              characterIndex,
+              progress,
+              baseX,
+              motionProfile,
+              characterRevealMask
+            )
+          )
       );
     });
 

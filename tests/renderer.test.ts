@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  ambiguityMultiplierForLandmarkRisk,
   compositeCharacterWithinAreaLimit,
+  createGlyphLandmarks,
   createDistinctColorIndices,
   createRevealSegments,
   estimateGlyphVisibility,
@@ -81,6 +83,19 @@ describe("verification animation", () => {
     expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.136);
     expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.28);
     expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.225);
+  });
+
+  it("shrinks frames around distinctive joined strokes", () => {
+    const wLandmarks = createGlyphLandmarks(stringToPaths("W").paths);
+    const sevenLandmarks = createGlyphLandmarks(stringToPaths("7").paths);
+    const cLandmarks = createGlyphLandmarks(stringToPaths("C").paths);
+
+    expect(wLandmarks.filter((landmark) => landmark.weight >= 1.25)).toHaveLength(3);
+    expect(sevenLandmarks.filter((landmark) => landmark.weight >= 1.25)).toHaveLength(1);
+    expect(cLandmarks.filter((landmark) => landmark.weight >= 1.25)).toHaveLength(0);
+    expect(ambiguityMultiplierForLandmarkRisk(1.35)).toBe(0.82);
+    expect(ambiguityMultiplierForLandmarkRisk(0.78)).toBe(0.9);
+    expect(ambiguityMultiplierForLandmarkRisk(0)).toBe(1);
   });
 
   it("scans every character fully with uneven per-character timing", () => {
