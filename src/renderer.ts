@@ -79,6 +79,7 @@ interface RevealMask extends RevealShapeProfile {
 export interface GlyphLandmark {
   point: Point;
   weight: number;
+  kind: "gap" | "junction" | "corner";
 }
 
 export interface GlyphVisibilityEstimate {
@@ -159,8 +160,10 @@ export function createGlyphLandmarks(paths: Point[][]): GlyphLandmark[] {
   const landmarks: GlyphLandmark[] = groups.map((group) => ({
     point: group.point,
     // Joined endpoints expose topology (for example the vertex in W or 7),
-    // while a lone endpoint contains much less identifying information.
-    weight: group.count >= 2 ? 1.35 : 0.28
+    // while a lone endpoint marks an opening that distinguishes glyphs such
+    // as 6 from 8. Openings must survive the reveal as reliably as corners.
+    weight: group.count >= 2 ? 1.35 : 0.78,
+    kind: group.count >= 2 ? "junction" : "gap"
   }));
   for (const corner of corners) {
     const existing = landmarks.find(
@@ -170,7 +173,7 @@ export function createGlyphLandmarks(paths: Point[][]): GlyphLandmark[] {
       ) <= 0.75
     );
     if (existing) existing.weight = Math.max(existing.weight, 1.15);
-    else landmarks.push({ point: [...corner], weight: 0.78 });
+    else landmarks.push({ point: [...corner], weight: 0.78, kind: "corner" });
   }
   return landmarks;
 }
@@ -441,7 +444,9 @@ function ambiguityAdjustedRevealMask(
   revealMask: RevealMask
 ): RevealMask {
   const visibleLandmarks = glyph.landmarks
-    .filter((landmark) => landmark.weight >= 0.72)
+    // Gap endpoints are required reading cues. Unlike junctions and corners,
+    // do not steer the reveal away from them when their turn comes.
+    .filter((landmark) => landmark.kind !== "gap" && landmark.weight >= 0.72)
     .map((landmark) => ({
       landmark,
       point: transformPoint(

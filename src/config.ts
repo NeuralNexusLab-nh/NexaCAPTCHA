@@ -4,7 +4,7 @@ export const config = Object.freeze({
   port: Number.parseInt(process.env.PORT ?? "3000", 10),
   verificationLifetimeMs: 120_000,
   responseLifetimeMs: 300_000,
-  retryCooldownMs: 10_000,
+  retryCooldownMs: 20_000,
   maxAttempts: 2,
   maxActiveVerifications: 160,
   maxRenderQueue: 6,

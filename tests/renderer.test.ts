@@ -100,6 +100,17 @@ describe("verification animation", () => {
     expect(ambiguityMultiplierForLandmarkRisk(0)).toBe(1);
   });
 
+  it("treats open terminals as required gap landmarks", () => {
+    const sixGaps = createGlyphLandmarks(stringToPaths("6").paths)
+      .filter((landmark) => landmark.kind === "gap");
+    const eightGaps = createGlyphLandmarks(stringToPaths("8").paths)
+      .filter((landmark) => landmark.kind === "gap");
+
+    expect(sixGaps.length).toBeGreaterThan(0);
+    expect(sixGaps.every((landmark) => landmark.weight >= 0.78)).toBe(true);
+    expect(eightGaps).toHaveLength(0);
+  });
+
   it("scans every character fully with uneven per-character timing", () => {
     let state = 0x13579bdf;
     const random = () => {

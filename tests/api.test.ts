@@ -95,7 +95,7 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(200)
       .expect(({ body }) => {
         expect(body.attemptsRemaining).toBe(1);
-        expect(body.retryAfterSeconds).toBe(10);
+        expect(body.retryAfterSeconds).toBe(20);
       });
 
     await request(app)
@@ -104,7 +104,7 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(429)
       .expect(({ body }) => expect(body.errorCode).toBe("answer-cooldown"));
 
-    now += 10_000;
+    now += 20_000;
     await request(app)
       .post(answerUrl)
       .send({ answer: "WRNG" })

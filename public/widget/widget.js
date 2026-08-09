@@ -67,10 +67,10 @@
 
   function updateControls() {
     stage.setAttribute("aria-busy", String(busy));
-    var unavailable = busy || coolingDown || completed || !currentVerificationId;
-    verifyButton.disabled = unavailable;
-    input.disabled = unavailable;
-    newButton.disabled = busy;
+    var inactive = busy || completed || !currentVerificationId;
+    verifyButton.disabled = inactive || coolingDown;
+    input.disabled = inactive;
+    newButton.disabled = busy || coolingDown;
   }
 
   function clearTimers() {
@@ -297,7 +297,7 @@
         setMessage("Two incorrect answers ended this verification.", "is-error");
         updateControls();
       } else {
-        startCooldown(result.retryAfterSeconds || 10);
+        startCooldown(result.retryAfterSeconds || 20);
       }
     } catch (error) {
       busy = false;
@@ -309,7 +309,7 @@
         setMessage("This verification expired after two minutes. Request a new one.", "is-error");
         updateControls();
       } else if (code.includes("answer-cooldown")) {
-        startCooldown(10);
+        startCooldown(20);
       } else {
         setPill("Error", "fa-circle-exclamation", "is-error");
         setMessage("Verification could not be completed. Try again.", "is-error");
