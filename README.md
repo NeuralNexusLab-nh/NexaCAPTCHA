@@ -1,42 +1,94 @@
 # NexaCAPTCHA
 
-**Let humans through. Make bots pay.**
+**ADAPTIVE HUMAN VERIFICATION**
 
-NexaCAPTCHA turns four characters into a moving target. People follow it naturally. Bots must chase incomplete, distorted pieces across the full animation—on every attempt.
+## Homo Sapiens? Welcome onboard!
 
-Try it at [nexacaptcha.zone.id](https://nexacaptcha.zone.id).
+## AI? Get out!
 
-## Why it is harder to automate
+NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.
 
-- **Incomplete by design:** each frame shows only separated fragments, while the complete animation scans across every part of every character.
-- **Constant distortion:** characters keep bending, stretching, rotating, and changing shape.
-- **Independent movement:** every character moves in its own direction and at its own changing speed.
-- **An unpredictable window:** the visible shape keeps bending and changing while it speeds up, slows down, and moves backward.
-- **Different every time:** animation length, color, motion, distortion, and timing change with every CAPTCHA.
-- **Higher solving cost:** bots must inspect many frames, track moving fragments, and rebuild the answer instead of reading one image.
+[Open the demo](https://nexacaptchademo.zeabur.app/) · [View integration](#integrate-nexacaptcha)
 
-NexaCAPTCHA is designed to raise the cost of automated solving. It does not claim that automation is impossible.
+- Designed for human readability
+- 45.8% model success in our test
+- Two attempts before expiry
 
-The animation starts loading immediately. A verification remains open for two minutes after playback begins. The first two incorrect answers each start a ten-second input cooldown; a third incorrect answer ends the verification. Replacing a verification also starts immediately.
+**LIVE DEMO · Ready**
 
-## Add it to your site
+## Try NexaCAPTCHA
 
-### 1. Paste this into your HTML
+Follow each color through the animation. Enter the four characters when you're ready.
 
-The Script loads NexaCAPTCHA. The Div chooses where it appears.
+[Open the live demo](https://nexacaptchademo.zeabur.app/)
+
+**HOW IT WORKS**
+
+## Security that remains usable.
+
+NexaCAPTCHA distributes visual information across time. People follow a clear sequence, while automated systems must reconstruct it from changing frames.
+
+### No complete still image
+
+The answer is revealed over time instead of being exposed in a single frame.
+
+### Independent motion profiles
+
+Each character moves and rotates on its own schedule, complicating frame-by-frame alignment.
+
+### Stable visual anchors
+
+Distinct colors help people track characters through motion without exposing the answer in metadata.
+
+### Variable reveal path
+
+The visible region changes direction and pace, reducing the value of fixed-window extraction.
+
+### Per-verification rendering
+
+Timing, distortion, placement, and masking are regenerated for every verification.
+
+### Server-enforced controls
+
+Retry limits, expiry, cooldowns, and one-time response tokens are enforced by the server.
+
+**VERIFICATION TEST · Tested build**
+
+## Verification performance, measured.
+
+Recorded mean completion time and success rate for human participants and GPT 5.6 Sol - Medium across three verification systems.
+
+| Verification system | Human | GPT 5.6 Sol - Medium |
+| --- | --- | --- |
+| **NexaCAPTCHA** | **15.3** seconds average | **45.8%** success rate · **49.4** seconds average |
+| **Google reCAPTCHA** | **1.9** seconds average | **99%** success rate · **42.9** seconds average |
+| **hCaptcha** | **11.8** seconds average | **83.7%** success rate · **48.3** seconds average |
+
+These results describe the recorded test runs and are not a guarantee of performance against every model or execution.
+
+**INTEGRATION**
+
+## Integrate NexaCAPTCHA.
+
+Add the client script and verify completed responses on your server. No frontend framework is required.
+
+### 1. Add the client script.
+
+Load NexaCAPTCHA and place the container where the verification should appear.
+
+HTML · page markup:
 
 ```html
 <script src="https://nexacaptcha.zone.id/captcha.js" defer></script>
 
-<div
-  class="nexa-captcha"
-  data-callback="onNexaComplete"
-></div>
+<div class="nexa-captcha" data-callback="onNexaComplete"></div>
 ```
 
-### 2. Add this to your frontend JavaScript
+### 2. Submit the completed result.
 
-Replace `yourSubmitFunction` with the function that already submits your form to your backend.
+Add this to your frontend JavaScript and replace `yourSubmitFunction` with your existing submission handler.
+
+JavaScript · frontend:
 
 ```js
 function onNexaComplete(result) {
@@ -49,20 +101,22 @@ function onNexaComplete(result) {
 }
 ```
 
-NexaCAPTCHA returns two values:
+### Values returned to the frontend.
 
 | Value | Meaning |
 | --- | --- |
 | `verificationId` | The ID of the completed CAPTCHA. |
-| `responseToken` | A 64-character proof that it was completed. It works once. |
+| `responseToken` | One-time proof that verification was completed. |
 
-## Check the result on your backend
+**SERVER VALIDATION**
 
-Before accepting the form, signup, or login, send both values to:
+## Validate every response server-side.
 
-`POST https://nexacaptcha.zone.id/api/siteverify`
+Before accepting a form submission, registration, or login, send both values to NexaCAPTCHA.
 
-Request:
+`POST /api/siteverify`
+
+### Request
 
 ```json
 {
@@ -71,7 +125,7 @@ Request:
 }
 ```
 
-Success:
+### Response · success
 
 ```json
 {
@@ -80,7 +134,7 @@ Success:
 }
 ```
 
-Failure:
+### Response · failure
 
 ```json
 {
@@ -89,7 +143,7 @@ Failure:
 }
 ```
 
-Node.js backend example:
+### Node.js · backend
 
 ```js
 const response = await fetch(
@@ -97,47 +151,25 @@ const response = await fetch(
   {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ verificationId, responseToken })
+    body: JSON.stringify({
+      verificationId,
+      responseToken
+    })
   }
 );
 
 const result = await response.json();
-
 if (!result.success) {
   return res.status(403).send("Verification failed");
 }
 ```
 
-Continue only when the response says `success: true`. A `responseToken` works once and expires after five minutes.
+> Continue only when the response says `success: true`. A `responseToken` works once and expires after five minutes.
 
-## Run it yourself
+---
 
-Requires Node.js 20 or newer and npm.
+Motion-based verification with server-enforced controls.
 
-```sh
-npm install
-npm run dev
-```
+25.0330° N · 121.5654° E
 
-Production:
-
-```sh
-npm run build
-npm start
-```
-
-For Zeabur, create a service from this repository and choose the native Node.js runtime. `zbpack.json` supplies the build and start commands.
-
-## Limits and checks
-
-```sh
-npm run check
-```
-
-The release budget is 0.25 vCPU, 200 MB RAM, and 10 GB storage. The current store supports one application instance. Restarting the service invalidates unfinished CAPTCHA sessions.
-
-Read [SECURITY.md](SECURITY.md) before production use.
-
-## License
-
-Licensed under the [Apache License 2.0](LICENSE). See [NOTICE](NOTICE).
+Made by [NeuralNexusLab](https://nxlab.zone.id) · [nexacaptcha@nxlab.zone.id](mailto:nexacaptcha@nxlab.zone.id) · [NexaCAPTCHA](https://nexacaptcha.zone.id)
