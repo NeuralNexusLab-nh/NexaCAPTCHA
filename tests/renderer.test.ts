@@ -10,6 +10,7 @@ import {
   createConcurrentRevealSegments,
   createRevealSegments,
   estimateGlyphVisibility,
+  minimumTrackableVisibleRatio,
   randomJitterAt,
   reduceGlyphVisibility,
   revealStateForFrame,
@@ -119,6 +120,15 @@ describe("verification animation", () => {
     expect(ambiguityMultiplierForLandmarkRisk(1.35)).toBe(0.82);
     expect(ambiguityMultiplierForLandmarkRisk(0.78)).toBe(0.9);
     expect(ambiguityMultiplierForLandmarkRisk(0)).toBe(1);
+    const wGlyph = stringToPaths("W");
+    expect(minimumTrackableVisibleRatio({
+      paths: wGlyph.paths,
+      landmarks: createGlyphLandmarks(wGlyph.paths),
+      minX: wGlyph.bounds.minX,
+      maxX: wGlyph.bounds.maxX,
+      minY: wGlyph.bounds.minY,
+      maxY: wGlyph.bounds.maxY
+    })).toBe(0.34);
   });
 
   it("treats open terminals as required gap landmarks", () => {
@@ -183,10 +193,16 @@ describe("verification animation", () => {
     const scans = createConcurrentRevealSegments(4, 240, 66, 62, random);
     expect(scans).toHaveLength(4);
     scans.forEach((segments, characterIndex) => {
-      expect(segments).toHaveLength(1);
-      expect(segments[0]?.frames).toBe(240);
-      expect(segments[0]?.characterIndex).toBe(characterIndex);
-      expect(Math.abs((segments[0]?.toX ?? 0) - (segments[0]?.fromX ?? 0))).toBe(62);
+      expect(segments).toHaveLength(2);
+      expect(segments.reduce((total, segment) => total + segment.frames, 0)).toBe(240);
+      expect(segments.every((segment) => segment.characterIndex === characterIndex)).toBe(true);
+      expect(segments[0]?.toX).toBe(segments[1]?.fromX);
+      const characterX = 66 + characterIndex * 62;
+      expect(segments[0]?.fromX).toBeGreaterThan(characterX - 31);
+      expect(segments[0]?.fromX).toBeLessThan(characterX + 31);
+      expect(new Set([segments[0]?.toX, segments[1]?.toX])).toEqual(
+        new Set([characterX - 31, characterX + 31])
+      );
       expect(revealStateForFrame(0, segments).centerX).not.toBe(
         revealStateForFrame(239, segments).centerX
       );

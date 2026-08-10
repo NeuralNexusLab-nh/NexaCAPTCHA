@@ -613,21 +613,52 @@ export function createConcurrentRevealSegments(
     const characterX = textStart + characterIndex * characterSpacing;
     const scanLeft = characterX - scanRadius;
     const scanRight = characterX + scanRadius;
+    const startProgress = 0.18 + random() * 0.64;
+    const scanStart = scanLeft + (scanRight - scanLeft) * startProgress;
     const reverseDirection = random() < 0.5;
-    return [{
+    const firstTarget = reverseDirection ? scanLeft : scanRight;
+    const secondTarget = reverseDirection ? scanRight : scanLeft;
+    const firstDistance = Math.abs(firstTarget - scanStart);
+    const secondDistance = Math.abs(secondTarget - firstTarget);
+    const firstFrames = Math.max(
+      2,
+      Math.min(
+        frames - 2,
+        Math.round(frames * firstDistance / (firstDistance + secondDistance))
+      )
+    );
+    const segment = (
+      segmentFrames: number,
+      fromX: number,
+      toX: number
+    ): RevealSegment => ({
       kind: "dwell",
-      frames,
-      fromX: reverseDirection ? scanRight : scanLeft,
-      toX: reverseDirection ? scanLeft : scanRight,
+      frames: segmentFrames,
+      fromX,
+      toX,
       phase: random() * Math.PI * 2,
       backtrackAmplitude:
         random() < DWELL_BACKTRACK_PROBABILITY ? 2 + random() * 2 : 0,
-      // Each character completes one scan, but its speed rises and falls on a
-      // different smooth schedule. Endpoints remain fixed and continuous.
       tempoVariation: (random() * 2 - 1) * 0.055,
       characterIndex
-    }];
+    });
+
+    // Start inside the glyph instead of at a predictable edge. Continue to
+    // one boundary, then reverse smoothly and cover the opposite boundary.
+    return [
+      segment(firstFrames, scanStart, firstTarget),
+      segment(frames - firstFrames, firstTarget, secondTarget)
+    ];
   });
+}
+
+export function minimumTrackableVisibleRatio(glyph: Glyph): number {
+  const joinedStrokes = glyph.landmarks.filter(
+    (landmark) => landmark.weight >= 1.25
+  ).length;
+  if (joinedStrokes >= 2) return 0.34;
+  if (joinedStrokes === 1) return 0.24;
+  return 0.18;
 }
 
 export function compositeCharacterWithinAreaLimit(
@@ -875,23 +906,26 @@ function renderVerificationAnimationAttempt(
         color,
         fullRevealMask
       );
+      const landmarkRisk = visibleLandmarkRisk(
+        glyph,
+        characterIndex,
+        progress,
+        baseX,
+        motionProfile,
+        characterRevealMask
+      );
+      const targetVisibleRatio = Math.max(
+        minimumTrackableVisibleRatio(glyph),
+        (maximumVisibleRatios[characterIndex] ?? 0.2) *
+          ambiguityMultiplierForLandmarkRisk(landmarkRisk)
+      );
       let compositedPixels = compositeCharacterWithinAreaLimit(
         pixels,
         visibleCharacter,
         fullCharacter,
         width,
         characterRevealMask.centerX,
-        (maximumVisibleRatios[characterIndex] ?? 0.2) *
-          ambiguityMultiplierForLandmarkRisk(
-            visibleLandmarkRisk(
-              glyph,
-              characterIndex,
-              progress,
-              baseX,
-              motionProfile,
-              characterRevealMask
-            )
-          )
+        targetVisibleRatio
       );
       if (compositedPixels === 0) {
         // A curved mask can miss a narrow terminal at the very edge of a scan.
@@ -924,7 +958,7 @@ function renderVerificationAnimationAttempt(
           fullCharacter,
           width,
           revealMask.centerX,
-          maximumVisibleRatios[characterIndex] ?? 0.2
+          targetVisibleRatio
         );
       }
       if (compositedPixels === 0) containsInactiveCharacter = true;
