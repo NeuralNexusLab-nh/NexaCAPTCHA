@@ -32,23 +32,14 @@ interface Glyph {
 }
 
 interface MotionProfile {
-  phaseX: number;
-  phaseY: number;
   phaseDistortion: number;
-  horizontalCycles: number;
-  verticalCycles: number;
   distortionCycles: number;
-  driftX: number;
-  driftY: number;
+  driftWaypoints: Point[];
   stretchX: number;
   stretchY: number;
   waveAmplitude: number;
   shearAmplitude: number;
   rotationDegrees: number;
-  jitterAmplitude: number;
-  jitterCyclesX: number;
-  jitterCyclesY: number;
-  jitterPhase: number;
   colorIndex: number;
 }
 
@@ -269,17 +260,45 @@ export function reduceGlyphVisibility(
   );
 }
 
-function horizontalDrift(
-  motionProfile: MotionProfile,
+export function directionalDrift(
+  waypoints: Point[],
   frameProgress: number
-): number {
-  const motion = frameProgress * Math.PI * 2;
-  const horizontalMotion =
-    motion * motionProfile.horizontalCycles + motionProfile.phaseX;
-  return (
-    motionProfile.driftX * Math.sin(horizontalMotion) +
-    1.4 * Math.sin(horizontalMotion * 2 + motionProfile.phaseY)
-  );
+): Point {
+  if (waypoints.length === 0) return [0, 0];
+  if (waypoints.length === 1) return waypoints[0] ?? [0, 0];
+
+  const wrappedProgress = ((frameProgress % 1) + 1) % 1;
+  const position = wrappedProgress * waypoints.length;
+  const segmentIndex = Math.floor(position) % waypoints.length;
+  const nextIndex = (segmentIndex + 1) % waypoints.length;
+  const segmentProgress = position - Math.floor(position);
+  // Ease into each turn so direction changes remain continuous rather than jittery.
+  const easedProgress =
+    segmentProgress * segmentProgress * (3 - 2 * segmentProgress);
+  const from = waypoints[segmentIndex] ?? [0, 0];
+  const to = waypoints[nextIndex] ?? from;
+  return [
+    from[0] + (to[0] - from[0]) * easedProgress,
+    from[1] + (to[1] - from[1]) * easedProgress
+  ];
+}
+
+function createDriftWaypoints(
+  count: number,
+  driftX: number,
+  driftY: number,
+  random: () => number
+): Point[] {
+  const startingAngle = random() * Math.PI * 2;
+  return Array.from({ length: count }, (_, index) => {
+    const evenAngle = startingAngle + (index / count) * Math.PI * 2;
+    const angle = evenAngle + (random() - 0.5) * 0.55;
+    const radius = 0.62 + random() * 0.38;
+    return [
+      Math.cos(angle) * driftX * radius,
+      Math.sin(angle) * driftY * radius
+    ];
+  });
 }
 
 function isInsideRevealMask(x: number, y: number, mask: RevealMask): boolean {
@@ -378,7 +397,6 @@ function transformPoint(
   const normalizedX = (point[0] - (glyph.minX + glyph.maxX) / 2) / glyphWidth;
   const normalizedY = (point[1] - (glyph.minY + glyph.maxY) / 2) / glyphHeight;
   const motion = frameProgress * Math.PI * 2;
-  const verticalMotion = motion * motionProfile.verticalCycles + motionProfile.phaseY;
   const distortionMotion =
     motion * motionProfile.distortionCycles + motionProfile.phaseDistortion;
   const wave = Math.sin(normalizedY * 7 + distortionMotion);
@@ -400,20 +418,14 @@ function transformPoint(
     Math.sin(distortionMotion + characterIndex * 0.7);
   const cosine = Math.cos(rotation);
   const sine = Math.sin(rotation);
-  const floatX = horizontalDrift(motionProfile, frameProgress);
-  const floatY =
-    motionProfile.driftY * Math.sin(verticalMotion) +
-    1.4 * Math.sin(verticalMotion * 2 + motionProfile.phaseX);
-  const jitterX =
-    motionProfile.jitterAmplitude *
-    Math.sin(motion * motionProfile.jitterCyclesX + motionProfile.jitterPhase);
-  const jitterY =
-    motionProfile.jitterAmplitude *
-    Math.cos(motion * motionProfile.jitterCyclesY + motionProfile.jitterPhase * 1.3);
+  const [floatX, floatY] = directionalDrift(
+    motionProfile.driftWaypoints,
+    frameProgress
+  );
 
   return [
-    baseX + localX * cosine - localY * sine + floatX + jitterX,
-    config.animation.height / 2 + localX * sine + localY * cosine + floatY + jitterY
+    baseX + localX * cosine - localY * sine + floatX,
+    config.animation.height / 2 + localX * sine + localY * cosine + floatY
   ];
 }
 
@@ -679,26 +691,30 @@ function renderVerificationAnimationAttempt(
   const questionDistortion =
     (0.95 + random() * 0.35) * 0.83 * DIFFICULTY_MULTIPLIER;
   const colorIndices = createDistinctColorIndices(glyphs.length, random);
-  const motionProfiles: MotionProfile[] = glyphs.map((_glyph, characterIndex) => ({
-    phaseX: random() * Math.PI * 2,
-    phaseY: random() * Math.PI * 2,
-    phaseDistortion: random() * Math.PI * 2,
-    horizontalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 5,
-    verticalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 6,
-    distortionCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 4,
-    driftX: (4.5 + random() * 4.5) * DIFFICULTY_MULTIPLIER,
-    driftY: (3.5 + random() * 3.5) * DIFFICULTY_MULTIPLIER,
-    stretchX: (0.15 + random() * 0.13) * questionDistortion,
-    stretchY: (0.12 + random() * 0.13) * questionDistortion,
-    waveAmplitude: (3.4 + random() * 2.6) * questionDistortion,
-    shearAmplitude: (6.5 + random() * 6.5) * questionDistortion,
-    rotationDegrees: (7 + random() * 10) * questionDistortion,
-    jitterAmplitude: (1 + random() * 1.5) * questionDistortion,
-    jitterCyclesX: 18 + Math.floor(random() * 15),
-    jitterCyclesY: 18 + Math.floor(random() * 15),
-    jitterPhase: random() * Math.PI * 2,
-    colorIndex: colorIndices[characterIndex] ?? 4
-  }));
+  const motionProfiles: MotionProfile[] = glyphs.map((_glyph, characterIndex) => {
+    const driftX = (4.5 + random() * 4.5) * DIFFICULTY_MULTIPLIER;
+    const driftY = (3.5 + random() * 3.5) * DIFFICULTY_MULTIPLIER;
+    const waypointCount = Math.max(
+      3,
+      5 + CAPTCHA_DIFFICULTY_POINTS + (random() < 0.5 ? 0 : 1)
+    );
+    return {
+      phaseDistortion: random() * Math.PI * 2,
+      distortionCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 4,
+      driftWaypoints: createDriftWaypoints(
+        waypointCount,
+        driftX,
+        driftY,
+        random
+      ),
+      stretchX: (0.15 + random() * 0.13) * questionDistortion,
+      stretchY: (0.12 + random() * 0.13) * questionDistortion,
+      waveAmplitude: (3.4 + random() * 2.6) * questionDistortion,
+      shearAmplitude: (6.5 + random() * 6.5) * questionDistortion,
+      rotationDegrees: (7 + random() * 10) * questionDistortion,
+      colorIndex: colorIndices[characterIndex] ?? 4
+    };
+  });
   const partialRevealWidth = (29 + random() * 4) / DIFFICULTY_MULTIPLIER;
   const maximumVisibleRatios = glyphs.map((glyph) => {
     const estimate = estimateGlyphVisibility(glyph.paths);
