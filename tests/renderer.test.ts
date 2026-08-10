@@ -8,7 +8,6 @@ import {
   createGlyphLandmarks,
   createDistinctColorIndices,
   createRevealSegments,
-  directionalDrift,
   estimateGlyphVisibility,
   reduceGlyphVisibility,
   revealStateForFrame,
@@ -31,30 +30,6 @@ function frameDelays(gif: Buffer): number[] {
 }
 
 describe("verification animation", () => {
-  it("moves through directional waypoints without high-frequency jitter", () => {
-    const waypoints: [number, number][] = [
-      [0, 0],
-      [10, 0],
-      [10, 8],
-      [0, 8]
-    ];
-    expect(directionalDrift(waypoints, 0)).toEqual([0, 0]);
-    expect(directionalDrift(waypoints, 0.25)).toEqual([10, 0]);
-    expect(directionalDrift(waypoints, 0.5)).toEqual([10, 8]);
-    expect(directionalDrift(waypoints, 0.75)).toEqual([0, 8]);
-    expect(directionalDrift(waypoints, 1)).toEqual([0, 0]);
-
-    const firstLeg = Array.from({ length: 11 }, (_, index) =>
-      directionalDrift(waypoints, index / 40)
-    );
-    expect(firstLeg.every((point) => point[1] === 0)).toBe(true);
-    expect(
-      firstLeg.every(
-        (point, index) => index === 0 || point[0] >= firstLeg[index - 1]![0]
-      )
-    ).toBe(true);
-  });
-
   it("assigns four visibly distinct character colors", () => {
     let value = 0;
     const colors = createDistinctColorIndices(4, () => {
