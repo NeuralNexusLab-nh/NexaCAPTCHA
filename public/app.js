@@ -5,7 +5,7 @@
     en: {
       skip: "Skip to content", languageLabel: "Language", navTop: "Home", navFeatures: "How it works", navExperiment: "Results", navSetup: "Setup", navVerify: "Check the result",
       heroEyebrow: "ADAPTIVE HUMAN VERIFICATION", heroTitleLine1: "Human, get in.", heroTitleLine2: "AI, get out!", heroLead: "NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.",
-      tryIt: "Open the demo", addToSite: "View integration", noCleanFrame: "Designed for human readability", changingMotion: "24.3% model success in our test", higherCost: "Two attempts before expiry",
+      tryIt: "Open the demo", addToSite: "View integration", noCleanFrame: "Designed for human readability", changingMotion: "11.8% model success in our test", higherCost: "Two attempts before expiry",
       liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA", ready: "Ready", demoHelp: "Follow each color through the animation. Enter the four characters when you're ready.", demoOutput: "Your result will appear here.",
       featuresEyebrow: "HOW IT WORKS", featuresTitle: "Security that remains usable.", featuresLead: "NexaCAPTCHA distributes visual information across time. People follow a clear sequence, while automated systems must reconstruct it from changing frames.",
       experimentEyebrow: "VERIFICATION TEST", experimentTitle: "Verification performance, measured.", experimentLead: "Recorded mean completion time and success rate for human participants and GPT 5.6 Sol - Medium across three verification systems.", experimentVersion: "Tested build", experimentHumanLabel: "Human", verificationSystem: "Verification system", secondsAverage: "seconds average", successRate: "success rate", experimentNote: "These results describe the recorded test runs and are not a guarantee of performance against every model or execution.",
@@ -19,7 +19,7 @@
     "zh-Hant": {
       skip: "跳到主要內容", languageLabel: "語言", navTop: "首頁", navFeatures: "運作方式", navExperiment: "測試結果", navSetup: "串接", navVerify: "檢查結果",
       heroEyebrow: "自適應人機驗證", heroTitleLine1: "Human, get in.", heroTitleLine2: "AI, get out!", heroLead: "NexaCAPTCHA 讓正常使用者清楚完成驗證，同時提高自動化解題所需的時間、運算與不確定性。",
-      tryIt: "開啟示範", addToSite: "查看串接方式", noCleanFrame: "以真人可讀性為優先", changingMotion: "測試中模型成功率 24.3%", higherCost: "兩次輸入機會，之後失效",
+      tryIt: "開啟示範", addToSite: "查看串接方式", noCleanFrame: "以真人可讀性為優先", changingMotion: "測試中模型成功率 11.8%", higherCost: "兩次輸入機會，之後失效",
       liveDemo: "即時示範", tryNexa: "試用 NexaCAPTCHA", ready: "可以開始", demoHelp: "跟著每個顏色看完整段動畫，準備好後輸入四個字元。", demoOutput: "驗證結果會顯示在這裡。",
       featuresEyebrow: "運作方式", featuresTitle: "兼顧安全性與可用性。", featuresLead: "NexaCAPTCHA 將視覺資訊分散在時間序列中。真人能依循清楚的變化完成驗證；自動化系統則必須從多個影格重建答案。",
       experimentEyebrow: "驗證測試", experimentTitle: "驗證效能，實際量測。", experimentLead: "記錄真人與 GPT 5.6 Sol - Medium 在三種驗證系統中的平均完成時間與成功率。", experimentVersion: "測試版本", experimentHumanLabel: "真人", verificationSystem: "驗證系統", secondsAverage: "秒平均完成", successRate: "成功率", experimentNote: "這些數據僅描述已記錄的測試，不保證所有模型或每次執行都會得到相同結果。",
@@ -33,7 +33,7 @@
     ja: {
       skip: "メインコンテンツへ移動", languageLabel: "言語", navTop: "ホーム", navFeatures: "仕組み", navExperiment: "テスト結果", navSetup: "導入", navVerify: "結果を確認",
       heroEyebrow: "適応型ヒューマン認証", heroTitleLine1: "Human, get in.", heroTitleLine2: "AI, get out!", heroLead: "NexaCAPTCHA は正規ユーザーの分かりやすさを保ちながら、自動解読に必要な時間、計算量、不確実性を高めます。",
-      tryIt: "デモを開く", addToSite: "導入方法を見る", noCleanFrame: "人の読みやすさを優先", changingMotion: "テスト時のモデル成功率 24.3%", higherCost: "入力は2回まで",
+      tryIt: "デモを開く", addToSite: "導入方法を見る", noCleanFrame: "人の読みやすさを優先", changingMotion: "テスト時のモデル成功率 11.8%", higherCost: "入力は2回まで",
       liveDemo: "ライブデモ", tryNexa: "NexaCAPTCHA を試す", ready: "準備完了", demoHelp: "色ごとに動きを追い、分かった4文字を入力してください。", demoOutput: "認証結果がここに表示されます。",
       featuresEyebrow: "仕組み", featuresTitle: "安全性と使いやすさを両立。", featuresLead: "NexaCAPTCHA は視覚情報を時間軸に分散します。人は明確な変化を追えますが、自動化システムには複数フレームからの再構成が必要です。",
       experimentEyebrow: "検証テスト", experimentTitle: "認証性能を実測。", experimentLead: "人と GPT 5.6 Sol - Medium を対象に、3種類の認証システムで平均所要時間と成功率を記録しました。", experimentVersion: "テスト版", experimentHumanLabel: "人", verificationSystem: "認証システム", secondsAverage: "秒（平均）", successRate: "成功率", experimentNote: "記載値は実施したテストの結果であり、すべてのモデルや実行に対する性能を保証するものではありません。",
