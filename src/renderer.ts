@@ -56,6 +56,7 @@ export interface RevealSegment {
   toX: number;
   phase: number;
   backtrackAmplitude: number;
+  tempoVariation?: number;
   characterIndex?: number;
 }
 
@@ -600,6 +601,35 @@ export function createRevealSegments(
   return segments;
 }
 
+export function createConcurrentRevealSegments(
+  glyphCount: number,
+  frames: number,
+  textStart: number,
+  characterSpacing: number,
+  random: () => number
+): RevealSegment[][] {
+  const scanRadius = characterSpacing / 2;
+  return Array.from({ length: glyphCount }, (_value, characterIndex) => {
+    const characterX = textStart + characterIndex * characterSpacing;
+    const scanLeft = characterX - scanRadius;
+    const scanRight = characterX + scanRadius;
+    const reverseDirection = random() < 0.5;
+    return [{
+      kind: "dwell",
+      frames,
+      fromX: reverseDirection ? scanRight : scanLeft,
+      toX: reverseDirection ? scanLeft : scanRight,
+      phase: random() * Math.PI * 2,
+      backtrackAmplitude:
+        random() < DWELL_BACKTRACK_PROBABILITY ? 2 + random() * 2 : 0,
+      // Each character completes one scan, but its speed rises and falls on a
+      // different smooth schedule. Endpoints remain fixed and continuous.
+      tempoVariation: (random() * 2 - 1) * 0.055,
+      characterIndex
+    }];
+  });
+}
+
 export function compositeCharacterWithinAreaLimit(
   target: Uint8Array,
   visibleCharacter: Uint8Array,
@@ -647,12 +677,24 @@ export function revealStateForFrame(
       const localFrame = frame - segmentStart;
       const progress = segment.frames <= 1 ? 1 : localFrame / (segment.frames - 1);
       if (segment.kind === "dwell") {
+        const tempoProgress = Math.min(
+          1,
+          Math.max(
+            0,
+            progress +
+              (segment.tempoVariation ?? 0) *
+                Math.sin(progress * Math.PI) *
+                Math.sin(progress * Math.PI * 2 + segment.phase)
+          )
+        );
         const unevenMotion =
           segment.backtrackAmplitude *
           Math.sin(progress * Math.PI * 2 + segment.phase) *
           Math.sin(progress * Math.PI);
         const centerX =
-          segment.fromX + (segment.toX - segment.fromX) * progress + unevenMotion;
+          segment.fromX +
+          (segment.toX - segment.fromX) * tempoProgress +
+          unevenMotion;
         return {
           centerX,
           dwellCharacterIndex: segment.characterIndex
@@ -744,7 +786,7 @@ function renderVerificationAnimationAttempt(
   };
   const textStart = 66;
   const characterSpacing = 62;
-  const revealSegments = createRevealSegments(
+  const concurrentRevealSegments = createConcurrentRevealSegments(
     glyphs.length,
     frames,
     textStart,
@@ -756,26 +798,12 @@ function renderVerificationAnimationAttempt(
   const visibleCharacter = new Uint8Array(width * height);
   const fullCharacter = new Uint8Array(width * height);
   let containsBlankFrame = false;
+  let containsInactiveCharacter = false;
 
   for (let frame = 0; frame < frames; frame += 1) {
     pixels.fill(0);
     let frameVisiblePixels = 0;
     const progress = frame / Math.max(1, frames);
-    const revealState = revealStateForFrame(frame, revealSegments);
-    const revealCenter = revealState.centerX;
-    const widthPulse =
-      partialRevealWidth + (revealState.dwellCharacterIndex !== undefined ? 2.3 : 0);
-    const revealMask: RevealMask = {
-      ...revealShapeProfile,
-      centerX: revealCenter,
-      centerY:
-        height / 2 +
-        4 * Math.sin(progress * Math.PI * 2 * revealShapeProfile.cycles + revealShapeProfile.phase),
-      width: widthPulse,
-      animatedPhase:
-        revealShapeProfile.phase + progress * Math.PI * 2 * revealShapeProfile.cycles
-    };
-
     for (let y = 0; y < height; y += 1) {
       const vignette = Math.abs(y - height / 2) / (height / 2);
       if (vignette > 0.86) pixels.fill(7, y * width, (y + 1) * width);
@@ -787,6 +815,21 @@ function renderVerificationAnimationAttempt(
       const baseX = textStart + characterIndex * characterSpacing;
       const motionProfile = motionProfiles[characterIndex];
       if (!motionProfile) return;
+      const revealSegments = concurrentRevealSegments[characterIndex] ?? [];
+      const revealState = revealStateForFrame(frame, revealSegments);
+      const characterPhase = revealShapeProfile.phase + characterIndex * 1.37;
+      const revealMask: RevealMask = {
+        ...revealShapeProfile,
+        centerX: revealState.centerX,
+        centerY:
+          height / 2 +
+          4 * Math.sin(
+            progress * Math.PI * 2 * revealShapeProfile.cycles + characterPhase
+          ),
+        width: partialRevealWidth + 2.3,
+        animatedPhase:
+          characterPhase + progress * Math.PI * 2 * revealShapeProfile.cycles
+      };
       const color = motionProfile.colorIndex;
       const characterRevealMask = ambiguityAdjustedRevealMask(
         glyph,
@@ -832,7 +875,7 @@ function renderVerificationAnimationAttempt(
         color,
         fullRevealMask
       );
-      frameVisiblePixels += compositeCharacterWithinAreaLimit(
+      let compositedPixels = compositeCharacterWithinAreaLimit(
         pixels,
         visibleCharacter,
         fullCharacter,
@@ -850,46 +893,43 @@ function renderVerificationAnimationAttempt(
             )
           )
       );
-    });
-
-    if (frameVisiblePixels === 0) {
-      const fallbackCharacterIndex = revealState.dwellCharacterIndex;
-      const fallbackGlyph = fallbackCharacterIndex === undefined
-        ? undefined
-        : glyphs[fallbackCharacterIndex];
-      const fallbackMotionProfile = fallbackCharacterIndex === undefined
-        ? undefined
-        : motionProfiles[fallbackCharacterIndex];
-      if (
-        fallbackCharacterIndex !== undefined &&
-        fallbackGlyph &&
-        fallbackMotionProfile
-      ) {
+      if (compositedPixels === 0) {
         // A curved mask can miss a narrow terminal at the very edge of a scan.
-        // Keep the same continuous position and motion, but widen only that
-        // empty frame enough to retain a readable stroke fragment.
+        // Widen only this character's mask so all four remain active without
+        // changing its scan position or exposing the complete glyph.
+        visibleCharacter.fill(0);
         drawTransformedGlyph(
-          pixels,
+          visibleCharacter,
           width,
           height,
-          fallbackGlyph,
-          fallbackCharacterIndex,
+          glyph,
+          characterIndex,
           progress,
-          textStart + fallbackCharacterIndex * characterSpacing,
-          fallbackMotionProfile,
-          fallbackMotionProfile.colorIndex,
+          baseX,
+          motionProfile,
+          color,
           {
             ...revealMask,
             centerY: height / 2,
-            width: revealMask.width * 1.4,
+            width: revealMask.width * 1.8,
             height: height * 2,
             bend: 0,
             pinch: 0,
             edgeWaves: 0
           }
         );
+        compositedPixels = compositeCharacterWithinAreaLimit(
+          pixels,
+          visibleCharacter,
+          fullCharacter,
+          width,
+          revealMask.centerX,
+          maximumVisibleRatios[characterIndex] ?? 0.2
+        );
       }
-    }
+      if (compositedPixels === 0) containsInactiveCharacter = true;
+      frameVisiblePixels += compositedPixels;
+    });
     if (
       frameVisiblePixels === 0 &&
       !pixels.some((pixel) => pixel >= 2 && pixel <= 6)
@@ -905,7 +945,7 @@ function renderVerificationAnimationAttempt(
   }
 
   gif.finish();
-  if (containsBlankFrame) {
+  if (containsBlankFrame || containsInactiveCharacter) {
     if (renderAttempt < 2) {
       return renderVerificationAnimationAttempt(answer, renderAttempt + 1);
     }

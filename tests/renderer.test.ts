@@ -7,6 +7,7 @@ import {
   compositeCharacterWithinAreaLimit,
   createGlyphLandmarks,
   createDistinctColorIndices,
+  createConcurrentRevealSegments,
   createRevealSegments,
   estimateGlyphVisibility,
   randomJitterAt,
@@ -171,6 +172,25 @@ describe("verification animation", () => {
     expect(
       minimumDurationSegments.every((segment) => segment.frames === 50)
     ).toBe(true);
+  });
+
+  it("keeps all character scans active for the full animation", () => {
+    let state = 0x2468ace0;
+    const random = () => {
+      state = (Math.imul(state, 1_664_525) + 1_013_904_223) >>> 0;
+      return state / 0x1_0000_0000;
+    };
+    const scans = createConcurrentRevealSegments(4, 240, 66, 62, random);
+    expect(scans).toHaveLength(4);
+    scans.forEach((segments, characterIndex) => {
+      expect(segments).toHaveLength(1);
+      expect(segments[0]?.frames).toBe(240);
+      expect(segments[0]?.characterIndex).toBe(characterIndex);
+      expect(Math.abs((segments[0]?.toX ?? 0) - (segments[0]?.fromX ?? 0))).toBe(62);
+      expect(revealStateForFrame(0, segments).centerX).not.toBe(
+        revealStateForFrame(239, segments).centerX
+      );
+    });
   });
 
   it("covers the full character scan without gaps at minimum dwell time", () => {
