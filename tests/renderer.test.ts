@@ -41,14 +41,14 @@ describe("verification animation", () => {
     expect(colors.every((color) => color >= 2 && color <= 6)).toBe(true);
   });
 
-  it("randomizes playback between 2.5 and 3.5 seconds", () => {
+  it("randomizes playback between 4 and 6 seconds", () => {
     const delays = frameDelays(renderVerificationAnimation("N3XA"));
-    expect(delays.length).toBeGreaterThanOrEqual(125);
-    expect(delays.length).toBeLessThanOrEqual(175);
+    expect(delays.length).toBeGreaterThanOrEqual(200);
+    expect(delays.length).toBeLessThanOrEqual(300);
     expect(delays.every((delay) => delay === 2)).toBe(true);
     const totalCentiseconds = delays.reduce((total, delay) => total + delay, 0);
-    expect(totalCentiseconds).toBeGreaterThanOrEqual(250);
-    expect(totalCentiseconds).toBeLessThanOrEqual(350);
+    expect(totalCentiseconds).toBeGreaterThanOrEqual(400);
+    expect(totalCentiseconds).toBeLessThanOrEqual(600);
   });
 
   it("limits a frame to the reduced visible area", () => {
@@ -149,13 +149,18 @@ describe("verification animation", () => {
       )
     );
     expect(largestStep).toBeLessThan(5);
+
+    const minimumDurationSegments = createRevealSegments(4, 200, 66, 62, random);
+    expect(
+      minimumDurationSegments.every((segment) => segment.frames === 50)
+    ).toBe(true);
   });
 
   it("covers the full character scan without gaps at minimum dwell time", () => {
     for (let phaseStep = 0; phaseStep < 16; phaseStep += 1) {
       const segment = {
         kind: "dwell" as const,
-        frames: 31,
+        frames: 50,
         fromX: 0,
         toX: 100,
         phase: (phaseStep / 16) * Math.PI * 2,
