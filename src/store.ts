@@ -48,8 +48,8 @@ interface VerificationStoreOptions {
 }
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-const REQUIRED_CONFUSABLE = "B836";
-const REQUIRED_COMPLEX = "KXADR26GVWYJT7";
+const REQUIRED_CONFUSABLE = "B836G";
+const REQUIRED_COMPLEX = "KX6VWY";
 
 type RandomInteger = (maxExclusive: number) => number;
 

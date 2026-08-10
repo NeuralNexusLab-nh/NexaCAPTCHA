@@ -53,11 +53,11 @@ describe("VerificationStore", () => {
   it("always includes both required groups without repeating characters", () => {
     for (let sample = 0; sample < 1_000; sample += 1) {
       const answer = generateAnswer();
-      expect(answer).toMatch(/[B836]/);
-      expect(answer).toMatch(/[KXADR26GVWYJT7]/);
+      expect(answer).toMatch(/[B836G]/);
+      expect(answer).toMatch(/[KX6VWY]/);
       expect(new Set(answer).size).toBe(4);
 
-      const confusableCharacters = answer.match(/[B836]/g) ?? [];
+      const confusableCharacters = answer.match(/[B836G]/g) ?? [];
       expect(confusableCharacters.length).toBeLessThanOrEqual(2);
       if (confusableCharacters.length === 2) {
         expect(confusableCharacters).toContain("6");
@@ -72,7 +72,7 @@ describe("VerificationStore", () => {
     );
 
     expect(answer.match(/6/g)).toHaveLength(1);
-    expect(answer).toMatch(/[KXADR2GVWYJT7]/);
+    expect(answer).toMatch(/[KXVWY]/);
     expect(new Set(answer).size).toBe(4);
   });
 
