@@ -61,8 +61,8 @@ Recorded mean completion time and success rate for human participants and GPT 5.
 | Verification system | Human | GPT 5.6 Sol - Medium |
 | --- | --- | --- |
 | **NexaCAPTCHA** | **7.3** seconds average | **24.3%** success rate · **60.3** seconds average |
-| **Google reCAPTCHA** | **1.9** seconds average | **99%** success rate · **42.9** seconds average |
-| **hCaptcha** | **11.8** seconds average | **83.7%** success rate · **48.3** seconds average |
+| **Google reCAPTCHA** | **1.9** seconds average | **99%** success rate · **7.6** seconds average |
+| **hCaptcha** | **11.8** seconds average | **85.7%** success rate · **49.56** seconds average |
 
 These results describe the recorded test runs and are not a guarantee of performance against every model or execution.
 
