@@ -84,10 +84,10 @@ describe("verification animation", () => {
   });
 
   it("keeps the enlarged visible area within the readability range", () => {
-    expect(CAPTCHA_DIFFICULTY_POINTS).toBe(-1);
-    expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.196842);
-    expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.377263);
-    expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.313158);
+    expect(CAPTCHA_DIFFICULTY_POINTS).toBe(-2);
+    expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.207778);
+    expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.398222);
+    expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.330556);
   });
 
   it("shrinks frames around distinctive joined strokes", () => {
