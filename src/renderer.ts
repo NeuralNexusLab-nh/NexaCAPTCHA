@@ -519,20 +519,13 @@ function ambiguityAdjustedRevealMask(
   const highestRisk = visibleLandmarks[0];
   if (!highestRisk) return revealMask;
 
-  const offset = revealMask.centerX - highestRisk.point[0];
-  const direction = Math.abs(offset) > 1
-    ? Math.sign(offset)
-    : Math.sin(revealMask.animatedPhase + characterIndex * 1.7) >= 0 ? 1 : -1;
   const joinedStroke = highestRisk.landmark.weight >= 1.25;
 
-  // Move the window to one side of a high-information junction instead of
-  // reducing the whole frame to a dot. The viewer still receives a useful
-  // stroke fragment, but the junction's branch relationship is not exposed.
+  // Protect high-information junctions by narrowing the continuous window.
+  // Moving its center here caused abrupt forward/backward jumps whenever a
+  // landmark entered or left the mask.
   return {
     ...revealMask,
-    centerX:
-      revealMask.centerX +
-      direction * revealMask.width * (joinedStroke ? 0.44 : 0.32),
     width: revealMask.width * (joinedStroke ? 0.78 : 0.88)
   };
 }
@@ -737,13 +730,7 @@ function renderVerificationAnimationAttempt(
     let frameVisiblePixels = 0;
     const progress = frame / Math.max(1, frames);
     const revealState = revealStateForFrame(frame, revealSegments);
-    let revealCenter = revealState.centerX;
-    if (revealState.dwellCharacterIndex !== undefined) {
-      const dwellMotionProfile = motionProfiles[revealState.dwellCharacterIndex];
-      if (dwellMotionProfile) {
-        revealCenter += horizontalDrift(dwellMotionProfile, progress);
-      }
-    }
+    const revealCenter = revealState.centerX;
     const widthPulse =
       partialRevealWidth + (revealState.dwellCharacterIndex !== undefined ? 2.3 : 0);
     const revealMask: RevealMask = {

@@ -140,6 +140,15 @@ describe("verification animation", () => {
     expect(transitionSegments).toHaveLength(0);
     expect(revealStateForFrame(0, segments).centerX).toBe(35);
     expect(revealStateForFrame(196, segments).centerX).toBe(283);
+    const centers = Array.from({ length: 197 }, (_value, frame) =>
+      revealStateForFrame(frame, segments).centerX
+    );
+    const largestStep = Math.max(
+      ...centers.slice(1).map((center, index) =>
+        Math.abs(center - (centers[index] ?? center))
+      )
+    );
+    expect(largestStep).toBeLessThan(5);
   });
 
   it("covers the full character scan without gaps at minimum dwell time", () => {
