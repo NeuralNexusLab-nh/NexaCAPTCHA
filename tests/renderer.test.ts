@@ -9,6 +9,7 @@ import {
   createDistinctColorIndices,
   createRevealSegments,
   estimateGlyphVisibility,
+  randomJitterAt,
   reduceGlyphVisibility,
   revealStateForFrame,
   renderVerificationAnimation
@@ -30,6 +31,22 @@ function frameDelays(gif: Buffer): number[] {
 }
 
 describe("verification animation", () => {
+  it("interpolates randomized jitter without abrupt frame jumps", () => {
+    const keyframes: [number, number][] = [
+      [-2, 1],
+      [1, -2],
+      [2, 2],
+      [-1, 0]
+    ];
+    expect(randomJitterAt(keyframes, 0)).toEqual([-2, 1]);
+    expect(randomJitterAt(keyframes, 0.25)).toEqual([1, -2]);
+    expect(randomJitterAt(keyframes, 1)).toEqual([-2, 1]);
+    const beforeTurn = randomJitterAt(keyframes, 0.2499);
+    const afterTurn = randomJitterAt(keyframes, 0.2501);
+    expect(Math.hypot(afterTurn[0] - beforeTurn[0], afterTurn[1] - beforeTurn[1]))
+      .toBeLessThan(0.01);
+  });
+
   it("assigns four visibly distinct character colors", () => {
     let value = 0;
     const colors = createDistinctColorIndices(4, () => {
@@ -84,10 +101,10 @@ describe("verification animation", () => {
   });
 
   it("keeps the enlarged visible area within the readability range", () => {
-    expect(CAPTCHA_DIFFICULTY_POINTS).toBe(-2);
-    expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.207778);
-    expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.398222);
-    expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.330556);
+    expect(CAPTCHA_DIFFICULTY_POINTS).toBe(0);
+    expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.187);
+    expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.3584);
+    expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.2975);
   });
 
   it("shrinks frames around distinctive joined strokes", () => {

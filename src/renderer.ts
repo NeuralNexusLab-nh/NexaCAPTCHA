@@ -19,7 +19,7 @@ const GIFEncoder =
 
 export const DWELL_BACKTRACK_PROBABILITY = 0.015;
 export const TRANSITION_BACKTRACK_PROBABILITY = 0.006;
-export const CAPTCHA_DIFFICULTY_POINTS = -2;
+export const CAPTCHA_DIFFICULTY_POINTS = 0;
 const DIFFICULTY_MULTIPLIER = 1 + CAPTCHA_DIFFICULTY_POINTS * 0.05;
 
 interface Glyph {
@@ -45,10 +45,7 @@ interface MotionProfile {
   waveAmplitude: number;
   shearAmplitude: number;
   rotationDegrees: number;
-  jitterAmplitude: number;
-  jitterCyclesX: number;
-  jitterCyclesY: number;
-  jitterPhase: number;
+  jitterKeyframes: Point[];
   colorIndex: number;
 }
 
@@ -102,6 +99,37 @@ function createPrng(seedBytes: Uint8Array): () => number {
     state ^= state << 5;
     return (state >>> 0) / 0x1_0000_0000;
   };
+}
+
+function createRandomJitterKeyframes(
+  count: number,
+  amplitude: number,
+  random: () => number
+): Point[] {
+  return Array.from({ length: count }, () => [
+    (random() * 2 - 1) * amplitude,
+    (random() * 2 - 1) * amplitude
+  ]);
+}
+
+export function randomJitterAt(
+  keyframes: Point[],
+  frameProgress: number
+): Point {
+  if (keyframes.length === 0) return [0, 0];
+  if (keyframes.length === 1) return keyframes[0] ?? [0, 0];
+  const wrappedProgress = ((frameProgress % 1) + 1) % 1;
+  const position = wrappedProgress * keyframes.length;
+  const keyframeIndex = Math.floor(position) % keyframes.length;
+  const nextIndex = (keyframeIndex + 1) % keyframes.length;
+  const localProgress = position - Math.floor(position);
+  const easedProgress = localProgress * localProgress * (3 - 2 * localProgress);
+  const from = keyframes[keyframeIndex] ?? [0, 0];
+  const to = keyframes[nextIndex] ?? from;
+  return [
+    from[0] + (to[0] - from[0]) * easedProgress,
+    from[1] + (to[1] - from[1]) * easedProgress
+  ];
 }
 
 function glyphFor(character: string): Glyph {
@@ -404,12 +432,10 @@ function transformPoint(
   const floatY =
     motionProfile.driftY * Math.sin(verticalMotion) +
     1.4 * Math.sin(verticalMotion * 2 + motionProfile.phaseX);
-  const jitterX =
-    motionProfile.jitterAmplitude *
-    Math.sin(motion * motionProfile.jitterCyclesX + motionProfile.jitterPhase);
-  const jitterY =
-    motionProfile.jitterAmplitude *
-    Math.cos(motion * motionProfile.jitterCyclesY + motionProfile.jitterPhase * 1.3);
+  const [jitterX, jitterY] = randomJitterAt(
+    motionProfile.jitterKeyframes,
+    frameProgress
+  );
 
   return [
     baseX + localX * cosine - localY * sine + floatX + jitterX,
@@ -679,26 +705,30 @@ function renderVerificationAnimationAttempt(
   const questionDistortion =
     (0.95 + random() * 0.35) * 0.83 * DIFFICULTY_MULTIPLIER;
   const colorIndices = createDistinctColorIndices(glyphs.length, random);
-  const motionProfiles: MotionProfile[] = glyphs.map((_glyph, characterIndex) => ({
-    phaseX: random() * Math.PI * 2,
-    phaseY: random() * Math.PI * 2,
-    phaseDistortion: random() * Math.PI * 2,
-    horizontalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 5,
-    verticalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 6,
-    distortionCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 4,
-    driftX: (4.5 + random() * 4.5) * DIFFICULTY_MULTIPLIER,
-    driftY: (3.5 + random() * 3.5) * DIFFICULTY_MULTIPLIER,
-    stretchX: (0.15 + random() * 0.13) * questionDistortion,
-    stretchY: (0.12 + random() * 0.13) * questionDistortion,
-    waveAmplitude: (3.4 + random() * 2.6) * questionDistortion,
-    shearAmplitude: (6.5 + random() * 6.5) * questionDistortion,
-    rotationDegrees: (7 + random() * 10) * questionDistortion,
-    jitterAmplitude: (1 + random() * 1.5) * questionDistortion,
-    jitterCyclesX: 18 + Math.floor(random() * 15),
-    jitterCyclesY: 18 + Math.floor(random() * 15),
-    jitterPhase: random() * Math.PI * 2,
-    colorIndex: colorIndices[characterIndex] ?? 4
-  }));
+  const motionProfiles: MotionProfile[] = glyphs.map((_glyph, characterIndex) => {
+    const jitterAmplitude = (1 + random() * 1.5) * questionDistortion;
+    return {
+      phaseX: random() * Math.PI * 2,
+      phaseY: random() * Math.PI * 2,
+      phaseDistortion: random() * Math.PI * 2,
+      horizontalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 5,
+      verticalCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 6,
+      distortionCycles: motionCycles[Math.floor(random() * motionCycles.length)] ?? 4,
+      driftX: (4.5 + random() * 4.5) * DIFFICULTY_MULTIPLIER,
+      driftY: (3.5 + random() * 3.5) * DIFFICULTY_MULTIPLIER,
+      stretchX: (0.15 + random() * 0.13) * questionDistortion,
+      stretchY: (0.12 + random() * 0.13) * questionDistortion,
+      waveAmplitude: (3.4 + random() * 2.6) * questionDistortion,
+      shearAmplitude: (6.5 + random() * 6.5) * questionDistortion,
+      rotationDegrees: (7 + random() * 10) * questionDistortion,
+      jitterKeyframes: createRandomJitterKeyframes(
+        18 + Math.floor(random() * 15),
+        jitterAmplitude,
+        random
+      ),
+      colorIndex: colorIndices[characterIndex] ?? 4
+    };
+  });
   const partialRevealWidth = (29 + random() * 4) / DIFFICULTY_MULTIPLIER;
   const maximumVisibleRatios = glyphs.map((glyph) => {
     const estimate = estimateGlyphVisibility(glyph.paths);
