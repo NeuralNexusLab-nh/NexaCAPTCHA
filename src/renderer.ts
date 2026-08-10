@@ -19,7 +19,7 @@ const GIFEncoder =
 
 export const DWELL_BACKTRACK_PROBABILITY = 0.015;
 export const TRANSITION_BACKTRACK_PROBABILITY = 0.006;
-export const CAPTCHA_DIFFICULTY_POINTS = 0;
+export const CAPTCHA_DIFFICULTY_POINTS = -1;
 const DIFFICULTY_MULTIPLIER = 1 + CAPTCHA_DIFFICULTY_POINTS * 0.05;
 
 interface Glyph {
@@ -670,10 +670,12 @@ function renderVerificationAnimationAttempt(
   const random = createPrng(seed);
   const frames = minFrames + Math.floor(random() * (maxFrames - minFrames + 1));
   const glyphs = answer.split("").map(glyphFor);
-  const cycleOffset = Math.ceil(CAPTCHA_DIFFICULTY_POINTS / 2);
+  const cycleOffset = Math.trunc(CAPTCHA_DIFFICULTY_POINTS / 2);
   const motionCycles = [2, 3, 4, 5, 6, 7, 8].map(
     (cycles) => cycles + cycleOffset
   );
+  if (CAPTCHA_DIFFICULTY_POINTS % 2 > 0) motionCycles.shift();
+  if (CAPTCHA_DIFFICULTY_POINTS % 2 < 0) motionCycles.pop();
   const questionDistortion =
     (0.95 + random() * 0.35) * 0.83 * DIFFICULTY_MULTIPLIER;
   const colorIndices = createDistinctColorIndices(glyphs.length, random);

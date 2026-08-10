@@ -2,9 +2,9 @@
 
 **ADAPTIVE HUMAN VERIFICATION**
 
-## Homo Sapiens? Welcome onboard!
+## Human, get in.
 
-## AI? Get out!
+## AI, get out!
 
 NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.
 
