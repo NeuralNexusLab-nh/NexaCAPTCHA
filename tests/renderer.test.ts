@@ -41,14 +41,14 @@ describe("verification animation", () => {
     expect(colors.every((color) => color >= 2 && color <= 6)).toBe(true);
   });
 
-  it("randomizes playback between 5.01 and 6.99 seconds", () => {
+  it("randomizes playback between 2.5 and 3.5 seconds", () => {
     const delays = frameDelays(renderVerificationAnimation("N3XA"));
-    expect(delays.length).toBeGreaterThanOrEqual(167);
-    expect(delays.length).toBeLessThanOrEqual(233);
-    expect(delays.every((delay) => delay === 3)).toBe(true);
+    expect(delays.length).toBeGreaterThanOrEqual(125);
+    expect(delays.length).toBeLessThanOrEqual(175);
+    expect(delays.every((delay) => delay === 2)).toBe(true);
     const totalCentiseconds = delays.reduce((total, delay) => total + delay, 0);
-    expect(totalCentiseconds).toBeGreaterThanOrEqual(501);
-    expect(totalCentiseconds).toBeLessThanOrEqual(699);
+    expect(totalCentiseconds).toBeGreaterThanOrEqual(250);
+    expect(totalCentiseconds).toBeLessThanOrEqual(350);
   });
 
   it("limits a frame to the reduced visible area", () => {
@@ -84,10 +84,10 @@ describe("verification animation", () => {
   });
 
   it("keeps the enlarged visible area within the readability range", () => {
-    expect(CAPTCHA_DIFFICULTY_POINTS).toBe(-2);
-    expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.207778);
-    expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.398222);
-    expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.330556);
+    expect(CAPTCHA_DIFFICULTY_POINTS).toBe(0);
+    expect(reduceGlyphVisibility(0.34, 0)).toBeCloseTo(0.187);
+    expect(reduceGlyphVisibility(0.56, 1)).toBeCloseTo(0.3584);
+    expect(reduceGlyphVisibility(0.5, 0.5)).toBeCloseTo(0.2975);
   });
 
   it("shrinks frames around distinctive joined strokes", () => {
@@ -155,7 +155,7 @@ describe("verification animation", () => {
     for (let phaseStep = 0; phaseStep < 16; phaseStep += 1) {
       const segment = {
         kind: "dwell" as const,
-        frames: 49,
+        frames: 31,
         fromX: 0,
         toX: 100,
         phase: (phaseStep / 16) * Math.PI * 2,
