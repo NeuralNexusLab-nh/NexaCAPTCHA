@@ -24,7 +24,7 @@ Horizon reveals information through motion. Gravity bends four characters throug
 
 Follow each color through the animation and enter the four characters when you're ready.
 
-[Try NexaCAPTCHA Horizon](https://nexacaptcha.zone.id/horizon)
+[Try NexaCAPTCHA Horizon](https://nexacaptchademo.zeabur.app/horizon)
 
 ### Add this HTML to your page.
 
@@ -46,7 +46,7 @@ Follow each color through the animation and enter the four characters when you'r
 
 Follow the hollow characters through the gravitational distortion, then enter all four.
 
-[Try NexaCAPTCHA Gravity](https://nexacaptcha.zone.id/gravity)
+[Try NexaCAPTCHA Gravity](https://nexacaptchademo.zeabur.app/gravity)
 
 ### Add Gravity to your page.
 

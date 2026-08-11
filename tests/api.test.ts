@@ -183,19 +183,6 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(200);
   });
 
-  it("serves dedicated Horizon and Gravity demo pages", async () => {
-    await request(app)
-      .get("/horizon")
-      .expect("Content-Type", /html/)
-      .expect(200)
-      .expect(({ text }) => expect(text).toContain("/captcha/horizon.js"));
-    await request(app)
-      .get("/gravity")
-      .expect("Content-Type", /html/)
-      .expect(200)
-      .expect(({ text }) => expect(text).toContain("/captcha/gravity.js"));
-  });
-
   it("denies cross-origin browser API calls", async () => {
     await request(app)
       .post("/api/verifications")
