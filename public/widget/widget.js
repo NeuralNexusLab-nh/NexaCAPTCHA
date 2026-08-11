@@ -24,6 +24,7 @@
   var stage = document.getElementById("verification-stage");
   var message = document.getElementById("status-message");
   var pill = document.getElementById("status-pill");
+  var title = document.getElementById("captcha-title");
   var currentVerificationId = null;
   var expiryTimer = null;
   var cooldownTimer = null;
@@ -31,7 +32,11 @@
   var coolingDown = false;
   var completed = false;
 
+  document.body.classList.toggle("theme-gravity", captchaType === "gravity");
   stage.classList.toggle("is-gravity", captchaType === "gravity");
+  title.textContent = captchaType === "gravity"
+    ? "NexaCAPTCHA Gravity"
+    : "NexaCAPTCHA Horizon";
   image.alt = captchaType === "gravity"
     ? "Distorted verification text"
     : "Animated verification text";
