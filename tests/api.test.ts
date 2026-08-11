@@ -129,9 +129,9 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(({ body }) => expect(body.errorCode).toBe("verification-expired"));
   });
 
-  it("serves the Phobetor loader and its legacy alias", async () => {
+  it("serves the Horizon loader and its compatibility alias", async () => {
     await request(app)
-      .get("/captcha/phobetor.js")
+      .get("/captcha/horizon.js")
       .expect("Access-Control-Allow-Origin", "*")
       .expect("Content-Type", /javascript/)
       .expect(200);
@@ -140,6 +140,7 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect("Access-Control-Allow-Origin", "*")
       .expect("Content-Type", /javascript/)
       .expect(200);
+    await request(app).get("/captcha/phobetor.js").expect(404);
   });
 
   it("denies cross-origin browser API calls", async () => {

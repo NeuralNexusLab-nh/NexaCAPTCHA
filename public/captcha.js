@@ -4,7 +4,7 @@
   var script = document.currentScript;
   if (!script) {
     var candidates = document.querySelectorAll(
-      'script[src*="/captcha.js"], script[src*="/captcha/phobetor.js"]'
+      'script[src*="/captcha.js"], script[src*="/captcha/horizon.js"]'
     );
     script = candidates[candidates.length - 1];
   }

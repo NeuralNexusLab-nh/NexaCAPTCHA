@@ -5,13 +5,13 @@
     en: {
       skip: "Skip to content", languageLabel: "Language", navTop: "Home", navDemo: "Demo", navFeatures: "How it works", navExperiment: "Results", navCallback: "Callback", navVerify: "Check the result",
       heroEyebrow: "ADAPTIVE HUMAN VERIFICATION", heroTitleLine1: "Human by design.", heroTitleLine2: "Automation denied.", heroLead: "NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.",
-      tryIt: "Try Phobetor", addToSite: "View integration", noCleanFrame: "Designed for human readability", changingMotion: "11.8% model success in our test", higherCost: "Two attempts before expiry",
-      demoEyebrow: "PHOBETOR CAPTCHA", demoTitle: "Meet Phobetor.", demoLead: "NexaCAPTCHA's first verification module. Complete the example, then copy the HTML directly below it.", liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA Phobetor", ready: "Ready", demoHelp: "Follow each color through the animation. Enter the four characters when you're ready.", demoOutput: "Your result will appear here.",
-      installEyebrow: "ADD PHOBETOR", installTitle: "Add this HTML to your page.", installLead: "The script loads Phobetor and the div marks where the verification should appear.", legacyLoader: "/captcha.js currently loads Phobetor too. It remains available as the compatibility URL for existing integrations.",
+      tryIt: "Explore CAPTCHA modules", addToSite: "View integration", noCleanFrame: "Designed for human readability", changingMotion: "11.8% model success in our test", higherCost: "Two attempts before expiry",
+      demoEyebrow: "CAPTCHA MODULES", demoTitle: "Choose a verification.", demoLead: "Each module uses the same callback format and server-side verification flow. Start with Horizon, with more options to come.", liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA Horizon", ready: "Ready", demoHelp: "Follow each color through the animation. Enter the four characters when you're ready.", demoOutput: "Your result will appear here.",
+      installEyebrow: "ADD HORIZON", installTitle: "Add this HTML to your page.", installLead: "The script loads Horizon and the div marks where the verification should appear.", legacyLoader: "/captcha.js currently loads Horizon too. It remains available as the compatibility URL for existing integrations.",
       featuresEyebrow: "HOW IT WORKS", featuresTitle: "Security that remains usable.", featuresLead: "NexaCAPTCHA distributes visual information across time. People follow a clear sequence, while automated systems must reconstruct it from changing frames.",
       experimentEyebrow: "VERIFICATION TEST", experimentTitle: "Verification performance, measured.", experimentLead: "Recorded mean completion time and success rate for human participants and GPT 5.6 Sol - Medium across three verification systems.", experimentVersion: "Tested build", experimentHumanLabel: "Human", verificationSystem: "Verification system", secondsAverage: "seconds average", successRate: "success rate", experimentNote: "These results describe the recorded test runs and are not a guarantee of performance against every model or execution.",
       featureIncompleteTitle: "No complete still image", featureIncompleteBody: "The answer is revealed over time instead of being exposed in a single frame.", featureDistortionTitle: "Independent motion profiles", featureDistortionBody: "Each character moves and rotates on its own schedule, complicating frame-by-frame alignment.", featureMotionTitle: "Stable visual anchors", featureMotionBody: "Distinct colors help people track characters through motion without exposing the answer in metadata.", featureWindowTitle: "Variable reveal path", featureWindowBody: "The visible region changes direction and pace, reducing the value of fixed-window extraction.", featureUniqueTitle: "Per-verification rendering", featureUniqueBody: "Timing, distortion, placement, and masking are regenerated for every verification.", featureCostTitle: "Server-enforced controls", featureCostBody: "Retry limits, expiry, cooldowns, and one-time response tokens are enforced by the server.",
-      callbackEyebrow: "CALLBACK", callbackTitle: "Use the completed result.", callbackLead: "Phobetor calls your function after a successful verification. Send the returned ID and token to your backend with the form being protected.", callbackCodeTitle: "Receive the callback.", callbackCodeLead: "Replace yourSubmitFunction with the function that submits your protected form.", callbackSecurity: "The callback is a frontend handoff, not final proof. Accept the form only after /api/siteverify returns success: true.", callbackValuesTitle: "Callback parameters", callbackValuesLead: "The callback receives one result object with these fields.", resultMeaning: "The object passed into your callback function.", successMeaning: "A boolean. It is true when Phobetor has been completed.",
+      callbackEyebrow: "CALLBACK", callbackTitle: "Use the completed result.", callbackLead: "Every NexaCAPTCHA module uses the same callback result. Send the returned ID and token to your backend with the form being protected.", callbackCodeTitle: "Example callback", callbackCodeLead: "This is only an example. You may rename onCaptchaComplete and change the submission logic; keep data-callback set to the same function name.", callbackSecurity: "The callback is a frontend handoff, not final proof. Accept the form only after /api/siteverify returns success: true.", callbackValuesTitle: "Callback parameters", callbackValuesLead: "The callback receives one result object with these fields.", resultMeaning: "The object passed into your callback function.", successMeaning: "A boolean. It is true when the verification has been completed.",
       htmlLocation: "HTML · page markup", frontendLocation: "JavaScript · frontend", backendLocation: "Node.js · backend", idMeaning: "The 16-character verification ID. Send it to your backend.", tokenMeaning: "The 64-character one-time token. Send it to your backend without changing it.",
       verifyEyebrow: "SERVER VALIDATION", verifyTitle: "Validate every response server-side.", verifyLead: "Before accepting a form submission, registration, or login, send both values to NexaCAPTCHA.", request: "Request", successResponse: "Response · success", failureResponse: "Response · failure", important: "Continue only when the response says success: true. A responseToken works once and expires after five minutes.",
       copy: "Copy", copied: "Copied", copySuccess: "Code copied.", copyFailure: "Could not copy. Select the code manually.", completed: "Verification complete", footerTagline: "Motion-based verification with server-enforced controls."
@@ -49,25 +49,25 @@
   Object.assign(translations["zh-Hant"], {
     navDemo: "示範",
     navCallback: "回呼函式",
-    tryIt: "試用 Phobetor",
-    demoEyebrow: "PHOBETOR 驗證",
-    demoTitle: "認識 Phobetor。",
-    demoLead: "NexaCAPTCHA 的第一款驗證模組。完成下方範例後，即可直接複製範例下方的 HTML。",
-    tryNexa: "試用 NexaCAPTCHA Phobetor",
-    installEyebrow: "加入 PHOBETOR",
+    tryIt: "查看 CAPTCHA 模組",
+    demoEyebrow: "CAPTCHA 模組",
+    demoTitle: "選擇驗證方式。",
+    demoLead: "所有模組共用相同的回呼格式與後端驗證流程。目前可先使用 Horizon，之後還會加入更多選擇。",
+    tryNexa: "試用 NexaCAPTCHA Horizon",
+    installEyebrow: "加入 HORIZON",
     installTitle: "將這段 HTML 加入你的頁面。",
-    installLead: "script 會載入 Phobetor，div 則標示驗證元件要顯示的位置。",
-    legacyLoader: "/captcha.js 目前同樣會載入 Phobetor，並保留作為既有串接的相容網址。",
+    installLead: "script 會載入 Horizon，div 則標示驗證元件要顯示的位置。",
+    legacyLoader: "/captcha.js 目前同樣會載入 Horizon，並保留作為既有串接的相容網址。",
     callbackEyebrow: "回呼函式",
     callbackTitle: "取得已完成的驗證結果。",
-    callbackLead: "驗證成功後，Phobetor 會呼叫你的函式。請將回傳的 ID 與權杖和受保護的表單一起送到後端。",
-    callbackCodeTitle: "接收回呼結果。",
-    callbackCodeLead: "請將 yourSubmitFunction 替換成你原本用來提交受保護表單的函式。",
+    callbackLead: "所有 NexaCAPTCHA 模組都使用相同的回呼結果。請將回傳的 ID 與權杖和受保護的表單一起送到後端。",
+    callbackCodeTitle: "回呼範例",
+    callbackCodeLead: "這只是一個範例。你可以重新命名 onCaptchaComplete 並改寫提交邏輯，只要 data-callback 使用相同的函式名稱即可。",
     callbackSecurity: "Callback 只負責將結果交給前端，不能當成最終證明。只有 /api/siteverify 回傳 success: true 時才能接受表單。",
     callbackValuesTitle: "Callback 參數",
     callbackValuesLead: "Callback 會收到一個 result 物件，其中包含以下欄位。",
     resultMeaning: "傳入 callback 函式的結果物件。",
-    successMeaning: "布林值；完成 Phobetor 驗證時為 true。",
+    successMeaning: "布林值；完成驗證時為 true。",
     idMeaning: "16 字元的驗證 ID，請將它傳給後端。",
     tokenMeaning: "64 字元的一次性權杖，請勿修改並直接傳給後端。"
   });
@@ -75,25 +75,25 @@
   Object.assign(translations.ja, {
     navDemo: "デモ",
     navCallback: "コールバック",
-    tryIt: "Phobetorを試す",
-    demoEyebrow: "PHOBETOR CAPTCHA",
-    demoTitle: "Phobetorを体験。",
-    demoLead: "NexaCAPTCHA初の認証モジュールです。デモを完了したら、すぐ下のHTMLをコピーできます。",
-    tryNexa: "NexaCAPTCHA Phobetorを試す",
-    installEyebrow: "PHOBETORを追加",
+    tryIt: "CAPTCHAモジュールを見る",
+    demoEyebrow: "CAPTCHA MODULES",
+    demoTitle: "認証方式を選択。",
+    demoLead: "すべてのモジュールで同じコールバック形式とサーバー検証フローを使用します。現在はHorizonを利用でき、今後さらに追加されます。",
+    tryNexa: "NexaCAPTCHA Horizonを試す",
+    installEyebrow: "HORIZONを追加",
     installTitle: "このHTMLをページに追加。",
-    installLead: "scriptがPhobetorを読み込み、divが認証を表示する位置を指定します。",
-    legacyLoader: "/captcha.jsも現在はPhobetorを読み込みます。既存の導入向け互換URLとして維持されます。",
+    installLead: "scriptがHorizonを読み込み、divが認証を表示する位置を指定します。",
+    legacyLoader: "/captcha.jsも現在はHorizonを読み込みます。既存の導入向け互換URLとして維持されます。",
     callbackEyebrow: "コールバック",
     callbackTitle: "完了した認証結果を使用。",
-    callbackLead: "認証に成功するとPhobetorが関数を呼び出します。返されたIDとトークンを保護対象のフォームと一緒にバックエンドへ送信します。",
-    callbackCodeTitle: "コールバックを受信。",
-    callbackCodeLead: "yourSubmitFunctionを、保護対象のフォームを送信する既存の関数に置き換えてください。",
+    callbackLead: "すべてのNexaCAPTCHAモジュールは同じコールバック結果を使用します。返されたIDとトークンを保護対象のフォームと一緒にバックエンドへ送信します。",
+    callbackCodeTitle: "コールバック例",
+    callbackCodeLead: "これは一例です。onCaptchaCompleteの名前や送信処理は変更でき、data-callbackには同じ関数名を指定します。",
     callbackSecurity: "Callbackはフロントエンドへの受け渡しであり、最終的な証明ではありません。/api/siteverifyがsuccess: trueを返した場合のみフォームを受け付けてください。",
     callbackValuesTitle: "Callbackパラメータ",
     callbackValuesLead: "Callbackは、次のフィールドを含むresultオブジェクトを一つ受け取ります。",
     resultMeaning: "Callback関数へ渡される結果オブジェクトです。",
-    successMeaning: "真偽値です。Phobetorが完了するとtrueになります。",
+    successMeaning: "真偽値です。認証が完了するとtrueになります。",
     idMeaning: "16文字の認証IDです。バックエンドへ送信します。",
     tokenMeaning: "64文字のワンタイムトークンです。変更せずバックエンドへ送信します。"
   });
@@ -203,12 +203,11 @@
     document.querySelectorAll(".reveal").forEach(function (element) { observer.observe(element); });
   }
 
-  window.onPhobetorComplete = function (result) {
+  window.onCaptchaComplete = function (result) {
     var output = document.getElementById("demo-output");
     if (!output || !result.success) return;
     output.classList.add("is-success");
     output.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i><span></span>';
     output.querySelector("span").textContent = text("completed");
   };
-  window.onNexaComplete = window.onPhobetorComplete;
 })();

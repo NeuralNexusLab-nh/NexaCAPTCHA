@@ -162,7 +162,7 @@ export function createApp(store: VerificationStore) {
     response.sendFile(path.join(config.publicDirectory, "captcha.js"));
   });
 
-  app.get("/captcha/phobetor.js", widgetHeaders, (_request, response) => {
+  app.get("/captcha/horizon.js", widgetHeaders, (_request, response) => {
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Cache-Control", "public, max-age=300");
     response.sendFile(path.join(config.publicDirectory, "captcha.js"));
