@@ -15,7 +15,8 @@ import {
   randomJitterAt,
   reduceGlyphVisibility,
   revealStateForFrame,
-  renderVerificationAnimation
+  renderVerificationAnimation,
+  structuralDistortionScale
 } from "../src/renderer.js";
 import { stringToPaths } from "hershey";
 
@@ -123,6 +124,7 @@ describe("verification animation", () => {
     expect(ambiguityMultiplierForLandmarkRisk(0)).toBe(1);
     const wGlyph = stringToPaths("W");
     expect(minimumTrackableVisibleRatio({
+      character: "W",
       paths: wGlyph.paths,
       landmarks: createGlyphLandmarks(wGlyph.paths),
       minX: wGlyph.bounds.minX,
@@ -130,6 +132,20 @@ describe("verification animation", () => {
       minY: wGlyph.bounds.minY,
       maxY: wGlyph.bounds.maxY
     })).toBe(0.34);
+    const yGlyph = stringToPaths("Y");
+    expect(minimumTrackableVisibleRatio({
+      character: "Y",
+      paths: yGlyph.paths,
+      landmarks: createGlyphLandmarks(yGlyph.paths),
+      minX: yGlyph.bounds.minX,
+      maxX: yGlyph.bounds.maxX,
+      minY: yGlyph.bounds.minY,
+      maxY: yGlyph.bounds.maxY
+    })).toBe(0.3);
+    expect(structuralDistortionScale("Y", [0, -9])).toBe(0.12);
+    expect(structuralDistortionScale("Y", [0, 2])).toBe(0.12);
+    expect(structuralDistortionScale("Y", [-8, 12])).toBe(1);
+    expect(structuralDistortionScale("X", [0, -9])).toBe(1);
   });
 
   it("treats open terminals as required gap landmarks", () => {

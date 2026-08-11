@@ -23,6 +23,7 @@ export const CAPTCHA_DIFFICULTY_POINTS = 0;
 const DIFFICULTY_MULTIPLIER = 1 + CAPTCHA_DIFFICULTY_POINTS * 0.05;
 
 interface Glyph {
+  character: string;
   paths: Point[][];
   landmarks: GlyphLandmark[];
   minX: number;
@@ -147,6 +148,7 @@ export function randomJitterAt(
 function glyphFor(character: string): Glyph {
   const result = stringToPaths(character);
   return {
+    character,
     paths: result.paths,
     landmarks: createGlyphLandmarks(result.paths),
     minX: result.bounds.minX,
@@ -154,6 +156,18 @@ function glyphFor(character: string): Glyph {
     minY: result.bounds.minY,
     maxY: result.bounds.maxY
   };
+}
+
+export function structuralDistortionScale(
+  character: string,
+  point: Point
+): number {
+  // Preserve the Y junction and lower stem as one axis. Whole-glyph rotation,
+  // drift and jitter still apply, but local warping cannot turn it into X.
+  if (character === "Y" && point[1] <= 2.1 && Math.abs(point[0]) <= 0.75) {
+    return 0.12;
+  }
+  return 1;
 }
 
 export function createGlyphLandmarks(paths: Point[][]): GlyphLandmark[] {
@@ -428,8 +442,11 @@ function transformPoint(
     normalizedY *
     motionProfile.shearAmplitude *
     Math.sin(distortionMotion * 2 + characterIndex);
+  const distortionScale = structuralDistortionScale(glyph.character, point);
   const localX =
-    normalizedX * 40 * scaleX + wave * motionProfile.waveAmplitude + shear;
+    normalizedX * 40 * scaleX +
+    wave * motionProfile.waveAmplitude * distortionScale +
+    shear * distortionScale;
   // Hershey paths use an upward Y axis; browser pixels use a downward Y axis.
   const localY =
     -normalizedY * 38 * scaleY +
@@ -564,7 +581,13 @@ function ambiguityAdjustedRevealMask(
   // landmark entered or left the mask.
   return {
     ...revealMask,
-    width: revealMask.width * (joinedStroke ? 0.78 : 0.88)
+    width:
+      revealMask.width *
+      (glyph.character === "Y" && joinedStroke
+        ? 0.96
+        : joinedStroke
+          ? 0.78
+          : 0.88)
   };
 }
 
@@ -653,6 +676,7 @@ export function concurrentRevealCenter(
 }
 
 export function minimumTrackableVisibleRatio(glyph: Glyph): number {
+  if (glyph.character === "Y") return 0.3;
   const joinedStrokes = glyph.landmarks.filter(
     (landmark) => landmark.weight >= 1.25
   ).length;
