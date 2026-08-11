@@ -1,6 +1,8 @@
 (function () {
   "use strict";
 
+  document.documentElement.classList.add("js");
+
   var translations = {
     en: {
       skip: "Skip to content", languageLabel: "Language", navTop: "Home", navDemo: "Demo", navFeatures: "How it works", navExperiment: "Results", navCallback: "Integration", navVerify: "Check the result",
