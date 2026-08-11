@@ -14,8 +14,8 @@
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fonts/oxanium/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=24">
-    <script src="/app.js?v=27" defer></script>
+    <link rel="stylesheet" href="/styles.css?v=25">
+    <script src="/app.js?v=28" defer></script>
     <script src="/captcha/horizon.js?v=5" defer></script>
   </head>
   <body>
@@ -35,7 +35,7 @@
           <a href="#home"><i class="fa-solid fa-house" aria-hidden="true"></i><span data-i18n="navTop">Home</span></a>
           <a href="#demo"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="navDemo">Demo</span></a>
           <a href="#experiment"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="navExperiment">Experiment</span></a>
-          <a href="#callback"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="navCallback">Callback</span></a>
+          <a href="#integration"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="navCallback">Integration</span></a>
           <a href="#verify"><i class="fa-solid fa-server" aria-hidden="true"></i><span data-i18n="navVerify">Backend verification</span></a>
           <a href="https://github.com/NeuralNexusLab-nh/NexaCAPTCHA" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github" aria-hidden="true"></i><span>GitHub</span></a>
         </div>
@@ -59,7 +59,7 @@
           <p class="hero-lead" data-i18n="heroLead">NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.</p>
           <div class="hero-actions">
             <a class="button button-primary" href="#demo"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span data-i18n="tryIt">Explore CAPTCHA modules</span></a>
-            <a class="button button-secondary" href="#callback"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="addToSite">View integration</span></a>
+            <a class="button button-secondary" href="#integration"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="addToSite">View integration</span></a>
           </div>
           <ul class="hero-notes" aria-label="Product highlights">
             <li><i class="fa-solid fa-eye" aria-hidden="true"></i><span data-i18n="noCleanFrame">Designed for human readability</span></li>
@@ -75,7 +75,7 @@
           <div class="section-heading reveal">
             <p class="eyebrow"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span data-i18n="demoEyebrow">CAPTCHA MODULES</span></p>
             <h2 id="demo-title" data-i18n="demoTitle">Choose a verification.</h2>
-            <p data-i18n="demoLead">Horizon reveals information through motion. Gravity bends four characters through a continuous gravitational vortex. Both use the same callback and server-side verification flow.</p>
+            <p data-i18n="demoLead">Horizon reveals information through motion. Gravity bends four characters through a continuous gravitational vortex. Both use the same integration and server-side verification flow.</p>
           </div>
 
           <div class="demo-stack">
@@ -98,20 +98,6 @@
               </output>
             </div>
 
-            <article class="demo-install" aria-labelledby="install-title">
-              <div class="demo-install-copy">
-                <p class="eyebrow"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="installEyebrow">ADD HORIZON</span></p>
-                <h3 id="install-title" data-i18n="installTitle">Add this HTML to your page.</h3>
-                <p data-i18n="installLead">The script loads Horizon and the div marks where the verification should appear.</p>
-              </div>
-              <div class="code-window">
-                <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span><button class="copy-button" type="button" data-copy="embed-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
-                <pre><code id="embed-code">&lt;script src="https://nexacaptcha.zone.id/captcha/horizon.js" defer&gt;&lt;/script&gt;
-
-&lt;div class="nexa-captcha" data-callback="onCaptchaComplete"&gt;&lt;/div&gt;</code></pre>
-              </div>
-              <p class="legacy-loader-note"><i class="fa-solid fa-link" aria-hidden="true"></i><span data-i18n="legacyLoader">/captcha.js currently loads Horizon too. It remains available as the compatibility URL for existing integrations.</span></p>
-            </article>
             </div>
 
             <div class="module-column reveal">
@@ -133,20 +119,16 @@
                 </output>
               </div>
 
-              <article class="demo-install gravity-install" aria-labelledby="install-gravity-title">
-                <div class="demo-install-copy">
-                  <p class="eyebrow"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="installGravityEyebrow">ADD GRAVITY</span></p>
-                  <h3 id="install-gravity-title" data-i18n="installTitle">Add this HTML to your page.</h3>
-                  <p data-i18n="installGravityLead">The script loads Gravity. The callback and server-side verification are shared with every module.</p>
-                </div>
-                <div class="code-window">
-                  <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span><button class="copy-button" type="button" data-copy="gravity-embed-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
-                  <pre><code id="gravity-embed-code">&lt;script src="https://nexacaptcha.zone.id/captcha/gravity.js" defer&gt;&lt;/script&gt;
-
-&lt;div class="nexa-captcha" data-callback="onCaptchaComplete"&gt;&lt;/div&gt;</code></pre>
-                </div>
-              </article>
             </div>
+
+            <a class="demo-integration-button reveal" href="#integration">
+              <span class="demo-integration-icon"><i class="fa-solid fa-code" aria-hidden="true"></i></span>
+              <span class="demo-integration-copy">
+                <strong data-i18n="integrationButtonTitle">Integrate NexaCAPTCHA</strong>
+                <small data-i18n="integrationButtonLead">Choose a module and add it to your site.</small>
+              </span>
+              <i class="fa-solid fa-arrow-down-long" aria-hidden="true"></i>
+            </a>
           </div>
         </div>
       </section>
@@ -198,24 +180,34 @@
         </div>
       </section>
 
-      <section class="section docs-section" id="callback" aria-labelledby="callback-title">
+      <section class="section docs-section" id="integration" aria-labelledby="callback-title">
         <div class="shell">
           <div class="section-heading reveal">
-            <p class="eyebrow"><i class="fa-solid fa-code-branch" aria-hidden="true"></i><span data-i18n="callbackEyebrow">CALLBACK</span></p>
-            <h2 id="callback-title" data-i18n="callbackTitle">Use the completed result.</h2>
-            <p data-i18n="callbackLead">Every NexaCAPTCHA module uses the same callback result. Send the returned ID and token to your backend with the form being protected.</p>
+            <p class="eyebrow"><i class="fa-solid fa-code-branch" aria-hidden="true"></i><span data-i18n="callbackEyebrow">INTEGRATION</span></p>
+            <h2 id="callback-title" data-i18n="callbackTitle">Connect NexaCAPTCHA.</h2>
+            <p data-i18n="callbackLead">Choose a module, add it to your page, then pass the completed result to your backend.</p>
           </div>
 
           <div class="callback-layout">
             <article class="callback-code reveal">
               <div class="callback-code-heading">
                 <span class="step-number">01</span>
-                <div><h3 data-i18n="callbackCodeTitle">Example callback</h3><p data-i18n="callbackCodeLead">This is only an example. You may rename onCaptchaComplete and change the submission logic; keep data-callback set to the same function name.</p></div>
+                <div><h3 data-i18n="callbackCodeTitle">Frontend setup</h3><p data-i18n="callbackCodeLead">Choose a module below. The callback name and submission logic are yours to change.</p></div>
               </div>
               <div class="code-window callback-html-window">
-                <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span><button class="copy-button" type="button" data-copy="callback-html-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
+                <div class="code-toolbar">
+                  <span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span>
+                  <div class="code-toolbar-actions">
+                    <label for="captcha-module-select" data-i18n="moduleLabel">Module</label>
+                    <select id="captcha-module-select">
+                      <option value="horizon">Horizon</option>
+                      <option value="gravity">Gravity</option>
+                    </select>
+                    <button class="copy-button" type="button" data-copy="callback-html-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button>
+                  </div>
+                </div>
                 <pre><code id="callback-html-code">&lt;script
-  src="https://nexacaptcha.zone.id/captcha/horizon.js"
+  src="https://nexacaptcha.zone.id/captcha/<mark class="module-loader-name">horizon.js</mark>"
   defer
 &gt;&lt;/script&gt;
 

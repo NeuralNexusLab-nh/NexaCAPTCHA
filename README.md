@@ -8,7 +8,7 @@
 
 NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.
 
-[Explore CAPTCHA modules](https://nexacaptcha.zone.id/#demo) · [View callback integration](#callback)
+[Explore CAPTCHA modules](https://nexacaptcha.zone.id/#demo) · [View integration](#integration)
 
 - Designed for human readability
 - 0% model success in our Horizon test
@@ -18,7 +18,7 @@ NexaCAPTCHA keeps verification clear for legitimate users while increasing the t
 
 ## Choose a verification.
 
-Horizon reveals information through motion. Gravity bends four characters through a continuous gravitational vortex. Both use the same callback and server-side verification flow.
+Horizon reveals information through motion. Gravity bends four characters through a continuous gravitational vortex. Both use the same integration and server-side verification flow.
 
 ### Horizon · Live demo
 
@@ -26,43 +26,13 @@ Follow each color through the animation and enter the four characters when you'r
 
 [Try NexaCAPTCHA Horizon](https://nexacaptchademo.zeabur.app/horizon)
 
-### Add this HTML to your page.
-
-```html
-<script
-  src="https://nexacaptcha.zone.id/captcha/horizon.js"
-  defer
-></script>
-
-<div
-  class="nexa-captcha"
-  data-callback="onCaptchaComplete"
-></div>
-```
-
-`/captcha.js` currently loads Horizon too. It remains available as the compatibility URL for existing integrations.
-
 ### Gravity · Live demo
 
 Follow the hollow characters through the gravitational distortion, then enter all four.
 
 [Try NexaCAPTCHA Gravity](https://nexacaptchademo.zeabur.app/gravity)
 
-### Add Gravity to your page.
-
-```html
-<script
-  src="https://nexacaptcha.zone.id/captcha/gravity.js"
-  defer
-></script>
-
-<div
-  class="nexa-captcha"
-  data-callback="onCaptchaComplete"
-></div>
-```
-
-Gravity uses the same callback result and server-side verification flow as Horizon.
+[Integrate NexaCAPTCHA](#integration)
 
 **VERIFICATION TEST · Tested build**
 
@@ -79,17 +49,17 @@ Agent results were measured on first exposure, without prior examples, conversat
 
 These results describe the recorded test runs and are not a guarantee of performance against every model or execution.
 
-<a id="callback"></a>
+<a id="integration"></a>
 
-**CALLBACK**
+**INTEGRATION**
 
-## Use the completed result.
+## Connect NexaCAPTCHA.
 
-Every NexaCAPTCHA module uses the same callback result. Send the returned ID and token to your backend with the form being protected.
+Choose a module, add it to your page, then pass the completed result to your backend.
 
-### Example callback
+### Frontend setup
 
-This is only an example. You may rename `onCaptchaComplete` and change its submission logic. Set `data-callback` in the HTML to the same function name you choose.
+Choose the loader for the module you want: `horizon.js` or `gravity.js`. The callback name and submission logic are yours to change.
 
 ```html
 <script
@@ -120,7 +90,7 @@ function onCaptchaComplete(result) {
 
 The callback is a frontend handoff, not final proof. Accept the form only after `/api/siteverify` returns `success: true`.
 
-### Callback parameters
+### Completion result
 
 | Value | Meaning |
 | --- | --- |

@@ -3,15 +3,15 @@
 
   var translations = {
     en: {
-      skip: "Skip to content", languageLabel: "Language", navTop: "Home", navDemo: "Demo", navFeatures: "How it works", navExperiment: "Results", navCallback: "Callback", navVerify: "Check the result",
+      skip: "Skip to content", languageLabel: "Language", navTop: "Home", navDemo: "Demo", navFeatures: "How it works", navExperiment: "Results", navCallback: "Integration", navVerify: "Check the result",
       heroEyebrow: "ADAPTIVE HUMAN VERIFICATION", heroTitleLine1: "Human by design.", heroTitleLine2: "Automation denied.", heroLead: "NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.",
       tryIt: "Explore CAPTCHA modules", addToSite: "View integration", noCleanFrame: "Designed for human readability", changingMotion: "0% model success in our Horizon test", higherCost: "Two attempts before expiry",
-      demoEyebrow: "CAPTCHA MODULES", demoTitle: "Choose a verification.", demoLead: "Horizon reveals information through motion. Gravity bends four characters through a continuous gravitational vortex. Both use the same callback and server-side verification flow.", liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA Horizon", tryGravity: "Try NexaCAPTCHA Gravity", ready: "Ready", demoHelp: "Follow each color through the animation. Enter the four characters when you're ready.", gravityHelp: "Follow the hollow characters through the gravitational distortion, then enter all four.", openHorizonDemo: "Open the full Horizon demo", openGravityDemo: "Open the full Gravity demo", demoOutput: "Your result will appear here.",
-      installEyebrow: "ADD HORIZON", installGravityEyebrow: "ADD GRAVITY", installTitle: "Add this HTML to your page.", installLead: "The script loads Horizon and the div marks where the verification should appear.", installGravityLead: "The script loads Gravity. The callback and server-side verification are shared with every module.", legacyLoader: "/captcha.js currently loads Horizon too. It remains available as the compatibility URL for existing integrations.",
+      demoEyebrow: "CAPTCHA MODULES", demoTitle: "Choose a verification.", demoLead: "Horizon reveals information through motion. Gravity bends four characters through a continuous gravitational vortex. Both use the same integration and server-side verification flow.", liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA Horizon", tryGravity: "Try NexaCAPTCHA Gravity", ready: "Ready", demoHelp: "Follow each color through the animation. Enter the four characters when you're ready.", gravityHelp: "Follow the hollow characters through the gravitational distortion, then enter all four.", openHorizonDemo: "Open the full Horizon demo", openGravityDemo: "Open the full Gravity demo", demoOutput: "Your result will appear here.",
+      integrationButtonTitle: "Integrate NexaCAPTCHA", integrationButtonLead: "Choose a module and add it to your site.", moduleLabel: "Module",
       featuresEyebrow: "HOW IT WORKS", featuresTitle: "Security that remains usable.", featuresLead: "NexaCAPTCHA distributes visual information across time. People follow a clear sequence, while automated systems must reconstruct it from changing frames.",
       experimentEyebrow: "VERIFICATION TEST", experimentTitle: "Verification performance, measured.", experimentLead: "Agent results were measured on first exposure, without prior examples, conversation history, or CAPTCHA-specific guidance.", experimentVersion: "Tested build", experimentHumanLabel: "Human", verificationSystem: "Verification system", secondsAverage: "seconds average", successRate: "success rate", experimentNote: "These results describe the recorded test runs and are not a guarantee of performance against every model or execution.",
       featureIncompleteTitle: "No complete still image", featureIncompleteBody: "The answer is revealed over time instead of being exposed in a single frame.", featureDistortionTitle: "Independent motion profiles", featureDistortionBody: "Each character moves and rotates on its own schedule, complicating frame-by-frame alignment.", featureMotionTitle: "Stable visual anchors", featureMotionBody: "Distinct colors help people track characters through motion without exposing the answer in metadata.", featureWindowTitle: "Variable reveal path", featureWindowBody: "The visible region changes direction and pace, reducing the value of fixed-window extraction.", featureUniqueTitle: "Per-verification rendering", featureUniqueBody: "Timing, distortion, placement, and masking are regenerated for every verification.", featureCostTitle: "Server-enforced controls", featureCostBody: "Retry limits, expiry, cooldowns, and one-time response tokens are enforced by the server.",
-      callbackEyebrow: "CALLBACK", callbackTitle: "Use the completed result.", callbackLead: "Every NexaCAPTCHA module uses the same callback result. Send the returned ID and token to your backend with the form being protected.", callbackCodeTitle: "Example callback", callbackCodeLead: "This is only an example. You may rename onCaptchaComplete and change the submission logic; keep data-callback set to the same function name.", callbackNameNote: "Choose your own callback name if you prefer. Use exactly the same name in the HTML and JavaScript.", callbackSecurity: "The callback is a frontend handoff, not final proof. Accept the form only after /api/siteverify returns success: true.", callbackValuesTitle: "Callback parameters", callbackValuesLead: "The callback receives one result object with these fields.", resultMeaning: "The object passed into your callback function.", successMeaning: "A boolean. It is true when the verification has been completed.",
+      callbackEyebrow: "INTEGRATION", callbackTitle: "Connect NexaCAPTCHA.", callbackLead: "Choose a module, add it to your page, then pass the completed result to your backend.", callbackCodeTitle: "Frontend setup", callbackCodeLead: "Choose a module below. The callback name and submission logic are yours to change.", callbackNameNote: "Choose your own callback name if you prefer. Use exactly the same name in the HTML and JavaScript.", callbackSecurity: "The callback is a frontend handoff, not final proof. Accept the form only after /api/siteverify returns success: true.", callbackValuesTitle: "Completion result", callbackValuesLead: "Your callback receives one result object with these fields.", resultMeaning: "The object passed into your callback function.", successMeaning: "A boolean. It is true when the verification has been completed.",
       htmlLocation: "HTML · page markup", frontendLocation: "JavaScript · frontend", backendLocation: "Node.js · backend", idMeaning: "The 16-character verification ID. Send it to your backend.", tokenMeaning: "The 64-character one-time token. Send it to your backend without changing it.",
       verifyEyebrow: "SERVER VALIDATION", verifyTitle: "Validate every response server-side.", verifyLead: "Before accepting a form submission, registration, or login, send both values to NexaCAPTCHA.", request: "Request", successResponse: "Response · success", failureResponse: "Response · failure", important: "Continue only when the response says success: true. A responseToken works once and expires after five minutes.",
       copy: "Copy", copied: "Copied", copySuccess: "Code copied.", copyFailure: "Could not copy. Select the code manually.", completed: "Verification complete", footerTagline: "Motion-based verification with server-enforced controls."
@@ -47,34 +47,30 @@
   };
 
   Object.assign(translations["zh-Hant"], {
-    demoLead: "Horizon 透過動態呈現資訊；Gravity 則讓四個字元受到連續的重力漩渦扭曲。兩者共用相同的回呼與後端驗證流程。",
     tryGravity: "試用 NexaCAPTCHA Gravity",
     gravityHelp: "沿著重力扭曲辨識四個中空字元，再輸入完整答案。",
     openHorizonDemo: "開啟完整 Horizon Demo",
     openGravityDemo: "開啟完整 Gravity Demo",
-    installGravityEyebrow: "加入 GRAVITY",
-    installGravityLead: "這段 script 會載入 Gravity；回呼與後端驗證流程則與所有模組共用。",
     experimentLead: "Agent 數據皆來自首次接觸測試，沒有先前範例、對話紀錄或針對 CAPTCHA 的解題提示。",
     navDemo: "示範",
-    navCallback: "回呼函式",
+    navCallback: "串接",
     tryIt: "查看 CAPTCHA 模組",
     demoEyebrow: "CAPTCHA 模組",
     demoTitle: "選擇驗證方式。",
-    demoLead: "Horizon 透過動態呈現資訊；Gravity 則讓四個字元受到連續的重力漩渦扭曲。兩者共用相同的回呼與後端驗證流程。",
+    demoLead: "Horizon 透過動態呈現資訊；Gravity 則讓四個字元受到連續的重力漩渦扭曲。兩者共用相同的串接格式與後端驗證流程。",
     tryNexa: "試用 NexaCAPTCHA Horizon",
-    installEyebrow: "加入 HORIZON",
-    installTitle: "將這段 HTML 加入你的頁面。",
-    installLead: "script 會載入 Horizon，div 則標示驗證元件要顯示的位置。",
-    legacyLoader: "/captcha.js 目前同樣會載入 Horizon，並保留作為既有串接的相容網址。",
-    callbackEyebrow: "回呼函式",
-    callbackTitle: "取得已完成的驗證結果。",
-    callbackLead: "所有 NexaCAPTCHA 模組都使用相同的回呼結果。請將回傳的 ID 與權杖和受保護的表單一起送到後端。",
-    callbackCodeTitle: "回呼範例",
-    callbackCodeLead: "這只是一個範例。你可以重新命名 onCaptchaComplete 並改寫提交邏輯，只要 data-callback 使用相同的函式名稱即可。",
+    integrationButtonTitle: "串接 NexaCAPTCHA",
+    integrationButtonLead: "選擇模組，將驗證加入你的網站。",
+    moduleLabel: "模組",
+    callbackEyebrow: "系統串接",
+    callbackTitle: "串接 NexaCAPTCHA。",
+    callbackLead: "選擇驗證模組、加入頁面，再將完成結果交給你的後端。",
+    callbackCodeTitle: "前端串接",
+    callbackCodeLead: "先選擇要使用的模組。回呼名稱與送出方式都能依你的專案調整。",
     callbackNameNote: "函式名稱可以自行修改，但 HTML 與 JavaScript 中的名稱必須完全相同。",
     callbackSecurity: "Callback 只負責將結果交給前端，不能當成最終證明。只有 /api/siteverify 回傳 success: true 時才能接受表單。",
-    callbackValuesTitle: "Callback 參數",
-    callbackValuesLead: "Callback 會收到一個 result 物件，其中包含以下欄位。",
+    callbackValuesTitle: "完成結果",
+    callbackValuesLead: "回呼函式會收到一個 result 物件，其中包含以下欄位。",
     resultMeaning: "傳入 callback 函式的結果物件。",
     successMeaning: "布林值；完成驗證時為 true。",
     idMeaning: "16 字元的驗證 ID，請將它傳給後端。",
@@ -82,34 +78,30 @@
   });
 
   Object.assign(translations.ja, {
-    demoLead: "Horizonは動きで情報を示し、Gravityは連続した重力の渦で4文字を歪めます。どちらも同じコールバックとサーバー検証フローを使用します。",
     tryGravity: "NexaCAPTCHA Gravityを試す",
     gravityHelp: "重力によって歪んだ4つの中空文字を読み取り、すべて入力してください。",
     openHorizonDemo: "Horizonのフルデモを開く",
     openGravityDemo: "Gravityのフルデモを開く",
-    installGravityEyebrow: "GRAVITYを追加",
-    installGravityLead: "このscriptはGravityを読み込みます。コールバックとサーバー検証はすべてのモジュールで共通です。",
     experimentLead: "Agentの結果は、事前の例、会話履歴、CAPTCHA固有のヒントがない初回接触時に測定したものです。",
     navDemo: "デモ",
-    navCallback: "コールバック",
+    navCallback: "導入",
     tryIt: "CAPTCHAモジュールを見る",
     demoEyebrow: "CAPTCHA MODULES",
     demoTitle: "認証方式を選択。",
-    demoLead: "Horizonは動きで情報を示し、Gravityは連続した重力の渦で4文字を歪めます。どちらも同じコールバックとサーバー検証フローを使用します。",
+    demoLead: "Horizonは動きで情報を示し、Gravityは連続した重力の渦で4文字を歪めます。どちらも同じ導入形式とサーバー検証フローを使用します。",
     tryNexa: "NexaCAPTCHA Horizonを試す",
-    installEyebrow: "HORIZONを追加",
-    installTitle: "このHTMLをページに追加。",
-    installLead: "scriptがHorizonを読み込み、divが認証を表示する位置を指定します。",
-    legacyLoader: "/captcha.jsも現在はHorizonを読み込みます。既存の導入向け互換URLとして維持されます。",
-    callbackEyebrow: "コールバック",
-    callbackTitle: "完了した認証結果を使用。",
-    callbackLead: "すべてのNexaCAPTCHAモジュールは同じコールバック結果を使用します。返されたIDとトークンを保護対象のフォームと一緒にバックエンドへ送信します。",
-    callbackCodeTitle: "コールバック例",
-    callbackCodeLead: "これは一例です。onCaptchaCompleteの名前や送信処理は変更でき、data-callbackには同じ関数名を指定します。",
+    integrationButtonTitle: "NexaCAPTCHAを導入",
+    integrationButtonLead: "モジュールを選び、サイトに認証を追加します。",
+    moduleLabel: "モジュール",
+    callbackEyebrow: "システム導入",
+    callbackTitle: "NexaCAPTCHAを導入。",
+    callbackLead: "認証モジュールを選んでページに追加し、完了結果をバックエンドへ渡します。",
+    callbackCodeTitle: "フロントエンド導入",
+    callbackCodeLead: "使用するモジュールを選択してください。コールバック名と送信処理はプロジェクトに合わせて変更できます。",
     callbackNameNote: "関数名は自由に変更できますが、HTMLとJavaScriptでは完全に同じ名前を使用してください。",
     callbackSecurity: "Callbackはフロントエンドへの受け渡しであり、最終的な証明ではありません。/api/siteverifyがsuccess: trueを返した場合のみフォームを受け付けてください。",
-    callbackValuesTitle: "Callbackパラメータ",
-    callbackValuesLead: "Callbackは、次のフィールドを含むresultオブジェクトを一つ受け取ります。",
+    callbackValuesTitle: "完了結果",
+    callbackValuesLead: "コールバックは、次のフィールドを含むresultオブジェクトを一つ受け取ります。",
     resultMeaning: "Callback関数へ渡される結果オブジェクトです。",
     successMeaning: "真偽値です。認証が完了するとtrueになります。",
     idMeaning: "16文字の認証IDです。バックエンドへ送信します。",
@@ -183,6 +175,18 @@
       if (parallaxFrame !== null) return;
       parallaxFrame = window.requestAnimationFrame(updateEarthPosition);
     }, { passive: true });
+  }
+
+  var captchaModuleSelect = document.getElementById("captcha-module-select");
+  var moduleLoaderName = document.querySelector(".module-loader-name");
+  function updateModuleLoader() {
+    if (!captchaModuleSelect || !moduleLoaderName) return;
+    var moduleName = captchaModuleSelect.value === "gravity" ? "gravity" : "horizon";
+    moduleLoaderName.textContent = moduleName + ".js";
+  }
+  if (captchaModuleSelect) {
+    captchaModuleSelect.addEventListener("change", updateModuleLoader);
+    updateModuleLoader();
   }
 
   document.querySelectorAll("[data-copy]").forEach(function (button) {
