@@ -18,7 +18,7 @@ NexaCAPTCHA keeps verification clear for legitimate users while increasing the t
 
 ## Choose a verification.
 
-Each module uses the same callback and server-side verification flow. Start with Horizon, with more options to come.
+Horizon reveals four color-coded characters across a short animation. Follow each color over time, then use the shared callback and server-side verification flow.
 
 ### Horizon · Live demo
 
@@ -29,42 +29,18 @@ Follow each color through the animation and enter the four characters when you'r
 ### Add this HTML to your page.
 
 ```html
-<script src="https://nexacaptcha.zone.id/captcha/horizon.js" defer></script>
+<script
+  src="https://nexacaptcha.zone.id/captcha/horizon.js"
+  defer
+></script>
 
-<div class="nexa-captcha" data-callback="onCaptchaComplete"></div>
+<div
+  class="nexa-captcha"
+  data-callback="onCaptchaComplete"
+></div>
 ```
 
 `/captcha.js` currently loads Horizon too. It remains available as the compatibility URL for existing integrations.
-
-**HOW IT WORKS**
-
-## Security that remains usable.
-
-NexaCAPTCHA distributes visual information across time. People follow a clear sequence, while automated systems must reconstruct it from changing frames.
-
-### No complete still image
-
-The answer is revealed over time instead of being exposed in a single frame.
-
-### Independent motion profiles
-
-Each character moves and rotates on its own schedule, complicating frame-by-frame alignment.
-
-### Stable visual anchors
-
-Distinct colors help people track characters through motion without exposing the answer in metadata.
-
-### Variable reveal path
-
-The visible region changes direction and pace, reducing the value of fixed-window extraction.
-
-### Per-verification rendering
-
-Timing, distortion, placement, and masking are regenerated for every verification.
-
-### Server-enforced controls
-
-Retry limits, expiry, cooldowns, and one-time response tokens are enforced by the server.
 
 **VERIFICATION TEST · Tested build**
 
@@ -91,6 +67,20 @@ Every NexaCAPTCHA module uses the same callback result. Send the returned ID and
 ### Example callback
 
 This is only an example. You may rename `onCaptchaComplete` and change its submission logic. Set `data-callback` in the HTML to the same function name you choose.
+
+```html
+<script
+  src="https://nexacaptcha.zone.id/captcha/horizon.js"
+  defer
+></script>
+
+<div
+  class="nexa-captcha"
+  data-callback="onCaptchaComplete"
+></div>
+```
+
+The callback name is yours to choose. Use exactly the same name in `data-callback` and your frontend JavaScript.
 
 JavaScript · frontend:
 

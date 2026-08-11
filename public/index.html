@@ -14,8 +14,8 @@
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fonts/oxanium/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=20">
-    <script src="/app.js?v=23" defer></script>
+    <link rel="stylesheet" href="/styles.css?v=21">
+    <script src="/app.js?v=24" defer></script>
     <script src="/captcha/horizon.js?v=1" defer></script>
   </head>
   <body>
@@ -27,14 +27,13 @@
     </div>
     <header class="site-header">
       <nav class="nav shell" aria-label="Main navigation">
-        <a class="brand" href="#top" aria-label="NexaCAPTCHA home">
+        <a class="brand" href="#home" aria-label="NexaCAPTCHA home">
           <img src="/assets/logo.svg?v=2" alt="" width="32" height="32">
           <span>NexaCAPTCHA</span>
         </a>
         <div class="nav-links">
-          <a href="#top"><i class="fa-solid fa-house" aria-hidden="true"></i><span data-i18n="navTop">Home</span></a>
+          <a href="#home"><i class="fa-solid fa-house" aria-hidden="true"></i><span data-i18n="navTop">Home</span></a>
           <a href="#demo"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="navDemo">Demo</span></a>
-          <a href="#features"><i class="fa-solid fa-star" aria-hidden="true"></i><span data-i18n="navFeatures">Features</span></a>
           <a href="#experiment"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="navExperiment">Experiment</span></a>
           <a href="#callback"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="navCallback">Callback</span></a>
           <a href="#verify"><i class="fa-solid fa-server" aria-hidden="true"></i><span data-i18n="navVerify">Backend verification</span></a>
@@ -53,7 +52,7 @@
     </header>
 
     <main id="main">
-      <section class="hero shell" id="top">
+      <section class="hero shell" id="home">
         <div class="hero-copy reveal">
           <p class="eyebrow"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span data-i18n="heroEyebrow">ADAPTIVE HUMAN VERIFICATION</span></p>
           <h1><span data-i18n="heroTitleLine1">Human by design.</span><em data-i18n="heroTitleLine2">Automation denied.</em></h1>
@@ -76,7 +75,7 @@
           <div class="section-heading reveal">
             <p class="eyebrow"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span data-i18n="demoEyebrow">CAPTCHA MODULES</span></p>
             <h2 id="demo-title" data-i18n="demoTitle">Choose a verification.</h2>
-            <p data-i18n="demoLead">Each module uses the same callback and server-side verification flow. Start with Horizon, with more options to come.</p>
+            <p data-i18n="demoLead">Horizon reveals four color-coded characters across a short animation. Follow each color over time, then use the shared callback and server-side verification flow.</p>
           </div>
 
           <div class="demo-stack">
@@ -115,46 +114,8 @@
         </div>
       </section>
 
-      <section class="section shell" id="features" aria-labelledby="features-title">
-        <div class="section-heading reveal">
-          <p class="eyebrow eyebrow-purple"><i class="fa-solid fa-star" aria-hidden="true"></i><span data-i18n="featuresEyebrow">HOW IT WORKS</span></p>
-          <h2 id="features-title" data-i18n="featuresTitle">Security that remains usable.</h2>
-          <p data-i18n="featuresLead">NexaCAPTCHA distributes visual information across time. People follow a clear sequence, while automated systems must reconstruct it from changing frames.</p>
-        </div>
-        <div class="feature-grid">
-          <article class="feature-card reveal">
-            <i class="fa-solid fa-eye-slash" aria-hidden="true"></i>
-            <h3 data-i18n="featureIncompleteTitle">No complete still image</h3>
-            <p data-i18n="featureIncompleteBody">The answer is revealed over time instead of being exposed in a single frame.</p>
-          </article>
-          <article class="feature-card reveal">
-            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
-            <h3 data-i18n="featureDistortionTitle">Independent motion profiles</h3>
-            <p data-i18n="featureDistortionBody">Each character moves and rotates on its own schedule, complicating frame-by-frame alignment.</p>
-          </article>
-          <article class="feature-card reveal">
-            <i class="fa-solid fa-arrows-up-down-left-right" aria-hidden="true"></i>
-            <h3 data-i18n="featureMotionTitle">Stable visual anchors</h3>
-            <p data-i18n="featureMotionBody">Distinct colors help people track characters through motion without exposing the answer in metadata.</p>
-          </article>
-          <article class="feature-card reveal">
-            <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
-            <h3 data-i18n="featureWindowTitle">Variable reveal path</h3>
-            <p data-i18n="featureWindowBody">The visible region changes direction and pace, reducing the value of fixed-window extraction.</p>
-          </article>
-          <article class="feature-card reveal">
-            <i class="fa-solid fa-fingerprint" aria-hidden="true"></i>
-            <h3 data-i18n="featureUniqueTitle">Per-verification rendering</h3>
-            <p data-i18n="featureUniqueBody">Timing, distortion, placement, and masking are regenerated for every verification.</p>
-          </article>
-          <article class="feature-card reveal">
-            <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
-            <h3 data-i18n="featureCostTitle">Server-enforced controls</h3>
-            <p data-i18n="featureCostBody">Retry limits, expiry, cooldowns, and one-time response tokens are enforced by the server.</p>
-          </article>
-        </div>
-
-        <aside class="experiment-panel reveal" id="experiment" aria-labelledby="experiment-title">
+      <section class="section shell" id="experiment" aria-labelledby="experiment-title">
+        <div class="experiment-panel reveal">
           <div class="experiment-heading">
             <div>
               <p class="eyebrow"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="experimentEyebrow">VERIFICATION TEST</span></p>
@@ -192,7 +153,7 @@
             </table>
           </div>
           <p class="experiment-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span data-i18n="experimentNote">This is a recorded test, not a promise that every model or every run will behave the same way.</span></p>
-        </aside>
+        </div>
       </section>
 
       <section class="section docs-section" id="callback" aria-labelledby="callback-title">
@@ -209,9 +170,22 @@
                 <span class="step-number">01</span>
                 <div><h3 data-i18n="callbackCodeTitle">Example callback</h3><p data-i18n="callbackCodeLead">This is only an example. You may rename onCaptchaComplete and change the submission logic; keep data-callback set to the same function name.</p></div>
               </div>
+              <div class="code-window callback-html-window">
+                <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span><button class="copy-button" type="button" data-copy="callback-html-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
+                <pre><code id="callback-html-code">&lt;script
+  src="https://nexacaptcha.zone.id/captcha/horizon.js"
+  defer
+&gt;&lt;/script&gt;
+
+&lt;div
+  class="nexa-captcha"
+  data-callback="<mark class="callback-name">onCaptchaComplete</mark>"
+&gt;&lt;/div&gt;</code></pre>
+              </div>
+              <p class="callback-name-note"><i class="fa-solid fa-pen" aria-hidden="true"></i><span data-i18n="callbackNameNote">Choose your own callback name if you prefer. Use exactly the same name in the HTML and JavaScript.</span></p>
               <div class="code-window">
                 <div class="code-toolbar"><span><i class="fa-brands fa-js" aria-hidden="true"></i><span data-i18n="frontendLocation">JavaScript · frontend</span></span><button class="copy-button" type="button" data-copy="callback-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
-                <pre><code id="callback-code">function onCaptchaComplete(result) {
+                <pre><code id="callback-code">function <mark class="callback-name">onCaptchaComplete</mark>(result) {
   if (!result.success) return;
 
   yourSubmitFunction({
