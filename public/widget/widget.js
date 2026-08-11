@@ -3,6 +3,7 @@
 
   var parameters = new URLSearchParams(window.location.search);
   var widgetId = parameters.get("widgetId") || "standalone";
+  var captchaType = parameters.get("captchaType") === "warp" ? "warp" : "horizon";
   var requestedParentOrigin = parameters.get("parentOrigin");
   var parentOrigin = null;
   try {
@@ -29,6 +30,11 @@
   var busy = false;
   var coolingDown = false;
   var completed = false;
+
+  stage.classList.toggle("is-warp", captchaType === "warp");
+  image.alt = captchaType === "warp"
+    ? "Distorted verification text"
+    : "Animated verification text";
 
   function send(type, payload) {
     if (!parentOrigin || window.parent === window) return;
@@ -158,7 +164,7 @@
       var response = await fetch("/api/verifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: "{}",
+        body: JSON.stringify({ captchaType: captchaType }),
         cache: "no-store"
       });
       var result = await response.json();
@@ -171,7 +177,12 @@
         image.classList.add("is-visible");
         busy = false;
         setPill("Playing", "fa-eye", "");
-        setMessage("Follow the reveal, then enter all four characters.", "");
+        setMessage(
+          captchaType === "warp"
+            ? "Read the distorted text, then enter all four characters."
+            : "Follow the reveal, then enter all four characters.",
+          ""
+        );
         updateControls();
         armExpiry(Math.max(1_000, (result.expiresInMs || 120_000) - 1_000));
         void fetch(
@@ -193,10 +204,10 @@
         currentVerificationId = null;
         busy = false;
         setPill("Error", "fa-circle-exclamation", "is-error");
-        setMessage("The verification animation could not be loaded. Try again.", "is-error");
+        setMessage("The verification image could not be loaded. Try again.", "is-error");
         updateControls();
       };
-      image.src = result.animationUrl;
+      image.src = captchaType === "warp" ? result.imageUrl : result.animationUrl;
     } catch (_) {
       currentVerificationId = null;
       busy = false;

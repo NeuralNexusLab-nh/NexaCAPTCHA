@@ -18,7 +18,7 @@ NexaCAPTCHA keeps verification clear for legitimate users while increasing the t
 
 ## Choose a verification.
 
-Horizon reveals four color-coded characters across a short animation. Follow each color over time, then use the shared callback and server-side verification flow.
+Horizon reveals information through motion. Warp bends four characters into a static image. Both use the same callback and server-side verification flow.
 
 ### Horizon · Live demo
 
@@ -42,17 +42,40 @@ Follow each color through the animation and enter the four characters when you'r
 
 `/captcha.js` currently loads Horizon too. It remains available as the compatibility URL for existing integrations.
 
+### Warp · Live demo
+
+Read the four distorted characters in the image, then enter them below.
+
+[Try NexaCAPTCHA Warp](https://nexacaptcha.zone.id/#demo)
+
+### Add Warp to your page.
+
+```html
+<script
+  src="https://nexacaptcha.zone.id/captcha/warp.js"
+  defer
+></script>
+
+<div
+  class="nexa-captcha"
+  data-callback="onCaptchaComplete"
+></div>
+```
+
+Warp uses the same callback result and server-side verification flow as Horizon.
+
 **VERIFICATION TEST · Tested build**
 
 ## Verification performance, measured.
 
-Recorded mean completion time and success rate for human participants and GPT 5.6 Sol - Medium across three verification systems.
+Agent results were measured on first exposure, without prior examples, conversation history, or CAPTCHA-specific guidance.
 
 | Verification system | Human | GPT 5.6 Sol - Medium |
 | --- | --- | --- |
-| **NexaCAPTCHA Horizon** | **7.3** seconds average | **11.8%** success rate · **60.3** seconds average |
+| **NexaCAPTCHA Horizon** | **18.3** seconds average | **11.8%** success rate · **60.3** seconds average |
+| **NexaCAPTCHA Warp** | **0.0** seconds average | **0.0%** success rate · **0.0** seconds average |
 | **Google reCAPTCHA** | **1.9** seconds average | **99%** success rate · **7.6** seconds average |
-| **hCaptcha** | **11.8** seconds average | **85.7%** success rate · **49.56** seconds average |
+| **hCaptcha** | **11.8** seconds average | **85.7%** success rate · **49.6** seconds average |
 
 These results describe the recorded test runs and are not a guarantee of performance against every model or execution.
 

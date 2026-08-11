@@ -4,13 +4,17 @@
   var script = document.currentScript;
   if (!script) {
     var candidates = document.querySelectorAll(
-      'script[src*="/captcha.js"], script[src*="/captcha/horizon.js"]'
+      'script[src*="/captcha.js"], script[src*="/captcha/horizon.js"], script[src*="/captcha/warp.js"]'
     );
     script = candidates[candidates.length - 1];
   }
   if (!script || !script.src) return;
 
-  var serviceOrigin = new URL(script.src, window.location.href).origin;
+  var loaderUrl = new URL(script.src, window.location.href);
+  var serviceOrigin = loaderUrl.origin;
+  var defaultCaptchaType = loaderUrl.pathname.indexOf("/captcha/warp.js") !== -1
+    ? "warp"
+    : "horizon";
   var instances = new WeakMap();
   var sequence = 0;
 
@@ -25,6 +29,10 @@
     if (instances.has(mount)) return instances.get(mount);
 
     options = options || {};
+    var captchaType = options.captchaType || mount.dataset.captchaType || defaultCaptchaType;
+    if (captchaType !== "horizon" && captchaType !== "warp") {
+      throw new Error("Unsupported NexaCAPTCHA type.");
+    }
     sequence += 1;
     var widgetId = "nexa_" + Date.now().toString(36) + "_" + sequence.toString(36);
     var result = { success: false, verificationId: null, responseToken: null };
@@ -35,7 +43,9 @@
       "/widget?v=6&parentOrigin=" +
       encodeURIComponent(window.location.origin) +
       "&widgetId=" +
-      encodeURIComponent(widgetId);
+      encodeURIComponent(widgetId) +
+      "&captchaType=" +
+      encodeURIComponent(captchaType);
     iframe.title = "NexaCAPTCHA verification";
     iframe.width = "100%";
     iframe.height = "360";

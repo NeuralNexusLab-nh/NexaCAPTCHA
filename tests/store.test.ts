@@ -3,7 +3,12 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PublicError } from "../src/errors.js";
-import { VerificationStore, generateAnswer, normalizeAnswer } from "../src/store.js";
+import {
+  VerificationStore,
+  generateAnswer,
+  generateWarpAnswer,
+  normalizeAnswer
+} from "../src/store.js";
 
 function publicErrorCode(run: () => unknown): string {
   try {
@@ -26,6 +31,8 @@ describe("VerificationStore", () => {
     store = new VerificationStore({
       answerFactory: () => "NEXA",
       renderer: () => Buffer.from("GIF89a", "ascii"),
+      warpAnswerFactory: () => "WARP",
+      warpRenderer: () => Buffer.from([137, 80, 78, 71]),
       mediaDirectory: directory,
       clock: () => now
     });
@@ -74,6 +81,30 @@ describe("VerificationStore", () => {
     expect(answer.match(/6/g)).toHaveLength(1);
     expect(answer).toMatch(/[KXVWY]/);
     expect(new Set(answer).size).toBe(4);
+  });
+
+  it("selects four unique Warp characters without required groups", () => {
+    const seen = new Set<string>();
+    for (let sample = 0; sample < 4_000; sample += 1) {
+      const answer = generateWarpAnswer();
+      expect(answer).toMatch(/^[A-HJ-NP-Z2-9]{4}$/);
+      expect(answer).not.toMatch(/[IO01]/);
+      expect(new Set(answer).size).toBe(4);
+      answer.split("").forEach((character) => seen.add(character));
+    }
+    expect([...seen].sort().join("")).toBe(
+      "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
+    );
+  });
+
+  it("creates Warp media while sharing the verification protocol", async () => {
+    const verification = await store.create("warp");
+    expect(verification.captchaType).toBe("warp");
+    if (verification.captchaType !== "warp") throw new Error("Expected Warp.");
+    expect(verification.imageUrl).toContain("/image");
+    expect(store.getMediaPath(verification.verificationId, "warp")).toMatch(/\.png$/);
+    const completion = store.submitAnswer(verification.verificationId, "WARP");
+    expect(completion.success).toBe(true);
   });
 
   it("expires after two incorrect attempts with a twenty-second cooldown", async () => {

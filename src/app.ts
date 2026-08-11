@@ -20,7 +20,11 @@ const answerSchema = z
   })
   .strict();
 
-const createVerificationSchema = z.object({}).strict();
+const createVerificationSchema = z
+  .object({
+    captchaType: z.enum(["horizon", "warp"]).optional()
+  })
+  .strict();
 
 const verificationSchema = z
   .object({
@@ -79,8 +83,8 @@ export function createApp(store: VerificationStore) {
     limiter(60_000, 24),
     async (_request, response, next) => {
       try {
-        createVerificationSchema.parse(_request.body);
-        const verification = await store.create();
+        const input = createVerificationSchema.parse(_request.body);
+        const verification = await store.create(input.captchaType ?? "horizon");
         response.setHeader("Cache-Control", "no-store");
         response.status(201).json(verification);
       } catch (error) {
@@ -94,9 +98,33 @@ export function createApp(store: VerificationStore) {
     limiter(60_000, 120),
     (request, response, next) => {
       try {
-        const mediaPath = store.getMediaPath(routeParameter(request.params.verificationId));
+        const mediaPath = store.getMediaPath(
+          routeParameter(request.params.verificationId),
+          "horizon"
+        );
         response.setHeader("Cache-Control", "no-store, max-age=0");
         response.setHeader("Content-Type", "image/gif");
+        response.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+        response.sendFile(mediaPath, (error) => {
+          if (error) next(error);
+        });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  app.get(
+    "/api/verifications/:verificationId/image",
+    limiter(60_000, 120),
+    (request, response, next) => {
+      try {
+        const mediaPath = store.getMediaPath(
+          routeParameter(request.params.verificationId),
+          "warp"
+        );
+        response.setHeader("Cache-Control", "no-store, max-age=0");
+        response.setHeader("Content-Type", "image/png");
         response.setHeader("Cross-Origin-Resource-Policy", "same-origin");
         response.sendFile(mediaPath, (error) => {
           if (error) next(error);
@@ -163,6 +191,12 @@ export function createApp(store: VerificationStore) {
   });
 
   app.get("/captcha/horizon.js", widgetHeaders, (_request, response) => {
+    response.setHeader("Access-Control-Allow-Origin", "*");
+    response.setHeader("Cache-Control", "public, max-age=300");
+    response.sendFile(path.join(config.publicDirectory, "captcha.js"));
+  });
+
+  app.get("/captcha/warp.js", widgetHeaders, (_request, response) => {
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Cache-Control", "public, max-age=300");
     response.sendFile(path.join(config.publicDirectory, "captcha.js"));

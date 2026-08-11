@@ -14,9 +14,9 @@
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fonts/oxanium/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=21">
-    <script src="/app.js?v=24" defer></script>
-    <script src="/captcha/horizon.js?v=1" defer></script>
+    <link rel="stylesheet" href="/styles.css?v=22">
+    <script src="/app.js?v=26" defer></script>
+    <script src="/captcha/horizon.js?v=2" defer></script>
   </head>
   <body>
     <div class="ambient-backdrop" aria-hidden="true">
@@ -75,11 +75,12 @@
           <div class="section-heading reveal">
             <p class="eyebrow"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span data-i18n="demoEyebrow">CAPTCHA MODULES</span></p>
             <h2 id="demo-title" data-i18n="demoTitle">Choose a verification.</h2>
-            <p data-i18n="demoLead">Horizon reveals four color-coded characters across a short animation. Follow each color over time, then use the shared callback and server-side verification flow.</p>
+            <p data-i18n="demoLead">Horizon reveals information through motion. Warp bends four characters into a static image. Both use the same callback and server-side verification flow.</p>
           </div>
 
           <div class="demo-stack">
-            <div class="demo-card reveal">
+            <div class="module-column reveal">
+            <div class="demo-card">
               <div class="demo-route" aria-hidden="true"><span>NEXA</span><i class="fa-solid fa-arrow-right-long"></i><span>HORIZON</span></div>
               <div class="card-heading">
                 <div>
@@ -89,14 +90,14 @@
                 <span class="live-pill"><span aria-hidden="true"></span><span data-i18n="ready">Ready</span></span>
               </div>
               <p class="card-help" data-i18n="demoHelp">Follow each color through the animation. Enter the four characters when you're ready.</p>
-              <div class="nexa-captcha" data-callback="onCaptchaComplete"></div>
-              <output class="demo-output" id="demo-output" aria-live="polite">
+              <div class="nexa-captcha" data-callback="onHorizonDemoComplete"></div>
+              <output class="demo-output" id="demo-output-horizon" aria-live="polite">
                 <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
                 <span data-i18n="demoOutput">Your result will appear here.</span>
               </output>
             </div>
 
-            <article class="demo-install reveal" aria-labelledby="install-title">
+            <article class="demo-install" aria-labelledby="install-title">
               <div class="demo-install-copy">
                 <p class="eyebrow"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="installEyebrow">ADD HORIZON</span></p>
                 <h3 id="install-title" data-i18n="installTitle">Add this HTML to your page.</h3>
@@ -110,6 +111,40 @@
               </div>
               <p class="legacy-loader-note"><i class="fa-solid fa-link" aria-hidden="true"></i><span data-i18n="legacyLoader">/captcha.js currently loads Horizon too. It remains available as the compatibility URL for existing integrations.</span></p>
             </article>
+            </div>
+
+            <div class="module-column reveal">
+              <div class="demo-card warp-card">
+                <div class="demo-route" aria-hidden="true"><span>NEXA</span><i class="fa-solid fa-arrow-right-long"></i><span>WARP</span></div>
+                <div class="card-heading">
+                  <div>
+                    <p class="eyebrow"><i class="fa-solid fa-image" aria-hidden="true"></i><span data-i18n="liveDemo">LIVE DEMO</span></p>
+                    <h3 data-i18n="tryWarp">Try NexaCAPTCHA Warp</h3>
+                  </div>
+                  <span class="live-pill"><span aria-hidden="true"></span><span data-i18n="ready">Ready</span></span>
+                </div>
+                <p class="card-help" data-i18n="warpHelp">Read the four distorted characters in the image, then enter them below.</p>
+                <div class="nexa-captcha" data-captcha-type="warp" data-callback="onWarpDemoComplete"></div>
+                <output class="demo-output" id="demo-output-warp" aria-live="polite">
+                  <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                  <span data-i18n="demoOutput">Your result will appear here.</span>
+                </output>
+              </div>
+
+              <article class="demo-install warp-install" aria-labelledby="install-warp-title">
+                <div class="demo-install-copy">
+                  <p class="eyebrow"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="installWarpEyebrow">ADD WARP</span></p>
+                  <h3 id="install-warp-title" data-i18n="installTitle">Add this HTML to your page.</h3>
+                  <p data-i18n="installWarpLead">The script loads Warp. The callback and server-side verification are shared with every module.</p>
+                </div>
+                <div class="code-window">
+                  <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span><button class="copy-button" type="button" data-copy="warp-embed-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
+                  <pre><code id="warp-embed-code">&lt;script src="https://nexacaptcha.zone.id/captcha/warp.js" defer&gt;&lt;/script&gt;
+
+&lt;div class="nexa-captcha" data-callback="onCaptchaComplete"&gt;&lt;/div&gt;</code></pre>
+                </div>
+              </article>
+            </div>
           </div>
         </div>
       </section>
@@ -120,7 +155,7 @@
             <div>
               <p class="eyebrow"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="experimentEyebrow">VERIFICATION TEST</span></p>
               <h3 id="experiment-title" data-i18n="experimentTitle">Verification performance, measured.</h3>
-              <p class="experiment-lead" data-i18n="experimentLead">Recorded mean completion time and success rate for human participants and GPT 5.6 Sol - Medium across three verification systems.</p>
+              <p class="experiment-lead" data-i18n="experimentLead">Agent results were measured on first exposure, without prior examples, conversation history, or CAPTCHA-specific guidance.</p>
             </div>
             <span class="experiment-version"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span data-i18n="experimentVersion">Tested build</span></span>
           </div>
@@ -136,8 +171,13 @@
               <tbody>
                 <tr class="nexa-result">
                   <th scope="row"><img src="/assets/logo.svg?v=2" alt="" width="24" height="24"><span>NexaCAPTCHA Horizon</span></th>
-                  <td><strong>7.3</strong> <span data-i18n="secondsAverage">seconds average</span></td>
+                  <td><strong>18.3</strong> <span data-i18n="secondsAverage">seconds average</span></td>
                   <td><strong>11.8%</strong> <span data-i18n="successRate">success rate</span> · <strong>60.3</strong> <span data-i18n="secondsAverage">seconds average</span></td>
+                </tr>
+                <tr class="nexa-result warp-result">
+                  <th scope="row"><img src="/assets/logo.svg?v=2" alt="" width="24" height="24"><span>NexaCAPTCHA Warp</span></th>
+                  <td><strong>0.0</strong> <span data-i18n="secondsAverage">seconds average</span></td>
+                  <td><strong>0.0%</strong> <span data-i18n="successRate">success rate</span> · <strong>0.0</strong> <span data-i18n="secondsAverage">seconds average</span></td>
                 </tr>
                 <tr>
                   <th scope="row"><i class="fa-brands fa-google" aria-hidden="true"></i><span>Google reCAPTCHA</span></th>
@@ -147,7 +187,7 @@
                 <tr>
                   <th scope="row"><i class="fa-solid fa-shield" aria-hidden="true"></i><span>hCaptcha</span></th>
                   <td><strong>11.8</strong> <span data-i18n="secondsAverage">seconds average</span></td>
-                  <td><strong>85.7%</strong> <span data-i18n="successRate">success rate</span> · <strong>49.56</strong> <span data-i18n="secondsAverage">seconds average</span></td>
+                  <td><strong>85.7%</strong> <span data-i18n="successRate">success rate</span> · <strong>49.6</strong> <span data-i18n="secondsAverage">seconds average</span></td>
                 </tr>
               </tbody>
             </table>

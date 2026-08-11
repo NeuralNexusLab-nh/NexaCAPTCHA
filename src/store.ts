@@ -11,6 +11,9 @@ import { config } from "./config.js";
 import { PublicError } from "./errors.js";
 import { RenderQueue } from "./render-queue.js";
 import { renderVerificationAnimation } from "./renderer.js";
+import { renderWarpImage } from "./warp-renderer.js";
+
+export type CaptchaType = "horizon" | "warp";
 
 export type VerificationStatus =
   | "pending"
@@ -21,6 +24,7 @@ export type VerificationStatus =
 
 interface VerificationRecord {
   id: string;
+  captchaType: CaptchaType;
   answerDigest: Buffer;
   answerSalt: Buffer;
   status: VerificationStatus;
@@ -34,15 +38,25 @@ interface VerificationRecord {
   verifiedAt?: number;
 }
 
-export interface PublicVerification {
-  verificationId: string;
-  animationUrl: string;
-  expiresInMs: number;
-}
+export type PublicVerification =
+  | {
+      verificationId: string;
+      captchaType: "horizon";
+      animationUrl: string;
+      expiresInMs: number;
+    }
+  | {
+      verificationId: string;
+      captchaType: "warp";
+      imageUrl: string;
+      expiresInMs: number;
+    };
 
 interface VerificationStoreOptions {
   answerFactory?: () => string;
   renderer?: (answer: string) => Buffer;
+  warpAnswerFactory?: () => string;
+  warpRenderer?: (answer: string) => Buffer;
   mediaDirectory?: string;
   clock?: () => number;
 }
@@ -105,12 +119,21 @@ export function generateAnswer(randomInteger: RandomInteger = randomInt): string
   return characters.join("");
 }
 
+export function generateWarpAnswer(randomInteger: RandomInteger = randomInt): string {
+  const pool = Array.from(ALPHABET);
+  return Array.from({ length: 4 }, () =>
+    takeRandomCharacter(pool, randomInteger)
+  ).join("");
+}
+
 export class VerificationStore {
   private readonly records = new Map<string, VerificationRecord>();
   private readonly runtimeSecret = randomBytes(32);
   private readonly renderQueue = new RenderQueue(config.maxRenderQueue);
   private readonly answerFactory: () => string;
   private readonly renderer: (answer: string) => Buffer;
+  private readonly warpAnswerFactory: () => string;
+  private readonly warpRenderer: (answer: string) => Buffer;
   private readonly mediaDirectory: string;
   private readonly clock: () => number;
   private cleanupTimer?: NodeJS.Timeout;
@@ -118,6 +141,8 @@ export class VerificationStore {
   constructor(options: VerificationStoreOptions = {}) {
     this.answerFactory = options.answerFactory ?? generateAnswer;
     this.renderer = options.renderer ?? renderVerificationAnimation;
+    this.warpAnswerFactory = options.warpAnswerFactory ?? generateWarpAnswer;
+    this.warpRenderer = options.warpRenderer ?? renderWarpImage;
     this.mediaDirectory = options.mediaDirectory ?? config.mediaDirectory;
     this.clock = options.clock ?? Date.now;
   }
@@ -142,7 +167,7 @@ export class VerificationStore {
       .digest();
   }
 
-  async create(): Promise<PublicVerification> {
+  async create(captchaType: CaptchaType = "horizon"): Promise<PublicVerification> {
     await this.cleanup();
     if (this.records.size >= config.maxActiveVerifications) {
       throw new PublicError(
@@ -153,16 +178,22 @@ export class VerificationStore {
     }
 
     const verificationId = `ver_${randomBase64Url(9)}`;
-    const answer = this.answerFactory();
+    const answer = captchaType === "warp"
+      ? this.warpAnswerFactory()
+      : this.answerFactory();
     const salt = randomBytes(16);
     const answerDigest = this.digestAnswer(answer, salt);
-    const mediaPath = path.join(this.mediaDirectory, `${verificationId}.gif`);
-    const media = await this.renderQueue.run(() => this.renderer(answer));
+    const extension = captchaType === "warp" ? "png" : "gif";
+    const mediaPath = path.join(this.mediaDirectory, `${verificationId}.${extension}`);
+    const media = await this.renderQueue.run(() =>
+      captchaType === "warp" ? this.warpRenderer(answer) : this.renderer(answer)
+    );
 
     await writeFile(mediaPath, media, { flag: "wx" });
     const now = this.clock();
     this.records.set(verificationId, {
       id: verificationId,
+      captchaType,
       answerDigest,
       answerSalt: salt,
       status: "pending",
@@ -171,16 +202,28 @@ export class VerificationStore {
       mediaPath
     });
 
+    if (captchaType === "warp") {
+      return {
+        verificationId,
+        captchaType,
+        imageUrl: `/api/verifications/${encodeURIComponent(verificationId)}/image`,
+        expiresInMs: config.verificationLifetimeMs
+      };
+    }
     return {
       verificationId,
+      captchaType,
       animationUrl: `/api/verifications/${encodeURIComponent(verificationId)}/animation`,
       expiresInMs: config.verificationLifetimeMs
     };
   }
 
-  getMediaPath(verificationId: string): string {
+  getMediaPath(verificationId: string, expectedType?: CaptchaType): string {
     const record = this.records.get(verificationId);
     if (!record) {
+      throw new PublicError(404, "verification-not-found", "Verification not found.");
+    }
+    if (expectedType !== undefined && record.captchaType !== expectedType) {
       throw new PublicError(404, "verification-not-found", "Verification not found.");
     }
     if (record.status !== "pending") throw this.statusError(record.status);
@@ -304,7 +347,7 @@ export class VerificationStore {
       throw new PublicError(
         409,
         "verification-not-started",
-        "The verification animation has not started."
+        "The verification media has not started."
       );
     }
     if (record.expiresAt <= this.clock() && record.status === "pending") {
@@ -363,7 +406,7 @@ export class VerificationStore {
       if (total <= config.maxTemporaryBytes) break;
       await rm(file.filePath, { force: true });
       total -= file.size;
-      const verificationId = path.basename(file.filePath, ".gif");
+      const verificationId = path.parse(file.filePath).name;
       this.records.delete(verificationId);
     }
   }

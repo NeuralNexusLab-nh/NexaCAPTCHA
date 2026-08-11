@@ -18,6 +18,8 @@ describe("NexaCAPTCHA HTTP API", () => {
     store = new VerificationStore({
       answerFactory: () => "NEXA",
       renderer: () => Buffer.from("GIF89a", "ascii"),
+      warpAnswerFactory: () => "WARP",
+      warpRenderer: () => Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
       mediaDirectory: directory,
       clock: () => now
     });
@@ -69,6 +71,38 @@ describe("NexaCAPTCHA HTTP API", () => {
       .send(verification)
       .expect(200)
       .expect(({ body }) => expect(body.success).toBe(false));
+  });
+
+  it("serves Warp as a PNG with the same answer and siteverify protocol", async () => {
+    const created = await request(app)
+      .post("/api/verifications")
+      .send({ captchaType: "warp" })
+      .expect(201);
+    expect(created.body.captchaType).toBe("warp");
+    expect(created.body.imageUrl).toContain("/image");
+    expect(created.body.animationUrl).toBeUndefined();
+
+    await request(app)
+      .get(created.body.imageUrl)
+      .expect("Content-Type", /image\/png/)
+      .expect("Cache-Control", /no-store/)
+      .expect(200);
+    await request(app)
+      .get(`/api/verifications/${created.body.verificationId}/animation`)
+      .expect(404);
+
+    const completed = await request(app)
+      .post(`/api/verifications/${created.body.verificationId}/answer`)
+      .send({ answer: "WARP" })
+      .expect(200);
+    await request(app)
+      .post("/api/siteverify")
+      .send({
+        verificationId: created.body.verificationId,
+        responseToken: completed.body.responseToken
+      })
+      .expect(200)
+      .expect(({ body }) => expect(body.success).toBe(true));
   });
 
   it("applies separate CSP and frame rules to the website and widget", async () => {
@@ -141,6 +175,11 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect("Content-Type", /javascript/)
       .expect(200);
     await request(app).get("/captcha/phobetor.js").expect(404);
+    await request(app)
+      .get("/captcha/warp.js")
+      .expect("Access-Control-Allow-Origin", "*")
+      .expect("Content-Type", /javascript/)
+      .expect(200);
   });
 
   it("denies cross-origin browser API calls", async () => {

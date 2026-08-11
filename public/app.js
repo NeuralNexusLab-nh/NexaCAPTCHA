@@ -6,10 +6,10 @@
       skip: "Skip to content", languageLabel: "Language", navTop: "Home", navDemo: "Demo", navFeatures: "How it works", navExperiment: "Results", navCallback: "Callback", navVerify: "Check the result",
       heroEyebrow: "ADAPTIVE HUMAN VERIFICATION", heroTitleLine1: "Human by design.", heroTitleLine2: "Automation denied.", heroLead: "NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.",
       tryIt: "Explore CAPTCHA modules", addToSite: "View integration", noCleanFrame: "Designed for human readability", changingMotion: "11.8% model success in our test", higherCost: "Two attempts before expiry",
-      demoEyebrow: "CAPTCHA MODULES", demoTitle: "Choose a verification.", demoLead: "Horizon reveals four color-coded characters across a short animation. Follow each color over time, then use the shared callback and server-side verification flow.", liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA Horizon", ready: "Ready", demoHelp: "Follow each color through the animation. Enter the four characters when you're ready.", demoOutput: "Your result will appear here.",
-      installEyebrow: "ADD HORIZON", installTitle: "Add this HTML to your page.", installLead: "The script loads Horizon and the div marks where the verification should appear.", legacyLoader: "/captcha.js currently loads Horizon too. It remains available as the compatibility URL for existing integrations.",
+      demoEyebrow: "CAPTCHA MODULES", demoTitle: "Choose a verification.", demoLead: "Horizon reveals information through motion. Warp bends four characters into a static image. Both use the same callback and server-side verification flow.", liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA Horizon", tryWarp: "Try NexaCAPTCHA Warp", ready: "Ready", demoHelp: "Follow each color through the animation. Enter the four characters when you're ready.", warpHelp: "Read the four distorted characters in the image, then enter them below.", demoOutput: "Your result will appear here.",
+      installEyebrow: "ADD HORIZON", installWarpEyebrow: "ADD WARP", installTitle: "Add this HTML to your page.", installLead: "The script loads Horizon and the div marks where the verification should appear.", installWarpLead: "The script loads Warp. The callback and server-side verification are shared with every module.", legacyLoader: "/captcha.js currently loads Horizon too. It remains available as the compatibility URL for existing integrations.",
       featuresEyebrow: "HOW IT WORKS", featuresTitle: "Security that remains usable.", featuresLead: "NexaCAPTCHA distributes visual information across time. People follow a clear sequence, while automated systems must reconstruct it from changing frames.",
-      experimentEyebrow: "VERIFICATION TEST", experimentTitle: "Verification performance, measured.", experimentLead: "Recorded mean completion time and success rate for human participants and GPT 5.6 Sol - Medium across three verification systems.", experimentVersion: "Tested build", experimentHumanLabel: "Human", verificationSystem: "Verification system", secondsAverage: "seconds average", successRate: "success rate", experimentNote: "These results describe the recorded test runs and are not a guarantee of performance against every model or execution.",
+      experimentEyebrow: "VERIFICATION TEST", experimentTitle: "Verification performance, measured.", experimentLead: "Agent results were measured on first exposure, without prior examples, conversation history, or CAPTCHA-specific guidance.", experimentVersion: "Tested build", experimentHumanLabel: "Human", verificationSystem: "Verification system", secondsAverage: "seconds average", successRate: "success rate", experimentNote: "These results describe the recorded test runs and are not a guarantee of performance against every model or execution.",
       featureIncompleteTitle: "No complete still image", featureIncompleteBody: "The answer is revealed over time instead of being exposed in a single frame.", featureDistortionTitle: "Independent motion profiles", featureDistortionBody: "Each character moves and rotates on its own schedule, complicating frame-by-frame alignment.", featureMotionTitle: "Stable visual anchors", featureMotionBody: "Distinct colors help people track characters through motion without exposing the answer in metadata.", featureWindowTitle: "Variable reveal path", featureWindowBody: "The visible region changes direction and pace, reducing the value of fixed-window extraction.", featureUniqueTitle: "Per-verification rendering", featureUniqueBody: "Timing, distortion, placement, and masking are regenerated for every verification.", featureCostTitle: "Server-enforced controls", featureCostBody: "Retry limits, expiry, cooldowns, and one-time response tokens are enforced by the server.",
       callbackEyebrow: "CALLBACK", callbackTitle: "Use the completed result.", callbackLead: "Every NexaCAPTCHA module uses the same callback result. Send the returned ID and token to your backend with the form being protected.", callbackCodeTitle: "Example callback", callbackCodeLead: "This is only an example. You may rename onCaptchaComplete and change the submission logic; keep data-callback set to the same function name.", callbackNameNote: "Choose your own callback name if you prefer. Use exactly the same name in the HTML and JavaScript.", callbackSecurity: "The callback is a frontend handoff, not final proof. Accept the form only after /api/siteverify returns success: true.", callbackValuesTitle: "Callback parameters", callbackValuesLead: "The callback receives one result object with these fields.", resultMeaning: "The object passed into your callback function.", successMeaning: "A boolean. It is true when the verification has been completed.",
       htmlLocation: "HTML · page markup", frontendLocation: "JavaScript · frontend", backendLocation: "Node.js · backend", idMeaning: "The 16-character verification ID. Send it to your backend.", tokenMeaning: "The 64-character one-time token. Send it to your backend without changing it.",
@@ -47,12 +47,18 @@
   };
 
   Object.assign(translations["zh-Hant"], {
+    demoLead: "Horizon 透過動態呈現資訊；Warp 則將四個字元扭曲在一張靜態圖片中。兩者共用相同的回呼與後端驗證流程。",
+    tryWarp: "試用 NexaCAPTCHA Warp",
+    warpHelp: "讀出圖片中四個扭曲的字元，再輸入到下方欄位。",
+    installWarpEyebrow: "加入 WARP",
+    installWarpLead: "這段 script 會載入 Warp；回呼與後端驗證流程則與所有模組共用。",
+    experimentLead: "Agent 數據皆來自首次接觸測試，沒有先前範例、對話紀錄或針對 CAPTCHA 的解題提示。",
     navDemo: "示範",
     navCallback: "回呼函式",
     tryIt: "查看 CAPTCHA 模組",
     demoEyebrow: "CAPTCHA 模組",
     demoTitle: "選擇驗證方式。",
-    demoLead: "Horizon 會在短動畫中逐步呈現四個不同顏色的字元。沿著顏色追蹤並輸入結果，再使用共用的回呼與後端驗證流程。",
+    demoLead: "Horizon 透過動態呈現資訊；Warp 則將四個字元扭曲在一張靜態圖片中。兩者共用相同的回呼與後端驗證流程。",
     tryNexa: "試用 NexaCAPTCHA Horizon",
     installEyebrow: "加入 HORIZON",
     installTitle: "將這段 HTML 加入你的頁面。",
@@ -74,12 +80,18 @@
   });
 
   Object.assign(translations.ja, {
+    demoLead: "Horizonは動きで情報を示し、Warpは4文字を1枚の静止画像に歪めて表示します。どちらも同じコールバックとサーバー検証フローを使用します。",
+    tryWarp: "NexaCAPTCHA Warpを試す",
+    warpHelp: "画像内の歪んだ4文字を読み取り、下の入力欄に入力してください。",
+    installWarpEyebrow: "WARPを追加",
+    installWarpLead: "このscriptはWarpを読み込みます。コールバックとサーバー検証はすべてのモジュールで共通です。",
+    experimentLead: "Agentの結果は、事前の例、会話履歴、CAPTCHA固有のヒントがない初回接触時に測定したものです。",
     navDemo: "デモ",
     navCallback: "コールバック",
     tryIt: "CAPTCHAモジュールを見る",
     demoEyebrow: "CAPTCHA MODULES",
     demoTitle: "認証方式を選択。",
-    demoLead: "Horizonは短いアニメーションの中で、色分けされた4文字を徐々に表示します。色を追って結果を入力し、共通のコールバックとサーバー検証フローを使用します。",
+    demoLead: "Horizonは動きで情報を示し、Warpは4文字を1枚の静止画像に歪めて表示します。どちらも同じコールバックとサーバー検証フローを使用します。",
     tryNexa: "NexaCAPTCHA Horizonを試す",
     installEyebrow: "HORIZONを追加",
     installTitle: "このHTMLをページに追加。",
@@ -205,11 +217,19 @@
     document.querySelectorAll(".reveal").forEach(function (element) { observer.observe(element); });
   }
 
-  window.onCaptchaComplete = function (result) {
-    var output = document.getElementById("demo-output");
+  function showDemoResult(outputId, result) {
+    var output = document.getElementById(outputId);
     if (!output || !result.success) return;
     output.classList.add("is-success");
     output.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i><span></span>';
     output.querySelector("span").textContent = text("completed");
+  }
+
+  window.onHorizonDemoComplete = function (result) {
+    showDemoResult("demo-output-horizon", result);
+  };
+
+  window.onWarpDemoComplete = function (result) {
+    showDemoResult("demo-output-warp", result);
   };
 })();
