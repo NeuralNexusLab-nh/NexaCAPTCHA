@@ -5,9 +5,10 @@ import {
   TRANSITION_BACKTRACK_PROBABILITY,
   ambiguityMultiplierForLandmarkRisk,
   compositeCharacterWithinAreaLimit,
+  concurrentRevealCenter,
   createGlyphLandmarks,
   createDistinctColorIndices,
-  createConcurrentRevealSegments,
+  createConcurrentRevealTracks,
   createRevealSegments,
   estimateGlyphVisibility,
   minimumTrackableVisibleRatio,
@@ -190,27 +191,27 @@ describe("verification animation", () => {
       state = (Math.imul(state, 1_664_525) + 1_013_904_223) >>> 0;
       return state / 0x1_0000_0000;
     };
-    const scans = createConcurrentRevealSegments(4, 240, 66, 62, random);
-    expect(scans).toHaveLength(4);
-    scans.forEach((segments, characterIndex) => {
-      expect(segments).toHaveLength(5);
-      expect(segments.reduce((total, segment) => total + segment.frames, 0)).toBe(240);
-      expect(segments.every((segment) => segment.characterIndex === characterIndex)).toBe(true);
-      for (let index = 1; index < segments.length; index += 1) {
-        expect(segments[index - 1]?.toX).toBe(segments[index]?.fromX);
-      }
+    const tracks = createConcurrentRevealTracks(4, 66, 62, random);
+    expect(tracks).toHaveLength(4);
+    tracks.forEach((track, characterIndex) => {
+      expect(track.characterIndex).toBe(characterIndex);
       const characterX = 66 + characterIndex * 62;
-      expect(segments[0]?.fromX).toBeGreaterThan(characterX - 31);
-      expect(segments[0]?.fromX).toBeLessThan(characterX + 31);
-      expect(segments.some((segment) => segment.toX === characterX - 31)).toBe(true);
-      expect(segments.some((segment) => segment.toX === characterX + 31)).toBe(true);
-      expect(revealStateForFrame(0, segments).centerX).toBe(
-        revealStateForFrame(239, segments).centerX
+      expect(track.scanLeft).toBeCloseTo(characterX - 24.8);
+      expect(track.scanRight).toBeCloseTo(characterX + 24.8);
+      expect(concurrentRevealCenter(0, 240, track)).toBeCloseTo(
+        concurrentRevealCenter(239, 240, track)
       );
-      const segmentSpeeds = segments.map(
-        (segment) => Math.abs(segment.toX - segment.fromX) / (segment.frames - 1)
+      const centers = Array.from({ length: 240 }, (_value, frame) =>
+        concurrentRevealCenter(frame, 240, track)
       );
-      expect(Math.max(...segmentSpeeds) - Math.min(...segmentSpeeds)).toBeLessThan(0.08);
+      const largestStep = Math.max(
+        ...centers.slice(1).map((center, index) =>
+          Math.abs(center - (centers[index] ?? center))
+        )
+      );
+      expect(largestStep).toBeLessThan(1.3);
+      expect(Math.min(...centers)).toBeLessThan(characterX - 23);
+      expect(Math.max(...centers)).toBeGreaterThan(characterX + 23);
     });
   });
 

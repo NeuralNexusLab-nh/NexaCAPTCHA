@@ -76,6 +76,17 @@ interface RevealMask extends RevealShapeProfile {
   animatedPhase: number;
 }
 
+export interface ConcurrentRevealTrack {
+  scanLeft: number;
+  scanRight: number;
+  phase: number;
+  cycles: number;
+  wobbleAmplitude: number;
+  wobbleCycles: number;
+  wobblePhase: number;
+  characterIndex: number;
+}
+
 export interface GlyphLandmark {
   point: Point;
   weight: number;
@@ -601,76 +612,44 @@ export function createRevealSegments(
   return segments;
 }
 
-export function createConcurrentRevealSegments(
+export function createConcurrentRevealTracks(
   glyphCount: number,
-  frames: number,
   textStart: number,
   characterSpacing: number,
   random: () => number
-): RevealSegment[][] {
-  const scanRadius = characterSpacing / 2;
+): ConcurrentRevealTrack[] {
+  const scanRadius = characterSpacing * 0.4;
   return Array.from({ length: glyphCount }, (_value, characterIndex) => {
     const characterX = textStart + characterIndex * characterSpacing;
-    const scanLeft = characterX - scanRadius;
-    const scanRight = characterX + scanRadius;
-    const startProgress = 0.18 + random() * 0.64;
-    const scanStart = scanLeft + (scanRight - scanLeft) * startProgress;
-    const reverseDirection = random() < 0.5;
-    const firstTarget = reverseDirection ? scanLeft : scanRight;
-    const secondTarget = reverseDirection ? scanRight : scanLeft;
-    const points = [
-      scanStart,
-      firstTarget,
-      secondTarget,
-      firstTarget,
-      secondTarget,
-      scanStart
-    ];
-    const distances = points.slice(1).map((point, index) =>
-      Math.abs(point - (points[index] ?? point))
-    );
-    const totalDistance = distances.reduce((total, distance) => total + distance, 0);
-    // Boundary frames are shared by adjacent segments. Allocate actual motion
-    // steps by distance so every part of the glyph receives equal scan time.
-    const availableSteps = frames - distances.length;
-    const rawSteps = distances.map(
-      (distance) => availableSteps * distance / totalDistance
-    );
-    const segmentSteps = rawSteps.map((steps) => Math.max(1, Math.floor(steps)));
-    let remainingSteps =
-      availableSteps - segmentSteps.reduce((total, steps) => total + steps, 0);
-    const remainderOrder = rawSteps
-      .map((steps, index) => ({ index, remainder: steps - Math.floor(steps) }))
-      .sort((left, right) => right.remainder - left.remainder);
-    for (let index = 0; remainingSteps > 0; index += 1, remainingSteps -= 1) {
-      const target = remainderOrder[index % remainderOrder.length]?.index ?? 0;
-      segmentSteps[target] = (segmentSteps[target] ?? 1) + 1;
-    }
-    const segment = (
-      segmentFrames: number,
-      fromX: number,
-      toX: number
-    ): RevealSegment => ({
-      kind: "dwell",
-      frames: segmentFrames,
-      fromX,
-      toX,
-      phase: random() * Math.PI * 2,
-      backtrackAmplitude: 0,
-      tempoVariation: 0,
+    return {
+      scanLeft: characterX - scanRadius,
+      scanRight: characterX + scanRadius,
+      phase: random(),
+      cycles: 2,
+      wobbleAmplitude: 0.7 + random() * 0.9,
+      wobbleCycles: 3 + Math.floor(random() * 4),
+      wobblePhase: random() * Math.PI * 2,
       characterIndex
-    });
-
-    // Four complete traversals double the prior average scan speed. Returning
-    // to the random start keeps the GIF loop continuous and exposure balanced.
-    return distances.map((_, index) =>
-      segment(
-        (segmentSteps[index] ?? 1) + 1,
-        points[index] ?? scanStart,
-        points[index + 1] ?? scanStart
-      )
-    );
+    };
   });
+}
+
+export function concurrentRevealCenter(
+  frame: number,
+  frames: number,
+  track: ConcurrentRevealTrack
+): number {
+  const progress = frames <= 1 ? 0 : frame / (frames - 1);
+  const cyclePosition = ((track.phase + progress * track.cycles) % 1 + 1) % 1;
+  const triangularProgress =
+    cyclePosition <= 0.5 ? cyclePosition * 2 : (1 - cyclePosition) * 2;
+  const mainPosition =
+    track.scanLeft + (track.scanRight - track.scanLeft) * triangularProgress;
+  const wobble =
+    track.wobbleAmplitude *
+    Math.sin(triangularProgress * Math.PI) *
+    Math.sin(progress * Math.PI * 2 * track.wobbleCycles + track.wobblePhase);
+  return mainPosition + wobble;
 }
 
 export function minimumTrackableVisibleRatio(glyph: Glyph): number {
@@ -823,7 +802,7 @@ function renderVerificationAnimationAttempt(
       colorIndex: colorIndices[characterIndex] ?? 4
     };
   });
-  const partialRevealWidth = (29 + random() * 4) / DIFFICULTY_MULTIPLIER;
+  const partialRevealWidth = (26 + random() * 3) / DIFFICULTY_MULTIPLIER;
   const maximumVisibleRatios = glyphs.map((glyph) => {
     const estimate = estimateGlyphVisibility(glyph.paths);
     return reduceGlyphVisibility(estimate.visibleRatio, random());
@@ -838,9 +817,8 @@ function renderVerificationAnimationAttempt(
   };
   const textStart = 66;
   const characterSpacing = 62;
-  const concurrentRevealSegments = createConcurrentRevealSegments(
+  const concurrentRevealTracks = createConcurrentRevealTracks(
     glyphs.length,
-    frames,
     textStart,
     characterSpacing,
     random
@@ -867,12 +845,13 @@ function renderVerificationAnimationAttempt(
       const baseX = textStart + characterIndex * characterSpacing;
       const motionProfile = motionProfiles[characterIndex];
       if (!motionProfile) return;
-      const revealSegments = concurrentRevealSegments[characterIndex] ?? [];
-      const revealState = revealStateForFrame(frame, revealSegments);
+      const revealTrack = concurrentRevealTracks[characterIndex];
+      if (!revealTrack) return;
+      const revealCenter = concurrentRevealCenter(frame, frames, revealTrack);
       const characterPhase = revealShapeProfile.phase + characterIndex * 1.37;
       const revealMask: RevealMask = {
         ...revealShapeProfile,
-        centerX: revealState.centerX,
+        centerX: revealCenter,
         centerY:
           height / 2 +
           4 * Math.sin(
