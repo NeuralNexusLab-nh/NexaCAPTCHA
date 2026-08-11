@@ -14,6 +14,13 @@ const CHARACTER_COLORS: readonly Rgba[] = [
   [55, 32, 67, 255]
 ];
 
+const CHARACTER_INNER_COLORS: readonly Rgba[] = [
+  [211, 228, 241, 255],
+  [224, 216, 241, 255],
+  [207, 232, 232, 255],
+  [232, 216, 231, 255]
+];
+
 const CRC_TABLE = Array.from({ length: 256 }, (_value, index) => {
   let value = index;
   for (let bit = 0; bit < 8; bit += 1) {
@@ -182,19 +189,27 @@ function transformGlyphPoint(
   shear: number,
   scaleX: number,
   scaleY: number,
-  wavePhase: number
+  wavePhase: number,
+  horizontalWarp: number,
+  verticalWarp: number,
+  bend: number,
+  twist: number
 ): Point {
   const width = Math.max(1, bounds.maxX - bounds.minX);
   const height = Math.max(1, bounds.maxY - bounds.minY);
   const normalizedX = (point[0] - (bounds.minX + bounds.maxX) / 2) / width;
   const normalizedY = (point[1] - (bounds.minY + bounds.maxY) / 2) / height;
-  const localX =
+  const baseX =
     normalizedX * 88 * scaleX +
     normalizedY * shear * 34 +
-    Math.sin(normalizedY * 6.2 + wavePhase) * 4.8;
-  const localY =
+    Math.sin(normalizedY * 7.1 + wavePhase) * horizontalWarp;
+  const baseY =
     -normalizedY * 112 * scaleY +
-    Math.sin(normalizedX * 5.4 + wavePhase * 0.7) * 5.2;
+    Math.sin(normalizedX * 6.4 + wavePhase * 0.7) * verticalWarp;
+  const localX =
+    baseX + normalizedY * normalizedY * bend * Math.sign(normalizedY || 1);
+  const localY =
+    baseY + normalizedX * normalizedY * twist;
   const cosine = Math.cos(rotation);
   const sine = Math.sin(rotation);
   const rotatedX = localX * cosine - localY * sine;
@@ -245,45 +260,68 @@ export function renderWarpImage(answer: string): Buffer {
     const glyph = stringToPaths(character);
     const centerX = glyphCenters[index]! + (random() - 0.5) * 18;
     const centerY = WARP_HEIGHT / 2 + (random() - 0.5) * 24;
-    const rotation = ((random() * 34 - 17) * Math.PI) / 180;
-    const shear = random() * 0.44 - 0.22;
-    const scaleX = 0.9 + random() * 0.24;
-    const scaleY = 0.92 + random() * 0.2;
+    const rotation = ((random() * 54 - 27) * Math.PI) / 180;
+    const shear = random() * 0.9 - 0.45;
+    const scaleX = 0.76 + random() * 0.5;
+    const scaleY = 0.84 + random() * 0.34;
     const wavePhase = random() * Math.PI * 2;
-    const thickness = 4.8 + random() * 2.1;
+    const horizontalWarp = 7 + random() * 8;
+    const verticalWarp = 7 + random() * 8;
+    const bend = random() * 30 - 15;
+    const twist = random() * 35 - 17.5;
+    const thickness = 7.2 + random() * 2.8;
     const color = CHARACTER_COLORS[index % CHARACTER_COLORS.length]!;
+    const innerColor = CHARACTER_INNER_COLORS[index % CHARACTER_INNER_COLORS.length]!;
 
-    glyph.paths.forEach((path) => {
+    const transformedPaths = glyph.paths.map((glyphPath) =>
+      glyphPath.map((point) =>
+        transformGlyphPoint(
+          point,
+          glyph.bounds,
+          centerX,
+          centerY,
+          rotation,
+          shear,
+          scaleX,
+          scaleY,
+          wavePhase,
+          horizontalWarp,
+          verticalWarp,
+          bend,
+          twist
+        )
+      )
+    );
+
+    transformedPaths.forEach((path) => {
       for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
         const previous = path[pointIndex - 1];
         const current = path[pointIndex];
         if (!previous || !current) continue;
+        const segmentWeight = 0.9 + Math.sin(pointIndex * 1.7 + wavePhase) * 0.1;
         drawLine(
           pixels,
-          transformGlyphPoint(
-            previous,
-            glyph.bounds,
-            centerX,
-            centerY,
-            rotation,
-            shear,
-            scaleX,
-            scaleY,
-            wavePhase
-          ),
-          transformGlyphPoint(
-            current,
-            glyph.bounds,
-            centerX,
-            centerY,
-            rotation,
-            shear,
-            scaleX,
-            scaleY,
-            wavePhase
-          ),
-          thickness,
+          previous,
+          current,
+          thickness * segmentWeight,
           color
+        );
+      }
+    });
+
+    // Redraw a narrow tinted centerline to turn each stroke into a hollow ribbon.
+    transformedPaths.forEach((path) => {
+      for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
+        const previous = path[pointIndex - 1];
+        const current = path[pointIndex];
+        if (!previous || !current) continue;
+        const segmentWeight = 0.9 + Math.sin(pointIndex * 1.7 + wavePhase) * 0.1;
+        drawLine(
+          pixels,
+          previous,
+          current,
+          thickness * segmentWeight * 0.43,
+          innerColor
         );
       }
     });
