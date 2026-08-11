@@ -73,7 +73,7 @@ Agent results were measured on first exposure, without prior examples, conversat
 | Verification system | Human | GPT 5.6 Sol - Medium |
 | --- | --- | --- |
 | **NexaCAPTCHA Horizon** | **18.3** seconds average | **0%** success rate · **60.3** seconds average |
-| **NexaCAPTCHA Gravity** | **0.0** seconds average | **0.0%** success rate · **0.0** seconds average |
+| **NexaCAPTCHA Gravity** | **4.7** seconds average | **0.0%** success rate · **0.0** seconds average |
 | **Google reCAPTCHA** | **1.9** seconds average | **99%** success rate · **7.6** seconds average |
 | **hCaptcha** | **11.8** seconds average | **85.7%** success rate · **49.6** seconds average |
 
