@@ -8,19 +8,29 @@
 
 NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.
 
-[Open the demo](https://nexacaptchademo.zeabur.app/) · [View integration](#integrate-nexacaptcha)
+[Try Phobetor](https://nexacaptcha.zone.id/#demo) · [View callback integration](#callback)
 
 - Designed for human readability
 - 11.8% model success in our test
 - Two attempts before expiry
 
-**LIVE DEMO · Ready**
+**PHOBETOR CAPTCHA · LIVE DEMO**
 
-## Try NexaCAPTCHA
+## Meet Phobetor.
 
-Follow each color through the animation. Enter the four characters when you're ready.
+NexaCAPTCHA's first verification module. Follow each color through the animation and enter the four characters when you're ready.
 
-[Open the live demo](https://nexacaptchademo.zeabur.app/)
+[Try NexaCAPTCHA Phobetor](https://nexacaptcha.zone.id/#demo)
+
+### Add this HTML to your page.
+
+```html
+<script src="https://nexacaptcha.zone.id/captcha/phobetor.js" defer></script>
+
+<div class="nexa-captcha" data-callback="onPhobetorComplete"></div>
+```
+
+`/captcha.js` currently loads Phobetor too. It remains available as the compatibility URL for existing integrations.
 
 **HOW IT WORKS**
 
@@ -60,38 +70,28 @@ Recorded mean completion time and success rate for human participants and GPT 5.
 
 | Verification system | Human | GPT 5.6 Sol - Medium |
 | --- | --- | --- |
-| **NexaCAPTCHA** | **7.3** seconds average | **11.8%** success rate · **60.3** seconds average |
+| **NexaCAPTCHA Phobetor** | **7.3** seconds average | **11.8%** success rate · **60.3** seconds average |
 | **Google reCAPTCHA** | **1.9** seconds average | **99%** success rate · **7.6** seconds average |
 | **hCaptcha** | **11.8** seconds average | **85.7%** success rate · **49.56** seconds average |
 
 These results describe the recorded test runs and are not a guarantee of performance against every model or execution.
 
-**INTEGRATION**
+<a id="callback"></a>
 
-## Integrate NexaCAPTCHA.
+**CALLBACK**
 
-Add the client script and verify completed responses on your server. No frontend framework is required.
+## Use the completed result.
 
-### 1. Add the client script.
+Phobetor calls your function after a successful verification. Send the returned ID and token to your backend with the form being protected.
 
-Load NexaCAPTCHA and place the container where the verification should appear.
-
-HTML · page markup:
-
-```html
-<script src="https://nexacaptcha.zone.id/captcha.js" defer></script>
-
-<div class="nexa-captcha" data-callback="onNexaComplete"></div>
-```
-
-### 2. Submit the completed result.
+### Receive the callback.
 
 Add this to your frontend JavaScript and replace `yourSubmitFunction` with your existing submission handler.
 
 JavaScript · frontend:
 
 ```js
-function onNexaComplete(result) {
+function onPhobetorComplete(result) {
   if (!result.success) return;
 
   yourSubmitFunction({
@@ -101,12 +101,16 @@ function onNexaComplete(result) {
 }
 ```
 
-### Values returned to the frontend.
+The callback is a frontend handoff, not final proof. Accept the form only after `/api/siteverify` returns `success: true`.
+
+### Callback parameters
 
 | Value | Meaning |
 | --- | --- |
-| `verificationId` | The ID of the completed CAPTCHA. |
-| `responseToken` | One-time proof that verification was completed. |
+| `result` | The object passed into your callback function. |
+| `result.success` | A boolean. It is `true` when Phobetor has been completed. |
+| `result.verificationId` | The 16-character verification ID. Send it to your backend. |
+| `result.responseToken` | The 64-character one-time token. Send it to your backend without changing it. |
 
 **SERVER VALIDATION**
 

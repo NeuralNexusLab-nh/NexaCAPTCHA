@@ -14,9 +14,9 @@
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fonts/oxanium/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=18">
-    <script src="/app.js?v=21" defer></script>
-    <script src="/captcha.js?v=8" defer></script>
+    <link rel="stylesheet" href="/styles.css?v=19">
+    <script src="/app.js?v=22" defer></script>
+    <script src="/captcha/phobetor.js?v=1" defer></script>
   </head>
   <body>
     <div class="ambient-backdrop" aria-hidden="true">
@@ -33,9 +33,10 @@
         </a>
         <div class="nav-links">
           <a href="#top"><i class="fa-solid fa-house" aria-hidden="true"></i><span data-i18n="navTop">Home</span></a>
+          <a href="#demo"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="navDemo">Demo</span></a>
           <a href="#features"><i class="fa-solid fa-star" aria-hidden="true"></i><span data-i18n="navFeatures">Features</span></a>
           <a href="#experiment"><i class="fa-solid fa-flask" aria-hidden="true"></i><span data-i18n="navExperiment">Experiment</span></a>
-          <a href="#setup"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="navSetup">Setup</span></a>
+          <a href="#callback"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="navCallback">Callback</span></a>
           <a href="#verify"><i class="fa-solid fa-server" aria-hidden="true"></i><span data-i18n="navVerify">Backend verification</span></a>
           <a href="https://github.com/NeuralNexusLab-nh/NexaCAPTCHA" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github" aria-hidden="true"></i><span>GitHub</span></a>
         </div>
@@ -58,8 +59,8 @@
           <h1><span data-i18n="heroTitleLine1">Human by design.</span><em data-i18n="heroTitleLine2">Automation denied.</em></h1>
           <p class="hero-lead" data-i18n="heroLead">NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.</p>
           <div class="hero-actions">
-            <a class="button button-primary" href="https://nexacaptchademo.zeabur.app/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i><span data-i18n="tryIt">Open the demo</span></a>
-            <a class="button button-secondary" href="#setup"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="addToSite">View integration</span></a>
+            <a class="button button-primary" href="#demo"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="tryIt">Try Phobetor</span></a>
+            <a class="button button-secondary" href="#callback"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="addToSite">View integration</span></a>
           </div>
           <ul class="hero-notes" aria-label="Product highlights">
             <li><i class="fa-solid fa-eye" aria-hidden="true"></i><span data-i18n="noCleanFrame">Designed for human readability</span></li>
@@ -68,21 +69,49 @@
           </ul>
         </div>
 
-        <div class="demo-card reveal" id="demo">
-          <div class="demo-route" aria-hidden="true"><span>HUMAN</span><i class="fa-solid fa-arrow-right-long"></i><span>VERIFIED</span></div>
-          <div class="card-heading">
-            <div>
-              <p class="eyebrow"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="liveDemo">LIVE DEMO</span></p>
-              <h2 data-i18n="tryNexa">Try NexaCAPTCHA</h2>
-            </div>
-            <span class="live-pill"><span aria-hidden="true"></span><span data-i18n="ready">Ready</span></span>
+      </section>
+
+      <section class="section demo-section" id="demo" aria-labelledby="demo-title">
+        <div class="shell demo-shell">
+          <div class="section-heading reveal">
+            <p class="eyebrow"><i class="fa-solid fa-satellite" aria-hidden="true"></i><span data-i18n="demoEyebrow">PHOBETOR CAPTCHA</span></p>
+            <h2 id="demo-title" data-i18n="demoTitle">Meet Phobetor.</h2>
+            <p data-i18n="demoLead">NexaCAPTCHA's first verification module. Complete the example, then copy the HTML directly below it.</p>
           </div>
-          <p class="card-help" data-i18n="demoHelp">Follow each color through the animation. Enter the four characters when you're ready.</p>
-          <div class="nexa-captcha" data-callback="onNexaComplete"></div>
-          <output class="demo-output" id="demo-output" aria-live="polite">
-            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-            <span data-i18n="demoOutput">Your result will appear here.</span>
-          </output>
+
+          <div class="demo-stack">
+            <div class="demo-card reveal">
+              <div class="demo-route" aria-hidden="true"><span>NEXA</span><i class="fa-solid fa-arrow-right-long"></i><span>PHOBETOR</span></div>
+              <div class="card-heading">
+                <div>
+                  <p class="eyebrow"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="liveDemo">LIVE DEMO</span></p>
+                  <h3 data-i18n="tryNexa">Try NexaCAPTCHA Phobetor</h3>
+                </div>
+                <span class="live-pill"><span aria-hidden="true"></span><span data-i18n="ready">Ready</span></span>
+              </div>
+              <p class="card-help" data-i18n="demoHelp">Follow each color through the animation. Enter the four characters when you're ready.</p>
+              <div class="nexa-captcha" data-callback="onPhobetorComplete"></div>
+              <output class="demo-output" id="demo-output" aria-live="polite">
+                <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                <span data-i18n="demoOutput">Your result will appear here.</span>
+              </output>
+            </div>
+
+            <article class="demo-install reveal" aria-labelledby="install-title">
+              <div class="demo-install-copy">
+                <p class="eyebrow"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="installEyebrow">ADD PHOBETOR</span></p>
+                <h3 id="install-title" data-i18n="installTitle">Add this HTML to your page.</h3>
+                <p data-i18n="installLead">The script loads Phobetor and the div marks where the verification should appear.</p>
+              </div>
+              <div class="code-window">
+                <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span><button class="copy-button" type="button" data-copy="embed-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
+                <pre><code id="embed-code">&lt;script src="https://nexacaptcha.zone.id/captcha/phobetor.js" defer&gt;&lt;/script&gt;
+
+&lt;div class="nexa-captcha" data-callback="onPhobetorComplete"&gt;&lt;/div&gt;</code></pre>
+              </div>
+              <p class="legacy-loader-note"><i class="fa-solid fa-link" aria-hidden="true"></i><span data-i18n="legacyLoader">/captcha.js currently loads Phobetor too. It remains available as the compatibility URL for existing integrations.</span></p>
+            </article>
+          </div>
         </div>
       </section>
 
@@ -145,7 +174,7 @@
               </thead>
               <tbody>
                 <tr class="nexa-result">
-                  <th scope="row"><img src="/assets/logo.svg?v=2" alt="" width="24" height="24"><span>NexaCAPTCHA</span></th>
+                  <th scope="row"><img src="/assets/logo.svg?v=2" alt="" width="24" height="24"><span>NexaCAPTCHA Phobetor</span></th>
                   <td><strong>7.3</strong> <span data-i18n="secondsAverage">seconds average</span></td>
                   <td><strong>11.8%</strong> <span data-i18n="successRate">success rate</span> · <strong>60.3</strong> <span data-i18n="secondsAverage">seconds average</span></td>
                 </tr>
@@ -166,35 +195,23 @@
         </aside>
       </section>
 
-      <section class="section docs-section" id="setup" aria-labelledby="setup-title">
+      <section class="section docs-section" id="callback" aria-labelledby="callback-title">
         <div class="shell">
           <div class="section-heading reveal">
-            <p class="eyebrow"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="setupEyebrow">SETUP</span></p>
-            <h2 id="setup-title" data-i18n="setupTitle">Integrate NexaCAPTCHA.</h2>
-            <p data-i18n="setupLead">Add the client script and verify completed responses on your server. No frontend framework is required.</p>
+            <p class="eyebrow"><i class="fa-solid fa-code-branch" aria-hidden="true"></i><span data-i18n="callbackEyebrow">CALLBACK</span></p>
+            <h2 id="callback-title" data-i18n="callbackTitle">Use the completed result.</h2>
+            <p data-i18n="callbackLead">Phobetor calls your function after a successful verification. Send the returned ID and token to your backend with the form being protected.</p>
           </div>
 
-          <article class="setup-row reveal">
-            <div class="setup-copy">
-              <span class="step-number">1</span>
-              <div><h3><i class="fa-solid fa-download" aria-hidden="true"></i><span data-i18n="loadTitle">Add the client script.</span></h3><p data-i18n="loadBody">Load NexaCAPTCHA and place the container where the verification should appear.</p></div>
-            </div>
-            <div class="code-window">
-              <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span><button class="copy-button" type="button" data-copy="embed-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
-              <pre><code id="embed-code">&lt;script src="https://nexacaptcha.zone.id/captcha.js" defer&gt;&lt;/script&gt;
-
-&lt;div class="nexa-captcha" data-callback="onNexaComplete"&gt;&lt;/div&gt;</code></pre>
-            </div>
-          </article>
-
-          <article class="setup-row reveal">
-            <div class="setup-copy">
-              <span class="step-number">2</span>
-              <div><h3><i class="fa-solid fa-arrow-right" aria-hidden="true"></i><span data-i18n="sendTitle">Submit the completed result.</span></h3><p data-i18n="sendBody">Add this to your frontend JavaScript and replace yourSubmitFunction with your existing submission handler.</p></div>
-            </div>
-            <div class="code-window">
-              <div class="code-toolbar"><span><i class="fa-brands fa-js" aria-hidden="true"></i><span data-i18n="frontendLocation">JavaScript · frontend</span></span><button class="copy-button" type="button" data-copy="callback-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
-              <pre><code id="callback-code">function onNexaComplete(result) {
+          <div class="callback-layout">
+            <article class="callback-code reveal">
+              <div class="callback-code-heading">
+                <span class="step-number">01</span>
+                <div><h3 data-i18n="callbackCodeTitle">Receive the callback.</h3><p data-i18n="callbackCodeLead">Replace yourSubmitFunction with the function that submits your protected form.</p></div>
+              </div>
+              <div class="code-window">
+                <div class="code-toolbar"><span><i class="fa-brands fa-js" aria-hidden="true"></i><span data-i18n="frontendLocation">JavaScript · frontend</span></span><button class="copy-button" type="button" data-copy="callback-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
+                <pre><code id="callback-code">function onPhobetorComplete(result) {
   if (!result.success) return;
 
   yourSubmitFunction({
@@ -202,15 +219,20 @@
     responseToken: result.responseToken
   });
 }</code></pre>
-            </div>
-          </article>
+              </div>
+              <p class="callback-security"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span data-i18n="callbackSecurity">The callback is a frontend handoff, not final proof. Accept the form only after /api/siteverify returns success: true.</span></p>
+            </article>
 
-          <div class="parameter-card reveal">
-            <h3><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span data-i18n="valuesTitle">Two values come back</span></h3>
-            <dl>
-              <div><dt>verificationId</dt><dd data-i18n="idMeaning">The ID of the completed CAPTCHA.</dd></div>
-              <div><dt>responseToken</dt><dd data-i18n="tokenMeaning">Proof that it was completed. It works once.</dd></div>
-            </dl>
+            <article class="parameter-card callback-parameters reveal">
+              <div class="parameter-heading"><span class="step-number">02</span><h3><i class="fa-solid fa-brackets-curly" aria-hidden="true"></i><span data-i18n="callbackValuesTitle">Callback parameters</span></h3></div>
+              <p data-i18n="callbackValuesLead">The callback receives one result object with these fields.</p>
+              <dl>
+                <div><dt>result</dt><dd data-i18n="resultMeaning">The object passed into your callback function.</dd></div>
+                <div><dt>result.success</dt><dd data-i18n="successMeaning">A boolean. It is true when Phobetor has been completed.</dd></div>
+                <div><dt>result.verificationId</dt><dd data-i18n="idMeaning">The 16-character verification ID. Send it to your backend.</dd></div>
+                <div><dt>result.responseToken</dt><dd data-i18n="tokenMeaning">The 64-character one-time token. Send it to your backend without changing it.</dd></div>
+              </dl>
+            </article>
           </div>
         </div>
       </section>

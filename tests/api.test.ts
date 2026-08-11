@@ -129,9 +129,15 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(({ body }) => expect(body.errorCode).toBe("verification-expired"));
   });
 
-  it("serves only the unversioned public loader and API routes", async () => {
+  it("serves the Phobetor loader and its legacy alias", async () => {
+    await request(app)
+      .get("/captcha/phobetor.js")
+      .expect("Access-Control-Allow-Origin", "*")
+      .expect("Content-Type", /javascript/)
+      .expect(200);
     await request(app)
       .get("/captcha.js")
+      .expect("Access-Control-Allow-Origin", "*")
       .expect("Content-Type", /javascript/)
       .expect(200);
   });
