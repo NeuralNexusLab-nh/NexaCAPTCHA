@@ -170,17 +170,21 @@ input:disabled { cursor: not-allowed; opacity: .58; }
 .verification-stage.is-gravity { border-color: #61388e; aspect-ratio: 3 / 1; background: #05030a; }
 .verification-stage.is-gravity::before { background: linear-gradient(90deg, rgba(30, 8, 52, .34), transparent 16% 84%, rgba(30, 8, 52, .34)); }
 
-.theme-gravity .captcha-shell { border-color: #61388e; background: #0b0614; }
+.theme-gravity { color: #eadbfa; }
+.theme-gravity .captcha-shell { border-color: #7443a4; background: #0b0614; box-shadow: inset 0 0 0 1px rgba(189, 116, 255, .06); }
+.theme-gravity .captcha-home { color: #e1c2fb; }
 .theme-gravity .captcha-home:hover { color: #cf94ff; }
-.theme-gravity .captcha-brand img { filter: drop-shadow(0 0 10px rgba(174, 89, 255, .5)); }
+.theme-gravity .captcha-brand img { filter: hue-rotate(46deg) saturate(1.35) brightness(1.15) drop-shadow(0 0 10px rgba(174, 89, 255, .5)); }
 .theme-gravity .status-pill:not(.is-complete):not(.is-error) { border-color: #61388e; color: #c483ff; }
 .theme-gravity .stage-placeholder, .theme-gravity label { color: #d9b5f7; }
-.theme-gravity input { border-color: #59327f; background: #0a0511; }
+.theme-gravity label i { color: #b965f0; }
+.theme-gravity input { border-color: #63398a; background: #0a0511; color: #e5c5ff; }
 .theme-gravity input:focus { border-color: #a757ed; background: #12081e; box-shadow: 0 0 0 2px rgba(168, 82, 237, .16); }
 .theme-gravity .button:focus-visible { outline-color: #b56aff; }
 .theme-gravity .button-primary { border-color: #8d42cf; background: #8d42cf; }
 .theme-gravity .button-quiet { color: #b995d4; }
 .theme-gravity .button-quiet:hover:not(:disabled) { border-color: #61388e; color: #f1e1ff; }
+.theme-gravity .captcha-footer p:not(.is-error):not(.is-success) { color: #b99acb; }
 
 .captcha-footer p {
   min-width: 0;

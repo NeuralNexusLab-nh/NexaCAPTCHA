@@ -40,7 +40,7 @@
     var iframe = document.createElement("iframe");
     iframe.src =
       serviceOrigin +
-      "/widget?v=7&parentOrigin=" +
+      "/widget?v=8&parentOrigin=" +
       encodeURIComponent(window.location.origin) +
       "&widgetId=" +
       encodeURIComponent(widgetId) +
