@@ -276,7 +276,8 @@ function transformGlyphPoint(
   shear: number,
   scaleX: number,
   scaleY: number,
-  wells: readonly GravityWell[]
+  wells: readonly GravityWell[],
+  warpedCenter: Point
 ): Point {
   const width = Math.max(1, bounds.maxX - bounds.minX);
   const height = Math.max(1, bounds.maxY - bounds.minY);
@@ -288,10 +289,17 @@ function transformGlyphPoint(
   const sine = Math.sin(rotation);
   const rotatedX = localX * cosine - localY * sine;
   const rotatedY = localX * sine + localY * cosine;
-  return applyGravityField(
+  const warpedPoint = applyGravityField(
     [centerX + rotatedX, centerY + rotatedY],
     wells
   );
+  // Apply the field differentially around the glyph center. This keeps reading
+  // order stable while allowing the strokes themselves to bend sharply around
+  // nearby wells instead of moving the whole character into another column.
+  return [
+    centerX + warpedPoint[0] - warpedCenter[0],
+    centerY + warpedPoint[1] - warpedCenter[1]
+  ];
 }
 
 function transformGlyphPath(
@@ -387,21 +395,27 @@ export function renderGravityImage(answer: string): Buffer {
   fillBackground(pixels, random, theme);
   drawOptionalGrid(pixels, random, theme);
 
-  const wellOnLeft = random() < 0.5;
-  const gravityWells: GravityWell[] = [{
-    x: wellOnLeft ? -35 + random() * 105 : GRAVITY_WIDTH - 70 + random() * 105,
-    y: 24 + random() * (GRAVITY_HEIGHT - 48),
-    radius: 215 + random() * 75,
-    pull: 0.075 + random() * 0.065,
-    swirl: (random() < 0.5 ? -1 : 1) * (0.48 + random() * 0.34)
-  }];
-  if (random() < 0.65) {
+  // Place the primary well inside the text band. The previous edge-biased well
+  // mostly rotated the complete word as one unit; an interior well creates the
+  // visibly non-linear lensing expected from Gravity while keeping every stroke
+  // continuous.
+  const primaryWell: GravityWell = {
+    x: 105 + random() * 390,
+    y: 34 + random() * (GRAVITY_HEIGHT - 68),
+    radius: 145 + random() * 75,
+    pull: 0.12 + random() * 0.09,
+    swirl: (random() < 0.5 ? -1 : 1) * (0.82 + random() * 0.52)
+  };
+  const gravityWells: GravityWell[] = [primaryWell];
+  if (random() < 0.62) {
     gravityWells.push({
-      x: wellOnLeft ? GRAVITY_WIDTH + 18 : -18,
-      y: 18 + random() * (GRAVITY_HEIGHT - 36),
-      radius: 185 + random() * 65,
-      pull: 0.025 + random() * 0.035,
-      swirl: (random() < 0.5 ? -1 : 1) * (0.14 + random() * 0.18)
+      x: Math.max(70, Math.min(GRAVITY_WIDTH - 70,
+        GRAVITY_WIDTH - primaryWell.x + (random() - 0.5) * 90)),
+      y: Math.max(28, Math.min(GRAVITY_HEIGHT - 28,
+        GRAVITY_HEIGHT - primaryWell.y + (random() - 0.5) * 54)),
+      radius: 120 + random() * 70,
+      pull: 0.055 + random() * 0.065,
+      swirl: (random() < 0.5 ? -1 : 1) * (0.34 + random() * 0.42)
     });
   }
 
@@ -441,6 +455,7 @@ export function renderGravityImage(answer: string): Buffer {
     const paletteIndex = (index + paletteOffset) % theme.glyphColors.length;
     const color = theme.glyphColors[paletteIndex]!;
     const innerColor = theme.innerColors[paletteIndex % theme.innerColors.length]!;
+    const warpedCenter = applyGravityField([centerX, centerY], gravityWells);
 
     const transformedPaths = glyph.paths.map((glyphPath) =>
       transformGlyphPath(glyphPath, (point) =>
@@ -453,7 +468,8 @@ export function renderGravityImage(answer: string): Buffer {
           shear,
           scaleX,
           scaleY,
-          gravityWells
+          gravityWells,
+          warpedCenter
         )
       )
     );
