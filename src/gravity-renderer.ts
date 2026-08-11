@@ -6,6 +6,18 @@ export const GRAVITY_WIDTH = 600;
 export const GRAVITY_HEIGHT = 200;
 
 type Rgba = readonly [number, number, number, number];
+type Rgb = readonly [number, number, number];
+
+interface VisualTheme {
+  background: Rgb;
+  backgroundVariation: number;
+  glyphColors: readonly Rgba[];
+  innerColors: readonly Rgba[];
+  paleLine: Rgba;
+  foregroundColors: readonly Rgba[];
+  noiseColor: Rgba;
+  gridColor?: Rgba;
+}
 
 interface GravityWell {
   x: number;
@@ -15,18 +27,56 @@ interface GravityWell {
   swirl: number;
 }
 
-const CHARACTER_COLORS: readonly Rgba[] = [
-  [177, 105, 255, 255],
-  [211, 139, 255, 255],
-  [143, 91, 232, 255],
-  [229, 167, 255, 255]
-];
-
-const CHARACTER_INNER_COLORS: readonly Rgba[] = [
-  [13, 7, 22, 255],
-  [17, 8, 27, 255],
-  [11, 6, 20, 255],
-  [18, 9, 28, 255]
+const VISUAL_THEMES: readonly VisualTheme[] = [
+  {
+    background: [244, 243, 238], backgroundVariation: 6,
+    glyphColors: [[28, 28, 34, 255], [69, 43, 79, 255], [37, 51, 61, 255], [74, 58, 89, 255]],
+    innerColors: [[238, 238, 233, 255], [241, 235, 242, 255], [235, 239, 239, 255], [240, 236, 242, 255]],
+    paleLine: [73, 79, 88, 48],
+    foregroundColors: [[32, 35, 41, 130], [91, 61, 104, 122], [53, 67, 76, 118]],
+    noiseColor: [48, 50, 56, 78]
+  },
+  {
+    background: [228, 232, 230], backgroundVariation: 12,
+    glyphColors: [[13, 15, 17, 255], [46, 47, 49, 255], [25, 28, 31, 255], [57, 48, 61, 255]],
+    innerColors: [[220, 224, 222, 255], [226, 228, 226, 255], [218, 223, 222, 255], [225, 222, 226, 255]],
+    paleLine: [35, 38, 41, 52],
+    foregroundColors: [[11, 13, 15, 135], [64, 64, 66, 120], [35, 40, 43, 124]],
+    noiseColor: [24, 26, 28, 95]
+  },
+  {
+    background: [237, 229, 245], backgroundVariation: 7,
+    glyphColors: [[67, 31, 93, 255], [112, 52, 142, 255], [42, 35, 62, 255], [91, 45, 121, 255]],
+    innerColors: [[232, 223, 240, 255], [235, 220, 242, 255], [230, 226, 237, 255], [234, 221, 241, 255]],
+    paleLine: [106, 76, 126, 54],
+    foregroundColors: [[84, 43, 111, 132], [133, 73, 161, 120], [54, 46, 76, 118]],
+    noiseColor: [91, 52, 111, 82]
+  },
+  {
+    background: [242, 247, 249], backgroundVariation: 5,
+    glyphColors: [[24, 54, 77, 255], [53, 82, 112, 255], [38, 61, 89, 255], [76, 63, 112, 255]],
+    innerColors: [[235, 243, 246, 255], [237, 243, 247, 255], [235, 242, 246, 255], [239, 238, 247, 255]],
+    paleLine: [83, 121, 148, 45],
+    foregroundColors: [[31, 76, 108, 125], [75, 105, 135, 116], [78, 61, 119, 112]],
+    noiseColor: [44, 82, 110, 76],
+    gridColor: [73, 126, 157, 34]
+  },
+  {
+    background: [244, 237, 215], backgroundVariation: 9,
+    glyphColors: [[64, 52, 30, 255], [93, 65, 36, 255], [55, 66, 43, 255], [82, 47, 73, 255]],
+    innerColors: [[238, 230, 207, 255], [240, 229, 207, 255], [235, 230, 210, 255], [240, 226, 216, 255]],
+    paleLine: [105, 89, 57, 48],
+    foregroundColors: [[82, 64, 34, 128], [111, 77, 42, 116], [75, 58, 76, 112]],
+    noiseColor: [78, 65, 42, 84]
+  },
+  {
+    background: [5, 3, 10], backgroundVariation: 4,
+    glyphColors: [[177, 105, 255, 255], [211, 139, 255, 255], [143, 91, 232, 255], [229, 167, 255, 255]],
+    innerColors: [[13, 7, 22, 255], [17, 8, 27, 255], [11, 6, 20, 255], [18, 9, 28, 255]],
+    paleLine: [161, 111, 224, 66],
+    foregroundColors: [[126, 72, 202, 145], [196, 119, 255, 138], [103, 74, 170, 132], [224, 155, 255, 126]],
+    noiseColor: [173, 112, 230, 82]
+  }
 ];
 
 const CRC_TABLE = Array.from({ length: 256 }, (_value, index) => {
@@ -265,24 +315,77 @@ function transformGlyphPath(
   return transformed;
 }
 
-function fillBackground(pixels: Uint8Array, random: () => number): void {
+function drawGlyphPaths(
+  pixels: Uint8Array,
+  paths: readonly Point[][],
+  thickness: number,
+  color: Rgba,
+  phase: number,
+  offsetX = 0,
+  offsetY = 0
+): void {
+  paths.forEach((path) => {
+    for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
+      const previous = path[pointIndex - 1];
+      const current = path[pointIndex];
+      if (!previous || !current) continue;
+      const segmentWeight = 0.92 + Math.sin(pointIndex * 1.7 + phase) * 0.08;
+      drawLine(
+        pixels,
+        [previous[0] + offsetX, previous[1] + offsetY],
+        [current[0] + offsetX, current[1] + offsetY],
+        thickness * segmentWeight,
+        color
+      );
+    }
+  });
+}
+
+function clampChannel(value: number): number {
+  return Math.max(0, Math.min(255, Math.round(value)));
+}
+
+function fillBackground(
+  pixels: Uint8Array,
+  random: () => number,
+  theme: VisualTheme
+): void {
   for (let y = 0; y < GRAVITY_HEIGHT; y += 1) {
     for (let x = 0; x < GRAVITY_WIDTH; x += 1) {
       const index = (y * GRAVITY_WIDTH + x) * 4;
       const wave = Math.sin(x * 0.022 + y * 0.035) * 1.5;
-      const noise = (random() - 0.5) * 4;
-      pixels[index] = Math.round(5 + wave + noise);
-      pixels[index + 1] = Math.round(3 + wave * 0.6 + noise * 0.5);
-      pixels[index + 2] = Math.round(10 + wave + noise);
+      const noise = (random() - 0.5) * theme.backgroundVariation;
+      pixels[index] = clampChannel(theme.background[0] + wave + noise);
+      pixels[index + 1] = clampChannel(theme.background[1] + wave * 0.6 + noise * 0.7);
+      pixels[index + 2] = clampChannel(theme.background[2] + wave + noise);
       pixels[index + 3] = 255;
     }
+  }
+}
+
+function drawOptionalGrid(
+  pixels: Uint8Array,
+  random: () => number,
+  theme: VisualTheme
+): void {
+  if (!theme.gridColor) return;
+  const spacing = 18 + Math.floor(random() * 11);
+  const offsetX = Math.floor(random() * spacing);
+  const offsetY = Math.floor(random() * spacing);
+  for (let x = offsetX; x < GRAVITY_WIDTH; x += spacing) {
+    drawLine(pixels, [x, 0], [x, GRAVITY_HEIGHT], 0.55, theme.gridColor);
+  }
+  for (let y = offsetY; y < GRAVITY_HEIGHT; y += spacing) {
+    drawLine(pixels, [0, y], [GRAVITY_WIDTH, y], 0.55, theme.gridColor);
   }
 }
 
 export function renderGravityImage(answer: string): Buffer {
   const random = createPrng(randomBytes(4));
   const pixels = new Uint8Array(GRAVITY_WIDTH * GRAVITY_HEIGHT * 4);
-  fillBackground(pixels, random);
+  const theme = VISUAL_THEMES[Math.floor(random() * VISUAL_THEMES.length)]!;
+  fillBackground(pixels, random, theme);
+  drawOptionalGrid(pixels, random, theme);
 
   const wellOnLeft = random() < 0.5;
   const gravityWells: GravityWell[] = [{
@@ -302,8 +405,8 @@ export function renderGravityImage(answer: string): Buffer {
     });
   }
 
-  const paleLine: Rgba = [161, 111, 224, 66];
-  for (let index = 0; index < 4; index += 1) {
+  const paleLineCount = 1 + Math.floor(random() * 4);
+  for (let index = 0; index < paleLineCount; index += 1) {
     const startY = 35 + random() * 130;
     const endY = 35 + random() * 130;
     drawGravityBezier(
@@ -315,12 +418,13 @@ export function renderGravityImage(answer: string): Buffer {
         [GRAVITY_WIDTH + 24, endY]
       ],
       1.2 + random() * 1.1,
-      paleLine,
+      theme.paleLine,
       gravityWells
     );
   }
 
   const glyphCenters = [105, 235, 365, 495];
+  const paletteOffset = Math.floor(random() * theme.glyphColors.length);
   answer.split("").forEach((character, index) => {
     const glyph = stringToPaths(character);
     const centerX = glyphCenters[index]! + (random() - 0.5) * 18;
@@ -330,9 +434,13 @@ export function renderGravityImage(answer: string): Buffer {
     const scaleX = 0.92 + random() * 0.16;
     const scaleY = 0.93 + random() * 0.14;
     const wavePhase = random() * Math.PI * 2;
-    const thickness = 5.2 + random() * 2;
-    const color = CHARACTER_COLORS[index % CHARACTER_COLORS.length]!;
-    const innerColor = CHARACTER_INNER_COLORS[index % CHARACTER_INNER_COLORS.length]!;
+    const strokeStyle = random();
+    const thickness = strokeStyle < 0.42
+      ? 3.3 + random() * 2.3
+      : 5 + random() * 2.2;
+    const paletteIndex = (index + paletteOffset) % theme.glyphColors.length;
+    const color = theme.glyphColors[paletteIndex]!;
+    const innerColor = theme.innerColors[paletteIndex % theme.innerColors.length]!;
 
     const transformedPaths = glyph.paths.map((glyphPath) =>
       transformGlyphPath(glyphPath, (point) =>
@@ -350,48 +458,37 @@ export function renderGravityImage(answer: string): Buffer {
       )
     );
 
-    transformedPaths.forEach((path) => {
-      for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
-        const previous = path[pointIndex - 1];
-        const current = path[pointIndex];
-        if (!previous || !current) continue;
-        const segmentWeight = 0.9 + Math.sin(pointIndex * 1.7 + wavePhase) * 0.1;
-        drawLine(
-          pixels,
-          previous,
-          current,
-          thickness * segmentWeight,
-          color
-        );
-      }
-    });
+    if (strokeStyle > 0.82) {
+      const ghostColor = theme.foregroundColors[
+        (index + 1) % theme.foregroundColors.length
+      ]!;
+      drawGlyphPaths(
+        pixels,
+        transformedPaths,
+        thickness * 0.78,
+        ghostColor,
+        wavePhase,
+        3 + random() * 3,
+        random() * 4 - 2
+      );
+    }
 
-    // Redraw a narrow tinted centerline to turn each stroke into a hollow ribbon.
-    transformedPaths.forEach((path) => {
-      for (let pointIndex = 1; pointIndex < path.length; pointIndex += 1) {
-        const previous = path[pointIndex - 1];
-        const current = path[pointIndex];
-        if (!previous || !current) continue;
-        const segmentWeight = 0.9 + Math.sin(pointIndex * 1.7 + wavePhase) * 0.1;
-        drawLine(
-          pixels,
-          previous,
-          current,
-          thickness * segmentWeight * 0.42,
-          innerColor
-        );
-      }
-    });
+    drawGlyphPaths(pixels, transformedPaths, thickness, color, wavePhase);
+
+    if (strokeStyle >= 0.42 && strokeStyle <= 0.82) {
+      drawGlyphPaths(
+        pixels,
+        transformedPaths,
+        thickness * 0.42,
+        innerColor,
+        wavePhase
+      );
+    }
   });
 
-  const foregroundColors: readonly Rgba[] = [
-    [126, 72, 202, 145],
-    [196, 119, 255, 138],
-    [103, 74, 170, 132],
-    [224, 155, 255, 126]
-  ];
-  for (let index = 0; index < 4; index += 1) {
-    const color = foregroundColors[index]!;
+  const foregroundLineCount = 1 + Math.floor(random() * 4);
+  for (let index = 0; index < foregroundLineCount; index += 1) {
+    const color = theme.foregroundColors[index % theme.foregroundColors.length]!;
     const baseY = 48 + random() * 104;
     drawGravityBezier(
       pixels,
@@ -407,11 +504,12 @@ export function renderGravityImage(answer: string): Buffer {
     );
   }
 
-  for (let index = 0; index < 42; index += 1) {
+  const noiseMarkCount = 18 + Math.floor(random() * 55);
+  for (let index = 0; index < noiseMarkCount; index += 1) {
     const x = 20 + random() * (GRAVITY_WIDTH - 40);
     const y = 18 + random() * (GRAVITY_HEIGHT - 36);
     if (random() < 0.55) {
-      drawDisc(pixels, x, y, 0.8 + random() * 1.4, [173, 112, 230, 82]);
+      drawDisc(pixels, x, y, 0.8 + random() * 1.4, theme.noiseColor);
     } else {
       const length = 4 + random() * 10;
       const angle = random() * Math.PI * 2;
@@ -420,7 +518,7 @@ export function renderGravityImage(answer: string): Buffer {
         [x, y],
         [x + Math.cos(angle) * length, y + Math.sin(angle) * length],
         0.8 + random() * 0.7,
-        [198, 137, 243, 80]
+        theme.noiseColor
       );
     }
   }
