@@ -60,13 +60,13 @@ describe("verification animation", () => {
     expect(colors.every((color) => color >= 2 && color <= 6)).toBe(true);
   });
 
-  it("randomizes playback between 4 and 6 seconds", () => {
+  it("randomizes playback between 5 and 6 seconds", () => {
     const delays = frameDelays(renderVerificationAnimation("N3XA"));
-    expect(delays.length).toBeGreaterThanOrEqual(200);
+    expect(delays.length).toBeGreaterThanOrEqual(250);
     expect(delays.length).toBeLessThanOrEqual(300);
     expect(delays.every((delay) => delay === 2)).toBe(true);
     const totalCentiseconds = delays.reduce((total, delay) => total + delay, 0);
-    expect(totalCentiseconds).toBeGreaterThanOrEqual(400);
+    expect(totalCentiseconds).toBeGreaterThanOrEqual(500);
     expect(totalCentiseconds).toBeLessThanOrEqual(600);
   });
 
@@ -193,19 +193,24 @@ describe("verification animation", () => {
     const scans = createConcurrentRevealSegments(4, 240, 66, 62, random);
     expect(scans).toHaveLength(4);
     scans.forEach((segments, characterIndex) => {
-      expect(segments).toHaveLength(2);
+      expect(segments).toHaveLength(5);
       expect(segments.reduce((total, segment) => total + segment.frames, 0)).toBe(240);
       expect(segments.every((segment) => segment.characterIndex === characterIndex)).toBe(true);
-      expect(segments[0]?.toX).toBe(segments[1]?.fromX);
+      for (let index = 1; index < segments.length; index += 1) {
+        expect(segments[index - 1]?.toX).toBe(segments[index]?.fromX);
+      }
       const characterX = 66 + characterIndex * 62;
       expect(segments[0]?.fromX).toBeGreaterThan(characterX - 31);
       expect(segments[0]?.fromX).toBeLessThan(characterX + 31);
-      expect(new Set([segments[0]?.toX, segments[1]?.toX])).toEqual(
-        new Set([characterX - 31, characterX + 31])
-      );
-      expect(revealStateForFrame(0, segments).centerX).not.toBe(
+      expect(segments.some((segment) => segment.toX === characterX - 31)).toBe(true);
+      expect(segments.some((segment) => segment.toX === characterX + 31)).toBe(true);
+      expect(revealStateForFrame(0, segments).centerX).toBe(
         revealStateForFrame(239, segments).centerX
       );
+      const segmentSpeeds = segments.map(
+        (segment) => Math.abs(segment.toX - segment.fromX) / (segment.frames - 1)
+      );
+      expect(Math.max(...segmentSpeeds) - Math.min(...segmentSpeeds)).toBeLessThan(0.08);
     });
   });
 

@@ -618,15 +618,34 @@ export function createConcurrentRevealSegments(
     const reverseDirection = random() < 0.5;
     const firstTarget = reverseDirection ? scanLeft : scanRight;
     const secondTarget = reverseDirection ? scanRight : scanLeft;
-    const firstDistance = Math.abs(firstTarget - scanStart);
-    const secondDistance = Math.abs(secondTarget - firstTarget);
-    const firstFrames = Math.max(
-      2,
-      Math.min(
-        frames - 2,
-        Math.round(frames * firstDistance / (firstDistance + secondDistance))
-      )
+    const points = [
+      scanStart,
+      firstTarget,
+      secondTarget,
+      firstTarget,
+      secondTarget,
+      scanStart
+    ];
+    const distances = points.slice(1).map((point, index) =>
+      Math.abs(point - (points[index] ?? point))
     );
+    const totalDistance = distances.reduce((total, distance) => total + distance, 0);
+    // Boundary frames are shared by adjacent segments. Allocate actual motion
+    // steps by distance so every part of the glyph receives equal scan time.
+    const availableSteps = frames - distances.length;
+    const rawSteps = distances.map(
+      (distance) => availableSteps * distance / totalDistance
+    );
+    const segmentSteps = rawSteps.map((steps) => Math.max(1, Math.floor(steps)));
+    let remainingSteps =
+      availableSteps - segmentSteps.reduce((total, steps) => total + steps, 0);
+    const remainderOrder = rawSteps
+      .map((steps, index) => ({ index, remainder: steps - Math.floor(steps) }))
+      .sort((left, right) => right.remainder - left.remainder);
+    for (let index = 0; remainingSteps > 0; index += 1, remainingSteps -= 1) {
+      const target = remainderOrder[index % remainderOrder.length]?.index ?? 0;
+      segmentSteps[target] = (segmentSteps[target] ?? 1) + 1;
+    }
     const segment = (
       segmentFrames: number,
       fromX: number,
@@ -637,18 +656,20 @@ export function createConcurrentRevealSegments(
       fromX,
       toX,
       phase: random() * Math.PI * 2,
-      backtrackAmplitude:
-        random() < DWELL_BACKTRACK_PROBABILITY ? 2 + random() * 2 : 0,
-      tempoVariation: (random() * 2 - 1) * 0.055,
+      backtrackAmplitude: 0,
+      tempoVariation: 0,
       characterIndex
     });
 
-    // Start inside the glyph instead of at a predictable edge. Continue to
-    // one boundary, then reverse smoothly and cover the opposite boundary.
-    return [
-      segment(firstFrames, scanStart, firstTarget),
-      segment(frames - firstFrames, firstTarget, secondTarget)
-    ];
+    // Four complete traversals double the prior average scan speed. Returning
+    // to the random start keeps the GIF loop continuous and exposure balanced.
+    return distances.map((_, index) =>
+      segment(
+        (segmentSteps[index] ?? 1) + 1,
+        points[index] ?? scanStart,
+        points[index + 1] ?? scanStart
+      )
+    );
   });
 }
 
