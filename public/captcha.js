@@ -4,7 +4,7 @@
   var script = document.currentScript;
   if (!script) {
     var candidates = document.querySelectorAll(
-      'script[src*="/captcha.js"], script[src*="/captcha/horizon.js"], script[src*="/captcha/warp.js"]'
+      'script[src*="/captcha.js"], script[src*="/captcha/horizon.js"], script[src*="/captcha/gravity.js"]'
     );
     script = candidates[candidates.length - 1];
   }
@@ -12,8 +12,8 @@
 
   var loaderUrl = new URL(script.src, window.location.href);
   var serviceOrigin = loaderUrl.origin;
-  var defaultCaptchaType = loaderUrl.pathname.indexOf("/captcha/warp.js") !== -1
-    ? "warp"
+  var defaultCaptchaType = loaderUrl.pathname.indexOf("/captcha/gravity.js") !== -1
+    ? "gravity"
     : "horizon";
   var instances = new WeakMap();
   var sequence = 0;
@@ -30,7 +30,7 @@
 
     options = options || {};
     var captchaType = options.captchaType || mount.dataset.captchaType || defaultCaptchaType;
-    if (captchaType !== "horizon" && captchaType !== "warp") {
+    if (captchaType !== "horizon" && captchaType !== "gravity") {
       throw new Error("Unsupported NexaCAPTCHA type.");
     }
     sequence += 1;

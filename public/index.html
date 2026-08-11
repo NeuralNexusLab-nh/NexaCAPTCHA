@@ -14,9 +14,9 @@
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fonts/oxanium/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=22">
-    <script src="/app.js?v=26" defer></script>
-    <script src="/captcha/horizon.js?v=2" defer></script>
+    <link rel="stylesheet" href="/styles.css?v=23">
+    <script src="/app.js?v=27" defer></script>
+    <script src="/captcha/horizon.js?v=3" defer></script>
   </head>
   <body>
     <div class="ambient-backdrop" aria-hidden="true">
@@ -63,7 +63,7 @@
           </div>
           <ul class="hero-notes" aria-label="Product highlights">
             <li><i class="fa-solid fa-eye" aria-hidden="true"></i><span data-i18n="noCleanFrame">Designed for human readability</span></li>
-            <li><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span data-i18n="changingMotion">11.8% model success in our test</span></li>
+            <li><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span data-i18n="changingMotion">0% model success in our Horizon test</span></li>
             <li><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i><span data-i18n="higherCost">Two attempts before expiry</span></li>
           </ul>
         </div>
@@ -75,7 +75,7 @@
           <div class="section-heading reveal">
             <p class="eyebrow"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span data-i18n="demoEyebrow">CAPTCHA MODULES</span></p>
             <h2 id="demo-title" data-i18n="demoTitle">Choose a verification.</h2>
-            <p data-i18n="demoLead">Horizon reveals information through motion. Warp bends four characters into a static image. Both use the same callback and server-side verification flow.</p>
+            <p data-i18n="demoLead">Horizon reveals information through motion. Gravity bends four characters through a continuous gravitational vortex. Both use the same callback and server-side verification flow.</p>
           </div>
 
           <div class="demo-stack">
@@ -90,6 +90,7 @@
                 <span class="live-pill"><span aria-hidden="true"></span><span data-i18n="ready">Ready</span></span>
               </div>
               <p class="card-help" data-i18n="demoHelp">Follow each color through the animation. Enter the four characters when you're ready.</p>
+              <a class="module-demo-link" href="https://nexacaptcha.zone.id/horizon" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i><span data-i18n="openHorizonDemo">Open the full Horizon demo</span></a>
               <div class="nexa-captcha" data-callback="onHorizonDemoComplete"></div>
               <output class="demo-output" id="demo-output-horizon" aria-live="polite">
                 <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
@@ -114,32 +115,33 @@
             </div>
 
             <div class="module-column reveal">
-              <div class="demo-card warp-card">
-                <div class="demo-route" aria-hidden="true"><span>NEXA</span><i class="fa-solid fa-arrow-right-long"></i><span>WARP</span></div>
+              <div class="demo-card gravity-card">
+                <div class="demo-route" aria-hidden="true"><span>NEXA</span><i class="fa-solid fa-arrow-right-long"></i><span>GRAVITY</span></div>
                 <div class="card-heading">
                   <div>
                     <p class="eyebrow"><i class="fa-solid fa-image" aria-hidden="true"></i><span data-i18n="liveDemo">LIVE DEMO</span></p>
-                    <h3 data-i18n="tryWarp">Try NexaCAPTCHA Warp</h3>
+                    <h3 data-i18n="tryGravity">Try NexaCAPTCHA Gravity</h3>
                   </div>
                   <span class="live-pill"><span aria-hidden="true"></span><span data-i18n="ready">Ready</span></span>
                 </div>
-                <p class="card-help" data-i18n="warpHelp">Read the four distorted characters in the image, then enter them below.</p>
-                <div class="nexa-captcha" data-captcha-type="warp" data-callback="onWarpDemoComplete"></div>
-                <output class="demo-output" id="demo-output-warp" aria-live="polite">
+                <p class="card-help" data-i18n="gravityHelp">Follow the hollow characters through the gravitational distortion, then enter all four.</p>
+                <a class="module-demo-link" href="https://nexacaptcha.zone.id/gravity" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i><span data-i18n="openGravityDemo">Open the full Gravity demo</span></a>
+                <div class="nexa-captcha" data-captcha-type="gravity" data-callback="onGravityDemoComplete"></div>
+                <output class="demo-output" id="demo-output-gravity" aria-live="polite">
                   <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
                   <span data-i18n="demoOutput">Your result will appear here.</span>
                 </output>
               </div>
 
-              <article class="demo-install warp-install" aria-labelledby="install-warp-title">
+              <article class="demo-install gravity-install" aria-labelledby="install-gravity-title">
                 <div class="demo-install-copy">
-                  <p class="eyebrow"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="installWarpEyebrow">ADD WARP</span></p>
-                  <h3 id="install-warp-title" data-i18n="installTitle">Add this HTML to your page.</h3>
-                  <p data-i18n="installWarpLead">The script loads Warp. The callback and server-side verification are shared with every module.</p>
+                  <p class="eyebrow"><i class="fa-solid fa-code" aria-hidden="true"></i><span data-i18n="installGravityEyebrow">ADD GRAVITY</span></p>
+                  <h3 id="install-gravity-title" data-i18n="installTitle">Add this HTML to your page.</h3>
+                  <p data-i18n="installGravityLead">The script loads Gravity. The callback and server-side verification are shared with every module.</p>
                 </div>
                 <div class="code-window">
-                  <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span><button class="copy-button" type="button" data-copy="warp-embed-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
-                  <pre><code id="warp-embed-code">&lt;script src="https://nexacaptcha.zone.id/captcha/warp.js" defer&gt;&lt;/script&gt;
+                  <div class="code-toolbar"><span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span><button class="copy-button" type="button" data-copy="gravity-embed-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>
+                  <pre><code id="gravity-embed-code">&lt;script src="https://nexacaptcha.zone.id/captcha/gravity.js" defer&gt;&lt;/script&gt;
 
 &lt;div class="nexa-captcha" data-callback="onCaptchaComplete"&gt;&lt;/div&gt;</code></pre>
                 </div>
@@ -172,10 +174,10 @@
                 <tr class="nexa-result">
                   <th scope="row"><img src="/assets/logo.svg?v=2" alt="" width="24" height="24"><span>NexaCAPTCHA Horizon</span></th>
                   <td><strong>18.3</strong> <span data-i18n="secondsAverage">seconds average</span></td>
-                  <td><strong>11.8%</strong> <span data-i18n="successRate">success rate</span> · <strong>60.3</strong> <span data-i18n="secondsAverage">seconds average</span></td>
+                  <td><strong>0%</strong> <span data-i18n="successRate">success rate</span> · <strong>60.3</strong> <span data-i18n="secondsAverage">seconds average</span></td>
                 </tr>
-                <tr class="nexa-result warp-result">
-                  <th scope="row"><img src="/assets/logo.svg?v=2" alt="" width="24" height="24"><span>NexaCAPTCHA Warp</span></th>
+                <tr class="nexa-result gravity-result">
+                  <th scope="row"><img src="/assets/logo.svg?v=2" alt="" width="24" height="24"><span>NexaCAPTCHA Gravity</span></th>
                   <td><strong>0.0</strong> <span data-i18n="secondsAverage">seconds average</span></td>
                   <td><strong>0.0%</strong> <span data-i18n="successRate">success rate</span> · <strong>0.0</strong> <span data-i18n="secondsAverage">seconds average</span></td>
                 </tr>

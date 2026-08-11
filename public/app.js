@@ -5,9 +5,9 @@
     en: {
       skip: "Skip to content", languageLabel: "Language", navTop: "Home", navDemo: "Demo", navFeatures: "How it works", navExperiment: "Results", navCallback: "Callback", navVerify: "Check the result",
       heroEyebrow: "ADAPTIVE HUMAN VERIFICATION", heroTitleLine1: "Human by design.", heroTitleLine2: "Automation denied.", heroLead: "NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.",
-      tryIt: "Explore CAPTCHA modules", addToSite: "View integration", noCleanFrame: "Designed for human readability", changingMotion: "11.8% model success in our test", higherCost: "Two attempts before expiry",
-      demoEyebrow: "CAPTCHA MODULES", demoTitle: "Choose a verification.", demoLead: "Horizon reveals information through motion. Warp bends four characters into a static image. Both use the same callback and server-side verification flow.", liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA Horizon", tryWarp: "Try NexaCAPTCHA Warp", ready: "Ready", demoHelp: "Follow each color through the animation. Enter the four characters when you're ready.", warpHelp: "Read the four distorted characters in the image, then enter them below.", demoOutput: "Your result will appear here.",
-      installEyebrow: "ADD HORIZON", installWarpEyebrow: "ADD WARP", installTitle: "Add this HTML to your page.", installLead: "The script loads Horizon and the div marks where the verification should appear.", installWarpLead: "The script loads Warp. The callback and server-side verification are shared with every module.", legacyLoader: "/captcha.js currently loads Horizon too. It remains available as the compatibility URL for existing integrations.",
+      tryIt: "Explore CAPTCHA modules", addToSite: "View integration", noCleanFrame: "Designed for human readability", changingMotion: "0% model success in our Horizon test", higherCost: "Two attempts before expiry",
+      demoEyebrow: "CAPTCHA MODULES", demoTitle: "Choose a verification.", demoLead: "Horizon reveals information through motion. Gravity bends four characters through a continuous gravitational vortex. Both use the same callback and server-side verification flow.", liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA Horizon", tryGravity: "Try NexaCAPTCHA Gravity", ready: "Ready", demoHelp: "Follow each color through the animation. Enter the four characters when you're ready.", gravityHelp: "Follow the hollow characters through the gravitational distortion, then enter all four.", openHorizonDemo: "Open the full Horizon demo", openGravityDemo: "Open the full Gravity demo", demoOutput: "Your result will appear here.",
+      installEyebrow: "ADD HORIZON", installGravityEyebrow: "ADD GRAVITY", installTitle: "Add this HTML to your page.", installLead: "The script loads Horizon and the div marks where the verification should appear.", installGravityLead: "The script loads Gravity. The callback and server-side verification are shared with every module.", legacyLoader: "/captcha.js currently loads Horizon too. It remains available as the compatibility URL for existing integrations.",
       featuresEyebrow: "HOW IT WORKS", featuresTitle: "Security that remains usable.", featuresLead: "NexaCAPTCHA distributes visual information across time. People follow a clear sequence, while automated systems must reconstruct it from changing frames.",
       experimentEyebrow: "VERIFICATION TEST", experimentTitle: "Verification performance, measured.", experimentLead: "Agent results were measured on first exposure, without prior examples, conversation history, or CAPTCHA-specific guidance.", experimentVersion: "Tested build", experimentHumanLabel: "Human", verificationSystem: "Verification system", secondsAverage: "seconds average", successRate: "success rate", experimentNote: "These results describe the recorded test runs and are not a guarantee of performance against every model or execution.",
       featureIncompleteTitle: "No complete still image", featureIncompleteBody: "The answer is revealed over time instead of being exposed in a single frame.", featureDistortionTitle: "Independent motion profiles", featureDistortionBody: "Each character moves and rotates on its own schedule, complicating frame-by-frame alignment.", featureMotionTitle: "Stable visual anchors", featureMotionBody: "Distinct colors help people track characters through motion without exposing the answer in metadata.", featureWindowTitle: "Variable reveal path", featureWindowBody: "The visible region changes direction and pace, reducing the value of fixed-window extraction.", featureUniqueTitle: "Per-verification rendering", featureUniqueBody: "Timing, distortion, placement, and masking are regenerated for every verification.", featureCostTitle: "Server-enforced controls", featureCostBody: "Retry limits, expiry, cooldowns, and one-time response tokens are enforced by the server.",
@@ -19,7 +19,7 @@
     "zh-Hant": {
       skip: "跳到主要內容", languageLabel: "語言", navTop: "首頁", navFeatures: "運作方式", navExperiment: "測試結果", navSetup: "串接", navVerify: "檢查結果",
       heroEyebrow: "自適應人機驗證", heroTitleLine1: "Human by design.", heroTitleLine2: "Automation denied.", heroLead: "NexaCAPTCHA 讓正常使用者清楚完成驗證，同時提高自動化解題所需的時間、運算與不確定性。",
-      tryIt: "開啟示範", addToSite: "查看串接方式", noCleanFrame: "以真人可讀性為優先", changingMotion: "測試中模型成功率 11.8%", higherCost: "兩次輸入機會，之後失效",
+      tryIt: "開啟示範", addToSite: "查看串接方式", noCleanFrame: "以真人可讀性為優先", changingMotion: "Horizon 測試中模型成功率 0%", higherCost: "兩次輸入機會，之後失效",
       liveDemo: "即時示範", tryNexa: "試用 NexaCAPTCHA", ready: "可以開始", demoHelp: "跟著每個顏色看完整段動畫，準備好後輸入四個字元。", demoOutput: "驗證結果會顯示在這裡。",
       featuresEyebrow: "運作方式", featuresTitle: "兼顧安全性與可用性。", featuresLead: "NexaCAPTCHA 將視覺資訊分散在時間序列中。真人能依循清楚的變化完成驗證；自動化系統則必須從多個影格重建答案。",
       experimentEyebrow: "驗證測試", experimentTitle: "驗證效能，實際量測。", experimentLead: "記錄真人與 GPT 5.6 Sol - Medium 在三種驗證系統中的平均完成時間與成功率。", experimentVersion: "測試版本", experimentHumanLabel: "真人", verificationSystem: "驗證系統", secondsAverage: "秒平均完成", successRate: "成功率", experimentNote: "這些數據僅描述已記錄的測試，不保證所有模型或每次執行都會得到相同結果。",
@@ -33,7 +33,7 @@
     ja: {
       skip: "メインコンテンツへ移動", languageLabel: "言語", navTop: "ホーム", navFeatures: "仕組み", navExperiment: "テスト結果", navSetup: "導入", navVerify: "結果を確認",
       heroEyebrow: "適応型ヒューマン認証", heroTitleLine1: "Human by design.", heroTitleLine2: "Automation denied.", heroLead: "NexaCAPTCHA は正規ユーザーの分かりやすさを保ちながら、自動解読に必要な時間、計算量、不確実性を高めます。",
-      tryIt: "デモを開く", addToSite: "導入方法を見る", noCleanFrame: "人の読みやすさを優先", changingMotion: "テスト時のモデル成功率 11.8%", higherCost: "入力は2回まで",
+      tryIt: "デモを開く", addToSite: "導入方法を見る", noCleanFrame: "人の読みやすさを優先", changingMotion: "Horizonテストでのモデル成功率0%", higherCost: "入力は2回まで",
       liveDemo: "ライブデモ", tryNexa: "NexaCAPTCHA を試す", ready: "準備完了", demoHelp: "色ごとに動きを追い、分かった4文字を入力してください。", demoOutput: "認証結果がここに表示されます。",
       featuresEyebrow: "仕組み", featuresTitle: "安全性と使いやすさを両立。", featuresLead: "NexaCAPTCHA は視覚情報を時間軸に分散します。人は明確な変化を追えますが、自動化システムには複数フレームからの再構成が必要です。",
       experimentEyebrow: "検証テスト", experimentTitle: "認証性能を実測。", experimentLead: "人と GPT 5.6 Sol - Medium を対象に、3種類の認証システムで平均所要時間と成功率を記録しました。", experimentVersion: "テスト版", experimentHumanLabel: "人", verificationSystem: "認証システム", secondsAverage: "秒（平均）", successRate: "成功率", experimentNote: "記載値は実施したテストの結果であり、すべてのモデルや実行に対する性能を保証するものではありません。",
@@ -47,18 +47,20 @@
   };
 
   Object.assign(translations["zh-Hant"], {
-    demoLead: "Horizon 透過動態呈現資訊；Warp 則將四個字元扭曲在一張靜態圖片中。兩者共用相同的回呼與後端驗證流程。",
-    tryWarp: "試用 NexaCAPTCHA Warp",
-    warpHelp: "讀出圖片中四個扭曲的字元，再輸入到下方欄位。",
-    installWarpEyebrow: "加入 WARP",
-    installWarpLead: "這段 script 會載入 Warp；回呼與後端驗證流程則與所有模組共用。",
+    demoLead: "Horizon 透過動態呈現資訊；Gravity 則讓四個字元受到連續的重力漩渦扭曲。兩者共用相同的回呼與後端驗證流程。",
+    tryGravity: "試用 NexaCAPTCHA Gravity",
+    gravityHelp: "沿著重力扭曲辨識四個中空字元，再輸入完整答案。",
+    openHorizonDemo: "開啟完整 Horizon Demo",
+    openGravityDemo: "開啟完整 Gravity Demo",
+    installGravityEyebrow: "加入 GRAVITY",
+    installGravityLead: "這段 script 會載入 Gravity；回呼與後端驗證流程則與所有模組共用。",
     experimentLead: "Agent 數據皆來自首次接觸測試，沒有先前範例、對話紀錄或針對 CAPTCHA 的解題提示。",
     navDemo: "示範",
     navCallback: "回呼函式",
     tryIt: "查看 CAPTCHA 模組",
     demoEyebrow: "CAPTCHA 模組",
     demoTitle: "選擇驗證方式。",
-    demoLead: "Horizon 透過動態呈現資訊；Warp 則將四個字元扭曲在一張靜態圖片中。兩者共用相同的回呼與後端驗證流程。",
+    demoLead: "Horizon 透過動態呈現資訊；Gravity 則讓四個字元受到連續的重力漩渦扭曲。兩者共用相同的回呼與後端驗證流程。",
     tryNexa: "試用 NexaCAPTCHA Horizon",
     installEyebrow: "加入 HORIZON",
     installTitle: "將這段 HTML 加入你的頁面。",
@@ -80,18 +82,20 @@
   });
 
   Object.assign(translations.ja, {
-    demoLead: "Horizonは動きで情報を示し、Warpは4文字を1枚の静止画像に歪めて表示します。どちらも同じコールバックとサーバー検証フローを使用します。",
-    tryWarp: "NexaCAPTCHA Warpを試す",
-    warpHelp: "画像内の歪んだ4文字を読み取り、下の入力欄に入力してください。",
-    installWarpEyebrow: "WARPを追加",
-    installWarpLead: "このscriptはWarpを読み込みます。コールバックとサーバー検証はすべてのモジュールで共通です。",
+    demoLead: "Horizonは動きで情報を示し、Gravityは連続した重力の渦で4文字を歪めます。どちらも同じコールバックとサーバー検証フローを使用します。",
+    tryGravity: "NexaCAPTCHA Gravityを試す",
+    gravityHelp: "重力によって歪んだ4つの中空文字を読み取り、すべて入力してください。",
+    openHorizonDemo: "Horizonのフルデモを開く",
+    openGravityDemo: "Gravityのフルデモを開く",
+    installGravityEyebrow: "GRAVITYを追加",
+    installGravityLead: "このscriptはGravityを読み込みます。コールバックとサーバー検証はすべてのモジュールで共通です。",
     experimentLead: "Agentの結果は、事前の例、会話履歴、CAPTCHA固有のヒントがない初回接触時に測定したものです。",
     navDemo: "デモ",
     navCallback: "コールバック",
     tryIt: "CAPTCHAモジュールを見る",
     demoEyebrow: "CAPTCHA MODULES",
     demoTitle: "認証方式を選択。",
-    demoLead: "Horizonは動きで情報を示し、Warpは4文字を1枚の静止画像に歪めて表示します。どちらも同じコールバックとサーバー検証フローを使用します。",
+    demoLead: "Horizonは動きで情報を示し、Gravityは連続した重力の渦で4文字を歪めます。どちらも同じコールバックとサーバー検証フローを使用します。",
     tryNexa: "NexaCAPTCHA Horizonを試す",
     installEyebrow: "HORIZONを追加",
     installTitle: "このHTMLをページに追加。",
@@ -229,7 +233,7 @@
     showDemoResult("demo-output-horizon", result);
   };
 
-  window.onWarpDemoComplete = function (result) {
-    showDemoResult("demo-output-warp", result);
+  window.onGravityDemoComplete = function (result) {
+    showDemoResult("demo-output-gravity", result);
   };
 })();

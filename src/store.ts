@@ -11,9 +11,9 @@ import { config } from "./config.js";
 import { PublicError } from "./errors.js";
 import { RenderQueue } from "./render-queue.js";
 import { renderVerificationAnimation } from "./renderer.js";
-import { renderWarpImage } from "./warp-renderer.js";
+import { renderGravityImage } from "./gravity-renderer.js";
 
-export type CaptchaType = "horizon" | "warp";
+export type CaptchaType = "horizon" | "gravity";
 
 export type VerificationStatus =
   | "pending"
@@ -47,7 +47,7 @@ export type PublicVerification =
     }
   | {
       verificationId: string;
-      captchaType: "warp";
+      captchaType: "gravity";
       imageUrl: string;
       expiresInMs: number;
     };
@@ -55,8 +55,8 @@ export type PublicVerification =
 interface VerificationStoreOptions {
   answerFactory?: () => string;
   renderer?: (answer: string) => Buffer;
-  warpAnswerFactory?: () => string;
-  warpRenderer?: (answer: string) => Buffer;
+  gravityAnswerFactory?: () => string;
+  gravityRenderer?: (answer: string) => Buffer;
   mediaDirectory?: string;
   clock?: () => number;
 }
@@ -119,7 +119,7 @@ export function generateAnswer(randomInteger: RandomInteger = randomInt): string
   return characters.join("");
 }
 
-export function generateWarpAnswer(randomInteger: RandomInteger = randomInt): string {
+export function generateGravityAnswer(randomInteger: RandomInteger = randomInt): string {
   const pool = Array.from(ALPHABET);
   return Array.from({ length: 4 }, () =>
     takeRandomCharacter(pool, randomInteger)
@@ -132,8 +132,8 @@ export class VerificationStore {
   private readonly renderQueue = new RenderQueue(config.maxRenderQueue);
   private readonly answerFactory: () => string;
   private readonly renderer: (answer: string) => Buffer;
-  private readonly warpAnswerFactory: () => string;
-  private readonly warpRenderer: (answer: string) => Buffer;
+  private readonly gravityAnswerFactory: () => string;
+  private readonly gravityRenderer: (answer: string) => Buffer;
   private readonly mediaDirectory: string;
   private readonly clock: () => number;
   private cleanupTimer?: NodeJS.Timeout;
@@ -141,8 +141,8 @@ export class VerificationStore {
   constructor(options: VerificationStoreOptions = {}) {
     this.answerFactory = options.answerFactory ?? generateAnswer;
     this.renderer = options.renderer ?? renderVerificationAnimation;
-    this.warpAnswerFactory = options.warpAnswerFactory ?? generateWarpAnswer;
-    this.warpRenderer = options.warpRenderer ?? renderWarpImage;
+    this.gravityAnswerFactory = options.gravityAnswerFactory ?? generateGravityAnswer;
+    this.gravityRenderer = options.gravityRenderer ?? renderGravityImage;
     this.mediaDirectory = options.mediaDirectory ?? config.mediaDirectory;
     this.clock = options.clock ?? Date.now;
   }
@@ -178,15 +178,15 @@ export class VerificationStore {
     }
 
     const verificationId = `ver_${randomBase64Url(9)}`;
-    const answer = captchaType === "warp"
-      ? this.warpAnswerFactory()
+    const answer = captchaType === "gravity"
+      ? this.gravityAnswerFactory()
       : this.answerFactory();
     const salt = randomBytes(16);
     const answerDigest = this.digestAnswer(answer, salt);
-    const extension = captchaType === "warp" ? "png" : "gif";
+    const extension = captchaType === "gravity" ? "png" : "gif";
     const mediaPath = path.join(this.mediaDirectory, `${verificationId}.${extension}`);
     const media = await this.renderQueue.run(() =>
-      captchaType === "warp" ? this.warpRenderer(answer) : this.renderer(answer)
+      captchaType === "gravity" ? this.gravityRenderer(answer) : this.renderer(answer)
     );
 
     await writeFile(mediaPath, media, { flag: "wx" });
@@ -202,7 +202,7 @@ export class VerificationStore {
       mediaPath
     });
 
-    if (captchaType === "warp") {
+    if (captchaType === "gravity") {
       return {
         verificationId,
         captchaType,

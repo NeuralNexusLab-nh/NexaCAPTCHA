@@ -6,7 +6,7 @@ import { PublicError } from "../src/errors.js";
 import {
   VerificationStore,
   generateAnswer,
-  generateWarpAnswer,
+  generateGravityAnswer,
   normalizeAnswer
 } from "../src/store.js";
 
@@ -31,8 +31,8 @@ describe("VerificationStore", () => {
     store = new VerificationStore({
       answerFactory: () => "NEXA",
       renderer: () => Buffer.from("GIF89a", "ascii"),
-      warpAnswerFactory: () => "WARP",
-      warpRenderer: () => Buffer.from([137, 80, 78, 71]),
+      gravityAnswerFactory: () => "GRAV",
+      gravityRenderer: () => Buffer.from([137, 80, 78, 71]),
       mediaDirectory: directory,
       clock: () => now
     });
@@ -83,10 +83,10 @@ describe("VerificationStore", () => {
     expect(new Set(answer).size).toBe(4);
   });
 
-  it("selects four unique Warp characters without required groups", () => {
+  it("selects four unique Gravity characters without required groups", () => {
     const seen = new Set<string>();
     for (let sample = 0; sample < 4_000; sample += 1) {
-      const answer = generateWarpAnswer();
+      const answer = generateGravityAnswer();
       expect(answer).toMatch(/^[A-HJ-NP-Z2-9]{4}$/);
       expect(answer).not.toMatch(/[IO01]/);
       expect(new Set(answer).size).toBe(4);
@@ -97,13 +97,13 @@ describe("VerificationStore", () => {
     );
   });
 
-  it("creates Warp media while sharing the verification protocol", async () => {
-    const verification = await store.create("warp");
-    expect(verification.captchaType).toBe("warp");
-    if (verification.captchaType !== "warp") throw new Error("Expected Warp.");
+  it("creates Gravity media while sharing the verification protocol", async () => {
+    const verification = await store.create("gravity");
+    expect(verification.captchaType).toBe("gravity");
+    if (verification.captchaType !== "gravity") throw new Error("Expected Gravity.");
     expect(verification.imageUrl).toContain("/image");
-    expect(store.getMediaPath(verification.verificationId, "warp")).toMatch(/\.png$/);
-    const completion = store.submitAnswer(verification.verificationId, "WARP");
+    expect(store.getMediaPath(verification.verificationId, "gravity")).toMatch(/\.png$/);
+    const completion = store.submitAnswer(verification.verificationId, "GRAV");
     expect(completion.success).toBe(true);
   });
 

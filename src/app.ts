@@ -22,7 +22,7 @@ const answerSchema = z
 
 const createVerificationSchema = z
   .object({
-    captchaType: z.enum(["horizon", "warp"]).optional()
+    captchaType: z.enum(["horizon", "gravity"]).optional()
   })
   .strict();
 
@@ -121,7 +121,7 @@ export function createApp(store: VerificationStore) {
       try {
         const mediaPath = store.getMediaPath(
           routeParameter(request.params.verificationId),
-          "warp"
+          "gravity"
         );
         response.setHeader("Cache-Control", "no-store, max-age=0");
         response.setHeader("Content-Type", "image/png");
@@ -196,7 +196,7 @@ export function createApp(store: VerificationStore) {
     response.sendFile(path.join(config.publicDirectory, "captcha.js"));
   });
 
-  app.get("/captcha/warp.js", widgetHeaders, (_request, response) => {
+  app.get("/captcha/gravity.js", widgetHeaders, (_request, response) => {
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Cache-Control", "public, max-age=300");
     response.sendFile(path.join(config.publicDirectory, "captcha.js"));

@@ -18,8 +18,8 @@ describe("NexaCAPTCHA HTTP API", () => {
     store = new VerificationStore({
       answerFactory: () => "NEXA",
       renderer: () => Buffer.from("GIF89a", "ascii"),
-      warpAnswerFactory: () => "WARP",
-      warpRenderer: () => Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+      gravityAnswerFactory: () => "GRAV",
+      gravityRenderer: () => Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
       mediaDirectory: directory,
       clock: () => now
     });
@@ -73,12 +73,12 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(({ body }) => expect(body.success).toBe(false));
   });
 
-  it("serves Warp as a PNG with the same answer and siteverify protocol", async () => {
+  it("serves Gravity as a PNG with the same answer and siteverify protocol", async () => {
     const created = await request(app)
       .post("/api/verifications")
-      .send({ captchaType: "warp" })
+      .send({ captchaType: "gravity" })
       .expect(201);
-    expect(created.body.captchaType).toBe("warp");
+    expect(created.body.captchaType).toBe("gravity");
     expect(created.body.imageUrl).toContain("/image");
     expect(created.body.animationUrl).toBeUndefined();
 
@@ -93,7 +93,7 @@ describe("NexaCAPTCHA HTTP API", () => {
 
     const completed = await request(app)
       .post(`/api/verifications/${created.body.verificationId}/answer`)
-      .send({ answer: "WARP" })
+      .send({ answer: "GRAV" })
       .expect(200);
     await request(app)
       .post("/api/siteverify")
@@ -175,11 +175,25 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect("Content-Type", /javascript/)
       .expect(200);
     await request(app).get("/captcha/phobetor.js").expect(404);
+    await request(app).get("/captcha/warp.js").expect(404);
     await request(app)
-      .get("/captcha/warp.js")
+      .get("/captcha/gravity.js")
       .expect("Access-Control-Allow-Origin", "*")
       .expect("Content-Type", /javascript/)
       .expect(200);
+  });
+
+  it("serves dedicated Horizon and Gravity demo pages", async () => {
+    await request(app)
+      .get("/horizon")
+      .expect("Content-Type", /html/)
+      .expect(200)
+      .expect(({ text }) => expect(text).toContain("/captcha/horizon.js"));
+    await request(app)
+      .get("/gravity")
+      .expect("Content-Type", /html/)
+      .expect(200)
+      .expect(({ text }) => expect(text).toContain("/captcha/gravity.js"));
   });
 
   it("denies cross-origin browser API calls", async () => {

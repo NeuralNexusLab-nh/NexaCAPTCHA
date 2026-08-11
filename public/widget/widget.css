@@ -161,8 +161,8 @@ input:disabled { cursor: not-allowed; opacity: .58; }
   margin-top: 10px;
 }
 
-.verification-stage.is-warp { aspect-ratio: 3 / 1; background: #f2f6fa; }
-.verification-stage.is-warp::before { background: linear-gradient(90deg, rgba(12, 31, 52, .08), transparent 16% 84%, rgba(12, 31, 52, .08)); }
+.verification-stage.is-gravity { aspect-ratio: 3 / 1; background: #f2f6fa; }
+.verification-stage.is-gravity::before { background: linear-gradient(90deg, rgba(12, 31, 52, .08), transparent 16% 84%, rgba(12, 31, 52, .08)); }
 
 .captcha-footer p {
   min-width: 0;

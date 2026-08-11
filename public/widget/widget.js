@@ -3,7 +3,7 @@
 
   var parameters = new URLSearchParams(window.location.search);
   var widgetId = parameters.get("widgetId") || "standalone";
-  var captchaType = parameters.get("captchaType") === "warp" ? "warp" : "horizon";
+  var captchaType = parameters.get("captchaType") === "gravity" ? "gravity" : "horizon";
   var requestedParentOrigin = parameters.get("parentOrigin");
   var parentOrigin = null;
   try {
@@ -31,8 +31,8 @@
   var coolingDown = false;
   var completed = false;
 
-  stage.classList.toggle("is-warp", captchaType === "warp");
-  image.alt = captchaType === "warp"
+  stage.classList.toggle("is-gravity", captchaType === "gravity");
+  image.alt = captchaType === "gravity"
     ? "Distorted verification text"
     : "Animated verification text";
 
@@ -178,7 +178,7 @@
         busy = false;
         setPill("Playing", "fa-eye", "");
         setMessage(
-          captchaType === "warp"
+          captchaType === "gravity"
             ? "Read the distorted text, then enter all four characters."
             : "Follow the reveal, then enter all four characters.",
           ""
@@ -207,7 +207,7 @@
         setMessage("The verification image could not be loaded. Try again.", "is-error");
         updateControls();
       };
-      image.src = captchaType === "warp" ? result.imageUrl : result.animationUrl;
+      image.src = captchaType === "gravity" ? result.imageUrl : result.animationUrl;
     } catch (_) {
       currentVerificationId = null;
       busy = false;

@@ -2,10 +2,18 @@ import { randomBytes } from "node:crypto";
 import { deflateSync } from "node:zlib";
 import { stringToPaths, type Point } from "hershey";
 
-export const WARP_WIDTH = 600;
-export const WARP_HEIGHT = 200;
+export const GRAVITY_WIDTH = 600;
+export const GRAVITY_HEIGHT = 200;
 
 type Rgba = readonly [number, number, number, number];
+
+interface GravityWell {
+  x: number;
+  y: number;
+  radius: number;
+  pull: number;
+  swirl: number;
+}
 
 const CHARACTER_COLORS: readonly Rgba[] = [
   [18, 39, 68, 255],
@@ -97,8 +105,8 @@ function blendPixel(
   y: number,
   color: Rgba
 ): void {
-  if (x < 0 || y < 0 || x >= WARP_WIDTH || y >= WARP_HEIGHT) return;
-  const index = (Math.floor(y) * WARP_WIDTH + Math.floor(x)) * 4;
+  if (x < 0 || y < 0 || x >= GRAVITY_WIDTH || y >= GRAVITY_HEIGHT) return;
+  const index = (Math.floor(y) * GRAVITY_WIDTH + Math.floor(x)) * 4;
   const alpha = color[3] / 255;
   pixels[index] = Math.round((pixels[index] ?? 0) * (1 - alpha) + color[0] * alpha);
   pixels[index + 1] = Math.round(
@@ -155,17 +163,45 @@ function drawLine(
   }
 }
 
-function drawBezier(
+function applyGravityField(point: Point, wells: readonly GravityWell[]): Point {
+  let x = point[0];
+  let y = point[1];
+  for (const well of wells) {
+    const relativeX = x - well.x;
+    const relativeY = y - well.y;
+    const distance = Math.max(18, Math.hypot(relativeX, relativeY));
+    const influence = Math.exp(-0.9 * (distance / well.radius) ** 2);
+    const coreEase = Math.min(1, distance / 44);
+    const angle = well.swirl * influence * coreEase;
+    const radialScale = 1 - well.pull * influence * coreEase;
+    const cosine = Math.cos(angle);
+    const sine = Math.sin(angle);
+    const rotatedX = relativeX * cosine - relativeY * sine;
+    const rotatedY = relativeX * sine + relativeY * cosine;
+
+    x = well.x + rotatedX * radialScale;
+    y = well.y + rotatedY * radialScale;
+  }
+  // Keep the strong vortex while fitting its displaced coordinates back into
+  // the PNG. This avoids solving readability problems by weakening gravity.
+  return [
+    GRAVITY_WIDTH / 2 + (x - GRAVITY_WIDTH / 2) * 0.9,
+    GRAVITY_HEIGHT / 2 + (y - GRAVITY_HEIGHT / 2) * 0.76
+  ];
+}
+
+function drawGravityBezier(
   pixels: Uint8Array,
   points: readonly [Point, Point, Point, Point],
   thickness: number,
-  color: Rgba
+  color: Rgba,
+  wells: readonly GravityWell[]
 ): void {
-  let previous = points[0];
+  let previous = applyGravityField(points[0], wells);
   for (let step = 1; step <= 180; step += 1) {
     const t = step / 180;
     const inverse = 1 - t;
-    const current: Point = [
+    const source: Point = [
       inverse ** 3 * points[0][0] +
         3 * inverse ** 2 * t * points[1][0] +
         3 * inverse * t ** 2 * points[2][0] +
@@ -175,6 +211,7 @@ function drawBezier(
         3 * inverse * t ** 2 * points[2][1] +
         t ** 3 * points[3][1]
     ];
+    const current = applyGravityField(source, wells);
     drawLine(pixels, previous, current, thickness, color);
     previous = current;
   }
@@ -190,39 +227,60 @@ function transformGlyphPoint(
   scaleX: number,
   scaleY: number,
   wavePhase: number,
-  horizontalWarp: number,
-  verticalWarp: number,
+  horizontalWave: number,
+  verticalWave: number,
   bend: number,
-  twist: number
+  twist: number,
+  wells: readonly GravityWell[]
 ): Point {
   const width = Math.max(1, bounds.maxX - bounds.minX);
   const height = Math.max(1, bounds.maxY - bounds.minY);
   const normalizedX = (point[0] - (bounds.minX + bounds.maxX) / 2) / width;
   const normalizedY = (point[1] - (bounds.minY + bounds.maxY) / 2) / height;
-  const baseX =
-    normalizedX * 88 * scaleX +
-    normalizedY * shear * 34 +
-    Math.sin(normalizedY * 7.1 + wavePhase) * horizontalWarp;
-  const baseY =
-    -normalizedY * 112 * scaleY +
-    Math.sin(normalizedX * 6.4 + wavePhase * 0.7) * verticalWarp;
   const localX =
-    baseX + normalizedY * normalizedY * bend * Math.sign(normalizedY || 1);
+    normalizedX * 88 * scaleX +
+    normalizedY * shear * 30 +
+    Math.sin(normalizedY * 6.5 + wavePhase) * horizontalWave +
+    normalizedY * normalizedY * bend * Math.sign(normalizedY || 1);
   const localY =
-    baseY + normalizedX * normalizedY * twist;
+    -normalizedY * 118 * scaleY +
+    Math.sin(normalizedX * 6.2 + wavePhase * 0.73) * verticalWave +
+    normalizedX * normalizedY * twist;
   const cosine = Math.cos(rotation);
   const sine = Math.sin(rotation);
   const rotatedX = localX * cosine - localY * sine;
   const rotatedY = localX * sine + localY * cosine;
-  const globalWarpX = Math.sin((centerY + rotatedY) * 0.045 + wavePhase) * 4.2;
-  const globalWarpY = Math.sin((centerX + rotatedX) * 0.025 + wavePhase) * 4.6;
-  return [centerX + rotatedX + globalWarpX, centerY + rotatedY + globalWarpY];
+  return applyGravityField(
+    [centerX + rotatedX, centerY + rotatedY],
+    wells
+  );
+}
+
+function transformGlyphPath(
+  path: readonly Point[],
+  transform: (point: Point) => Point
+): Point[] {
+  const transformed: Point[] = [];
+  for (let index = 1; index < path.length; index += 1) {
+    const from = path[index - 1];
+    const to = path[index];
+    if (!from || !to) continue;
+    const steps = Math.max(5, Math.ceil(Math.hypot(to[0] - from[0], to[1] - from[1])));
+    for (let step = index === 1 ? 0 : 1; step <= steps; step += 1) {
+      const progress = step / steps;
+      transformed.push(transform([
+        from[0] + (to[0] - from[0]) * progress,
+        from[1] + (to[1] - from[1]) * progress
+      ]));
+    }
+  }
+  return transformed;
 }
 
 function fillBackground(pixels: Uint8Array, random: () => number): void {
-  for (let y = 0; y < WARP_HEIGHT; y += 1) {
-    for (let x = 0; x < WARP_WIDTH; x += 1) {
-      const index = (y * WARP_WIDTH + x) * 4;
+  for (let y = 0; y < GRAVITY_HEIGHT; y += 1) {
+    for (let x = 0; x < GRAVITY_WIDTH; x += 1) {
+      const index = (y * GRAVITY_WIDTH + x) * 4;
       const wave = Math.sin(x * 0.022 + y * 0.035) * 2;
       const noise = (random() - 0.5) * 5;
       pixels[index] = Math.round(242 + wave + noise);
@@ -233,25 +291,44 @@ function fillBackground(pixels: Uint8Array, random: () => number): void {
   }
 }
 
-export function renderWarpImage(answer: string): Buffer {
+export function renderGravityImage(answer: string): Buffer {
   const random = createPrng(randomBytes(4));
-  const pixels = new Uint8Array(WARP_WIDTH * WARP_HEIGHT * 4);
+  const pixels = new Uint8Array(GRAVITY_WIDTH * GRAVITY_HEIGHT * 4);
   fillBackground(pixels, random);
 
+  const wellOnLeft = random() < 0.5;
+  const gravityWells: GravityWell[] = [{
+    x: wellOnLeft ? -35 + random() * 105 : GRAVITY_WIDTH - 70 + random() * 105,
+    y: 24 + random() * (GRAVITY_HEIGHT - 48),
+    radius: 215 + random() * 75,
+    pull: 0.075 + random() * 0.065,
+    swirl: (random() < 0.5 ? -1 : 1) * (0.48 + random() * 0.34)
+  }];
+  if (random() < 0.65) {
+    gravityWells.push({
+      x: wellOnLeft ? GRAVITY_WIDTH + 18 : -18,
+      y: 18 + random() * (GRAVITY_HEIGHT - 36),
+      radius: 185 + random() * 65,
+      pull: 0.025 + random() * 0.035,
+      swirl: (random() < 0.5 ? -1 : 1) * (0.14 + random() * 0.18)
+    });
+  }
+
   const paleLine: Rgba = [72, 104, 139, 42];
-  for (let index = 0; index < 3; index += 1) {
+  for (let index = 0; index < 4; index += 1) {
     const startY = 35 + random() * 130;
     const endY = 35 + random() * 130;
-    drawBezier(
+    drawGravityBezier(
       pixels,
       [
         [-24, startY],
         [150 + random() * 100, -15 + random() * 225],
         [360 + random() * 120, -10 + random() * 220],
-        [WARP_WIDTH + 24, endY]
+        [GRAVITY_WIDTH + 24, endY]
       ],
       1.2 + random() * 1.1,
-      paleLine
+      paleLine,
+      gravityWells
     );
   }
 
@@ -259,22 +336,22 @@ export function renderWarpImage(answer: string): Buffer {
   answer.split("").forEach((character, index) => {
     const glyph = stringToPaths(character);
     const centerX = glyphCenters[index]! + (random() - 0.5) * 18;
-    const centerY = WARP_HEIGHT / 2 + (random() - 0.5) * 24;
-    const rotation = ((random() * 54 - 27) * Math.PI) / 180;
-    const shear = random() * 0.9 - 0.45;
-    const scaleX = 0.76 + random() * 0.5;
-    const scaleY = 0.84 + random() * 0.34;
+    const centerY = GRAVITY_HEIGHT / 2 + (random() - 0.5) * 16;
+    const rotation = ((random() * 34 - 17) * Math.PI) / 180;
+    const shear = random() * 0.64 - 0.32;
+    const scaleX = 0.76 + random() * 0.45;
+    const scaleY = 0.84 + random() * 0.3;
     const wavePhase = random() * Math.PI * 2;
-    const horizontalWarp = 7 + random() * 8;
-    const verticalWarp = 7 + random() * 8;
-    const bend = random() * 30 - 15;
-    const twist = random() * 35 - 17.5;
-    const thickness = 7.2 + random() * 2.8;
+    const horizontalWave = 5 + random() * 7;
+    const verticalWave = 6 + random() * 8;
+    const bend = random() * 20 - 10;
+    const twist = random() * 24 - 12;
+    const thickness = 5.2 + random() * 2;
     const color = CHARACTER_COLORS[index % CHARACTER_COLORS.length]!;
     const innerColor = CHARACTER_INNER_COLORS[index % CHARACTER_INNER_COLORS.length]!;
 
     const transformedPaths = glyph.paths.map((glyphPath) =>
-      glyphPath.map((point) =>
+      transformGlyphPath(glyphPath, (point) =>
         transformGlyphPoint(
           point,
           glyph.bounds,
@@ -285,10 +362,11 @@ export function renderWarpImage(answer: string): Buffer {
           scaleX,
           scaleY,
           wavePhase,
-          horizontalWarp,
-          verticalWarp,
+          horizontalWave,
+          verticalWave,
           bend,
-          twist
+          twist,
+          gravityWells
         )
       )
     );
@@ -320,7 +398,7 @@ export function renderWarpImage(answer: string): Buffer {
           pixels,
           previous,
           current,
-          thickness * segmentWeight * 0.43,
+          thickness * segmentWeight * 0.42,
           innerColor
         );
       }
@@ -330,27 +408,29 @@ export function renderWarpImage(answer: string): Buffer {
   const foregroundColors: readonly Rgba[] = [
     [42, 77, 116, 120],
     [91, 57, 131, 112],
-    [23, 91, 103, 105]
+    [23, 91, 103, 105],
+    [65, 88, 121, 104]
   ];
-  for (let index = 0; index < 3; index += 1) {
+  for (let index = 0; index < 4; index += 1) {
     const color = foregroundColors[index]!;
     const baseY = 48 + random() * 104;
-    drawBezier(
+    drawGravityBezier(
       pixels,
       [
         [-16, baseY],
         [120 + random() * 110, baseY + (random() - 0.5) * 120],
         [380 + random() * 90, baseY + (random() - 0.5) * 120],
-        [WARP_WIDTH + 16, 45 + random() * 110]
+        [GRAVITY_WIDTH + 16, 45 + random() * 110]
       ],
       1.4 + random() * 1.4,
-      color
+      color,
+      gravityWells
     );
   }
 
-  for (let index = 0; index < 28; index += 1) {
-    const x = 20 + random() * (WARP_WIDTH - 40);
-    const y = 18 + random() * (WARP_HEIGHT - 36);
+  for (let index = 0; index < 42; index += 1) {
+    const x = 20 + random() * (GRAVITY_WIDTH - 40);
+    const y = 18 + random() * (GRAVITY_HEIGHT - 36);
     if (random() < 0.55) {
       drawDisc(pixels, x, y, 0.8 + random() * 1.4, [36, 67, 98, 75]);
     } else {
@@ -366,5 +446,5 @@ export function renderWarpImage(answer: string): Buffer {
     }
   }
 
-  return encodePng(pixels, WARP_WIDTH, WARP_HEIGHT);
+  return encodePng(pixels, GRAVITY_WIDTH, GRAVITY_HEIGHT);
 }

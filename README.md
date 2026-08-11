@@ -11,20 +11,20 @@ NexaCAPTCHA keeps verification clear for legitimate users while increasing the t
 [Explore CAPTCHA modules](https://nexacaptcha.zone.id/#demo) · [View callback integration](#callback)
 
 - Designed for human readability
-- 11.8% model success in our test
+- 0% model success in our Horizon test
 - Two attempts before expiry
 
 **CAPTCHA MODULES**
 
 ## Choose a verification.
 
-Horizon reveals information through motion. Warp bends four characters into a static image. Both use the same callback and server-side verification flow.
+Horizon reveals information through motion. Gravity bends four characters through a continuous gravitational vortex. Both use the same callback and server-side verification flow.
 
 ### Horizon · Live demo
 
 Follow each color through the animation and enter the four characters when you're ready.
 
-[Try NexaCAPTCHA Horizon](https://nexacaptcha.zone.id/#demo)
+[Try NexaCAPTCHA Horizon](https://nexacaptcha.zone.id/horizon)
 
 ### Add this HTML to your page.
 
@@ -42,17 +42,17 @@ Follow each color through the animation and enter the four characters when you'r
 
 `/captcha.js` currently loads Horizon too. It remains available as the compatibility URL for existing integrations.
 
-### Warp · Live demo
+### Gravity · Live demo
 
-Read the four distorted characters in the image, then enter them below.
+Follow the hollow characters through the gravitational distortion, then enter all four.
 
-[Try NexaCAPTCHA Warp](https://nexacaptcha.zone.id/#demo)
+[Try NexaCAPTCHA Gravity](https://nexacaptcha.zone.id/gravity)
 
-### Add Warp to your page.
+### Add Gravity to your page.
 
 ```html
 <script
-  src="https://nexacaptcha.zone.id/captcha/warp.js"
+  src="https://nexacaptcha.zone.id/captcha/gravity.js"
   defer
 ></script>
 
@@ -62,7 +62,7 @@ Read the four distorted characters in the image, then enter them below.
 ></div>
 ```
 
-Warp uses the same callback result and server-side verification flow as Horizon.
+Gravity uses the same callback result and server-side verification flow as Horizon.
 
 **VERIFICATION TEST · Tested build**
 
@@ -72,8 +72,8 @@ Agent results were measured on first exposure, without prior examples, conversat
 
 | Verification system | Human | GPT 5.6 Sol - Medium |
 | --- | --- | --- |
-| **NexaCAPTCHA Horizon** | **18.3** seconds average | **11.8%** success rate · **60.3** seconds average |
-| **NexaCAPTCHA Warp** | **0.0** seconds average | **0.0%** success rate · **0.0** seconds average |
+| **NexaCAPTCHA Horizon** | **18.3** seconds average | **0%** success rate · **60.3** seconds average |
+| **NexaCAPTCHA Gravity** | **0.0** seconds average | **0.0%** success rate · **0.0** seconds average |
 | **Google reCAPTCHA** | **1.9** seconds average | **99%** success rate · **7.6** seconds average |
 | **hCaptcha** | **11.8** seconds average | **85.7%** success rate · **49.6** seconds average |
 

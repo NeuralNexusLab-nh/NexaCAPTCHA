@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Try the NexaCAPTCHA Horizon motion-based human verification module.">
+    <meta name="theme-color" content="#020812">
+    <title>NexaCAPTCHA Horizon · Live demo</title>
+    <link rel="icon" href="/favicon-blue.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/vendor/fonts/inter/index.css">
+    <link rel="stylesheet" href="/vendor/fonts/oxanium/index.css">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/demo-page.css?v=1">
+    <script src="/demo-page.js?v=1" defer></script>
+    <script src="/captcha/horizon.js?v=3" defer></script>
+  </head>
+  <body>
+    <nav class="demo-nav" aria-label="Demo navigation">
+      <a class="demo-brand" href="/"><img src="/assets/logo.svg?v=2" alt=""><span>NexaCAPTCHA</span></a>
+      <a class="back-link" href="/#demo"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>All CAPTCHA modules</span></a>
+    </nav>
+    <main class="demo-main">
+      <header class="demo-heading">
+        <p class="eyebrow"><i class="fa-solid fa-play" aria-hidden="true"></i>HORIZON · LIVE DEMO</p>
+        <h1>NexaCAPTCHA Horizon</h1>
+        <p>Follow each color through the animation, then enter the four characters. This page runs the same module and verification flow available through the public loader.</p>
+      </header>
+      <section class="verification-panel" aria-label="Horizon verification">
+        <div class="nexa-captcha" data-callback="onCaptchaComplete"></div>
+        <output class="demo-result" id="demo-result" aria-live="polite"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Your completed result will appear here.</span></output>
+      </section>
+    </main>
+  </body>
+</html>

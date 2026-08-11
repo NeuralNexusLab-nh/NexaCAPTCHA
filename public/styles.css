@@ -79,13 +79,16 @@ h3 { letter-spacing: -.025em; }
 
 .demo-card { position: relative; padding: 20px; overflow: hidden; border: 1px solid rgba(105, 174, 255, .36); border-radius: 3px; background: linear-gradient(145deg, rgba(9, 37, 78, .82), rgba(3, 12, 27, .9)); box-shadow: inset 0 1px rgba(169, 214, 255, .08), 0 24px 64px rgba(0, 13, 34, .3); backdrop-filter: blur(16px); clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px)); }
 .demo-card::before { position: absolute; top: -150px; right: -110px; width: 280px; height: 280px; border-radius: 50%; background: rgba(22, 135, 255, .18); filter: blur(66px); content: ""; pointer-events: none; }
-.warp-card { border-color: rgba(87, 209, 190, .34); background: linear-gradient(145deg, rgba(8, 48, 65, .78), rgba(3, 12, 27, .92)); }
-.warp-card::before { background: rgba(41, 195, 182, .16); }
+.gravity-card { border-color: rgba(87, 209, 190, .34); background: linear-gradient(145deg, rgba(8, 48, 65, .78), rgba(3, 12, 27, .92)); }
+.gravity-card::before { background: rgba(41, 195, 182, .16); }
 .demo-route { position: relative; display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 11px; border-bottom: 1px solid var(--border-soft); color: #a5a5a8; font: 500 9px ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .2em; }
 .demo-route i { color: var(--lavender); }
 .card-heading { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .card-heading h3 { margin-bottom: 0; font-size: 30px; }
 .card-help { position: relative; margin: 10px 0 18px; color: var(--muted); font-size: 13px; }
+.module-demo-link { position: relative; display: inline-flex; align-items: center; gap: 8px; margin: -5px 0 16px; color: #90c8ff; font: 600 11px Oxanium, sans-serif; letter-spacing: .02em; text-decoration: none; }
+.module-demo-link:hover { color: white; }
+.module-demo-link i { font-size: 10px; }
 .live-pill { display: inline-flex; height: 29px; align-items: center; gap: 7px; padding: 0 11px; border: 1px solid var(--border-soft); border-radius: 2px; background: rgba(22, 135, 255, .08); color: #c7ddf7; font-size: 10px; }
 .live-pill > span:first-child { width: 6px; height: 6px; border-radius: 50%; background: var(--violet); box-shadow: 0 0 12px var(--violet); }
 .nexa-captcha { position: relative; min-height: 346px; }
@@ -94,9 +97,9 @@ h3 { letter-spacing: -.025em; }
 .demo-output.is-success { color: var(--lavender); }
 .demo-install { position: relative; min-width: 0; padding: 22px; overflow: hidden; border: 1px solid rgba(166, 116, 255, .38); border-radius: 3px; background: linear-gradient(145deg, rgba(48, 25, 87, .42), rgba(5, 8, 20, .96)); box-shadow: 0 18px 60px rgba(25, 8, 54, .25); }
 .demo-install::before { position: absolute; inset: 0 0 auto; height: 2px; background: linear-gradient(90deg, #a674ff, transparent 72%); content: ""; }
-.warp-install { border-color: rgba(59, 178, 210, .34); background: linear-gradient(145deg, rgba(13, 53, 75, .52), rgba(5, 8, 20, .96)); }
-.warp-install::before { background: linear-gradient(90deg, #4cced7, transparent 72%); }
-.warp-install .eyebrow { color: #80e5e6; }
+.gravity-install { border-color: rgba(59, 178, 210, .34); background: linear-gradient(145deg, rgba(13, 53, 75, .52), rgba(5, 8, 20, .96)); }
+.gravity-install::before { background: linear-gradient(90deg, #4cced7, transparent 72%); }
+.gravity-install .eyebrow { color: #80e5e6; }
 .demo-install .eyebrow, .demo-install .legacy-loader-note i { color: #c5a7ff; }
 .demo-install-copy { max-width: 690px; margin-bottom: 20px; }
 .demo-install-copy h3 { margin-bottom: 8px; font-size: 24px; }
@@ -127,8 +130,8 @@ h3 { letter-spacing: -.025em; }
 .experiment-table .nexa-result { background: linear-gradient(90deg, rgba(22, 135, 255, .14), transparent 75%); }
 .experiment-table .nexa-result th { color: var(--lavender); font-size: 18px; }
 .experiment-table .nexa-result td:last-child strong { color: var(--lavender); }
-.experiment-table .warp-result { background: linear-gradient(90deg, rgba(38, 181, 187, .11), transparent 75%); }
-.experiment-table .warp-result th, .experiment-table .warp-result td:last-child strong { color: #80e5e6; }
+.experiment-table .gravity-result { background: linear-gradient(90deg, rgba(38, 181, 187, .11), transparent 75%); }
+.experiment-table .gravity-result th, .experiment-table .gravity-result td:last-child strong { color: #80e5e6; }
 .experiment-note { position: relative; z-index: 1; display: flex; align-items: flex-start; gap: 9px; margin: 18px 0 0; color: var(--muted); font-size: 12px; }
 .experiment-note i { margin-top: 4px; color: var(--lavender); }
 
