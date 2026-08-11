@@ -2,9 +2,9 @@
 
 **ADAPTIVE HUMAN VERIFICATION**
 
-## Human, get in.
+## Human by design.
 
-## AI, get out!
+## Automation denied.
 
 NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.
 
