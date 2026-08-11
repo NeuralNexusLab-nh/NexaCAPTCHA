@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fonts/oxanium/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=26">
+    <link rel="stylesheet" href="/styles.css?v=27">
     <script src="/app.js?v=29" defer></script>
     <script src="/captcha/horizon.js?v=5" defer></script>
   </head>
@@ -216,6 +216,20 @@
   data-callback="<mark class="callback-name">onCaptchaComplete</mark>"
 &gt;&lt;/div&gt;</code></pre>
               </div>
+              <noscript>
+                <div class="no-js-loader-list">
+                  <strong>Choose one CAPTCHA module endpoint:</strong>
+                  <div>
+                    <span>Horizon</span>
+                    <code>https://nexacaptcha.zone.id/captcha/horizon.js</code>
+                  </div>
+                  <div>
+                    <span>Gravity</span>
+                    <code>https://nexacaptcha.zone.id/captcha/gravity.js</code>
+                  </div>
+                  <p>Load one endpoint with a <code>&lt;script src="…" defer&gt;&lt;/script&gt;</code> element, then use the same CAPTCHA container shown above.</p>
+                </div>
+              </noscript>
               <p class="callback-name-note"><i class="fa-solid fa-pen" aria-hidden="true"></i><span data-i18n="callbackNameNote">Choose your own callback name if you prefer. Use exactly the same name in the HTML and JavaScript.</span></p>
               <div class="code-window">
                 <div class="code-toolbar"><span><i class="fa-brands fa-js" aria-hidden="true"></i><span data-i18n="frontendLocation">JavaScript · frontend</span></span><button class="copy-button" type="button" data-copy="callback-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button></div>

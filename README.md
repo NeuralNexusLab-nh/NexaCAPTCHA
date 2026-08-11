@@ -59,7 +59,10 @@ Choose a module, add it to your page, then pass the completed result to your bac
 
 ### Frontend setup
 
-Choose the loader for the module you want: `horizon.js` or `gravity.js`. The callback name and submission logic are yours to change.
+Choose one loader endpoint. The callback name and submission logic are yours to change.
+
+- Horizon: `https://nexacaptcha.zone.id/captcha/horizon.js`
+- Gravity: `https://nexacaptcha.zone.id/captcha/gravity.js`
 
 ```html
 <script

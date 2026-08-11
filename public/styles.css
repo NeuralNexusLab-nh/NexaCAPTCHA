@@ -161,6 +161,12 @@ h3 { letter-spacing: -.025em; }
 .code-toolbar-actions label { color: #8e9bad; font: 600 9px Oxanium, sans-serif; letter-spacing: .1em; text-transform: uppercase; }
 .code-toolbar-actions select { min-height: 32px; padding: 0 28px 0 10px; border: 1px solid rgba(105, 174, 255, .34); border-radius: 2px; background: #061326; color: #dbeeff; cursor: pointer; font: 600 11px Oxanium, sans-serif; }
 .module-loader-name { padding: 0; background: transparent; color: #78c3ff; font: inherit; text-shadow: 0 0 14px rgba(71, 165, 255, .36); }
+.no-js-loader-list { display: grid; gap: 10px; margin-top: 12px; padding: 16px; border: 1px solid var(--border); background: rgba(5, 20, 43, .72); color: var(--muted); font-size: 12px; }
+.no-js-loader-list strong { color: var(--text); }
+.no-js-loader-list > div { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.no-js-loader-list span { color: var(--lavender); font: 600 11px Oxanium, sans-serif; }
+.no-js-loader-list code { color: #badcff; overflow-wrap: anywhere; }
+.no-js-loader-list p { margin: 2px 0 0; }
 .copy-button { display: inline-flex; min-height: 32px; align-items: center; gap: 7px; padding: 0 10px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: var(--muted); cursor: pointer; font-size: 11px; font-weight: 600; }
 .copy-button:hover { border-color: var(--border); color: var(--text); }
 .copy-button.is-copied { color: var(--lavender); }
@@ -251,6 +257,7 @@ dd { margin: 0; color: var(--muted); font-size: 13px; }
   .callback-html-window .code-toolbar { align-items: flex-start; flex-direction: column; gap: 9px; padding-block: 10px; }
   .callback-html-window .code-toolbar-actions { width: 100%; }
   .callback-html-window .copy-button { margin-left: auto; }
+  .no-js-loader-list > div { grid-template-columns: 1fr; gap: 4px; }
   dl div { grid-template-columns: 1fr; gap: 5px; }
   .footer-grid { min-height: 190px; align-items: flex-start; flex-direction: column; justify-content: center; gap: 20px; }
   .footer-links { justify-content: flex-start; }
