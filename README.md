@@ -38,7 +38,7 @@ Follow each color through the animation and enter the four characters when you'r
 
 ## Verification performance, measured.
 
-For the Horizon result, the agent began with no prior attempts or context, wrote its analysis scripts during the test, and improved them as it went.
+All agents started without prior context and developed their approach during the test.
 
 | Verification system | Human | GPT 5.6 Sol - Medium |
 | --- | --- | --- |
