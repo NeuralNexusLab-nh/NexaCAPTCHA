@@ -11,7 +11,7 @@ NexaCAPTCHA keeps verification clear for legitimate users while increasing the t
 [Explore CAPTCHA modules](https://nexacaptcha.zone.id/#demo) · [View integration](#integration)
 
 - Designed for human readability
-- 0% model success in our Horizon test
+- 11.8% model success in our Horizon test
 - Two attempts before expiry
 
 **CAPTCHA MODULES**
@@ -38,11 +38,11 @@ Follow the hollow characters through the gravitational distortion, then enter al
 
 ## Verification performance, measured.
 
-Agent results were measured on first exposure, without prior examples, conversation history, or CAPTCHA-specific guidance.
+Agents were evaluated after brief, limited familiarization with the verification flow, without access to implementation details or task-specific training data.
 
 | Verification system | Human | GPT 5.6 Sol - Medium |
 | --- | --- | --- |
-| **NexaCAPTCHA Horizon** | **18.3** seconds average | **0%** success rate · **60.3** seconds average |
+| **NexaCAPTCHA Horizon** | **18.3** seconds average | **11.8%** success rate · **60.3** seconds average |
 | **NexaCAPTCHA Gravity** | **4.7** seconds average | **0.0%** success rate · **0.0** seconds average |
 | **Google reCAPTCHA** | **1.9** seconds average | **99%** success rate · **7.6** seconds average |
 | **hCaptcha** | **11.8** seconds average | **85.7%** success rate · **49.6** seconds average |
