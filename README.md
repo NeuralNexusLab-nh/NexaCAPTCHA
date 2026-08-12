@@ -18,19 +18,19 @@ NexaCAPTCHA keeps verification clear for legitimate users while increasing the t
 
 ## Choose a verification.
 
-Horizon reveals information through motion. Gravity bends four characters through a continuous gravitational vortex. Both use the same integration and server-side verification flow.
-
-### Horizon · Live demo
-
-Follow each color through the animation and enter the four characters when you're ready.
-
-[Try NexaCAPTCHA Horizon](https://nexacaptchademo.zeabur.app/horizon)
+Gravity bends four characters through a continuous gravitational vortex. Horizon reveals information through motion. Both use the same integration and server-side verification flow.
 
 ### Gravity · Live demo
 
 Follow the hollow characters through the gravitational distortion, then enter all four.
 
 [Try NexaCAPTCHA Gravity](https://nexacaptchademo.zeabur.app/gravity)
+
+### Horizon · Live demo
+
+Follow each color through the animation and enter the four characters when you're ready.
+
+[Try NexaCAPTCHA Horizon](https://nexacaptchademo.zeabur.app/horizon)
 
 [Integrate NexaCAPTCHA](#integration)
 
@@ -61,12 +61,12 @@ Choose a module, add it to your page, then pass the completed result to your bac
 
 Choose one loader endpoint. The callback name and submission logic are yours to change.
 
-- Horizon: `https://nexacaptcha.zone.id/captcha/horizon.js`
 - Gravity: `https://nexacaptcha.zone.id/captcha/gravity.js`
+- Horizon: `https://nexacaptcha.zone.id/captcha/horizon.js`
 
 ```html
 <script
-  src="https://nexacaptcha.zone.id/captcha/horizon.js"
+  src="https://nexacaptcha.zone.id/captcha/gravity.js"
   defer
 ></script>
 

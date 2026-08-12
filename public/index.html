@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="/vendor/fonts/oxanium/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="/styles.css?v=28">
-    <script src="/app.js?v=32" defer></script>
+    <script src="/app.js?v=33" defer></script>
     <script src="/captcha/horizon.js?v=5" defer></script>
   </head>
   <body>
@@ -75,31 +75,10 @@
           <div class="section-heading reveal">
             <p class="eyebrow"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span data-i18n="demoEyebrow">CAPTCHA MODULES</span></p>
             <h2 id="demo-title" data-i18n="demoTitle">Choose a verification.</h2>
-            <p data-i18n="demoLead">Horizon reveals information through motion. Gravity bends four characters through a continuous gravitational vortex. Both use the same integration and server-side verification flow.</p>
+            <p data-i18n="demoLead">Gravity bends four characters through a continuous gravitational vortex. Horizon reveals information through motion. Both use the same integration and server-side verification flow.</p>
           </div>
 
           <div class="demo-stack">
-            <div class="module-column reveal">
-            <div class="demo-card">
-              <div class="demo-route" aria-hidden="true"><span>NEXA</span><i class="fa-solid fa-arrow-right-long"></i><span>HORIZON</span></div>
-              <div class="card-heading">
-                <div>
-                  <p class="eyebrow"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="liveDemo">LIVE DEMO</span></p>
-                  <h3 data-i18n="tryNexa">Try NexaCAPTCHA Horizon</h3>
-                </div>
-                <span class="live-pill"><span aria-hidden="true"></span><span data-i18n="ready">Ready</span></span>
-              </div>
-              <p class="card-help" data-i18n="demoHelp">Follow each color through the animation. Enter the four characters when you're ready.</p>
-              <a class="module-demo-link" href="https://nexacaptchademo.zeabur.app/horizon" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i><span data-i18n="openHorizonDemo">Open the full Horizon demo</span></a>
-              <div class="nexa-captcha" data-callback="onHorizonDemoComplete"></div>
-              <output class="demo-output" id="demo-output-horizon" aria-live="polite">
-                <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                <span data-i18n="demoOutput">Your result will appear here.</span>
-              </output>
-            </div>
-
-            </div>
-
             <div class="module-column reveal">
               <div class="demo-card gravity-card">
                 <div class="demo-route" aria-hidden="true"><span>NEXA</span><i class="fa-solid fa-arrow-right-long"></i><span>GRAVITY</span></div>
@@ -119,6 +98,26 @@
                 </output>
               </div>
 
+            </div>
+
+            <div class="module-column reveal">
+              <div class="demo-card">
+                <div class="demo-route" aria-hidden="true"><span>NEXA</span><i class="fa-solid fa-arrow-right-long"></i><span>HORIZON</span></div>
+                <div class="card-heading">
+                  <div>
+                    <p class="eyebrow"><i class="fa-solid fa-play" aria-hidden="true"></i><span data-i18n="liveDemo">LIVE DEMO</span></p>
+                    <h3 data-i18n="tryNexa">Try NexaCAPTCHA Horizon</h3>
+                  </div>
+                  <span class="live-pill"><span aria-hidden="true"></span><span data-i18n="ready">Ready</span></span>
+                </div>
+                <p class="card-help" data-i18n="demoHelp">Follow each color through the animation. Enter the four characters when you're ready.</p>
+                <a class="module-demo-link" href="https://nexacaptchademo.zeabur.app/horizon" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i><span data-i18n="openHorizonDemo">Open the full Horizon demo</span></a>
+                <div class="nexa-captcha" data-callback="onHorizonDemoComplete"></div>
+                <output class="demo-output" id="demo-output-horizon" aria-live="polite">
+                  <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                  <span data-i18n="demoOutput">Your result will appear here.</span>
+                </output>
+              </div>
             </div>
 
             <a class="demo-integration-button reveal" href="#integration">
@@ -197,12 +196,12 @@
               <div class="module-loader-list" aria-labelledby="module-loaders-title">
                 <strong id="module-loaders-title" data-i18n="moduleLoadersTitle">Module loaders</strong>
                 <div>
-                  <span data-i18n="horizonLoader">Horizon loader</span>
-                  <code>https://nexacaptcha.zone.id/captcha/horizon.js</code>
-                </div>
-                <div>
                   <span data-i18n="gravityLoader">Gravity loader</span>
                   <code>https://nexacaptcha.zone.id/captcha/gravity.js</code>
+                </div>
+                <div>
+                  <span data-i18n="horizonLoader">Horizon loader</span>
+                  <code>https://nexacaptcha.zone.id/captcha/horizon.js</code>
                 </div>
               </div>
               <div class="code-window callback-html-window">
@@ -211,14 +210,14 @@
                   <div class="code-toolbar-actions">
                     <label for="captcha-module-select" data-i18n="moduleLabel">Module</label>
                     <select id="captcha-module-select">
+                      <option value="gravity" selected>Gravity</option>
                       <option value="horizon">Horizon</option>
-                      <option value="gravity">Gravity</option>
                     </select>
                     <button class="copy-button" type="button" data-copy="callback-html-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button>
                   </div>
                 </div>
                 <pre><code id="callback-html-code">&lt;script
-  src="https://nexacaptcha.zone.id/captcha/<mark class="module-loader-name">horizon.js</mark>"
+  src="https://nexacaptcha.zone.id/captcha/<mark class="module-loader-name">gravity.js</mark>"
   defer
 &gt;&lt;/script&gt;
 

@@ -8,7 +8,7 @@
       skip: "Skip to content", languageLabel: "Language", navTop: "Home", navDemo: "Demo", navFeatures: "How it works", navExperiment: "Results", navCallback: "Integration", navVerify: "Check the result",
       heroEyebrow: "ADAPTIVE HUMAN VERIFICATION", heroTitleLine1: "Human by design.", heroTitleLine2: "Automation denied.", heroLead: "NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.",
       tryIt: "Explore CAPTCHA modules", addToSite: "View integration", noCleanFrame: "Designed for human readability", changingMotion: "11.8% model success in our Horizon test", higherCost: "Two attempts before expiry",
-      demoEyebrow: "CAPTCHA MODULES", demoTitle: "Choose a verification.", demoLead: "Horizon reveals information through motion. Gravity bends four characters through a continuous gravitational vortex. Both use the same integration and server-side verification flow.", liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA Horizon", tryGravity: "Try NexaCAPTCHA Gravity", ready: "Ready", demoHelp: "Follow each color through the animation. Enter the four characters when you're ready.", gravityHelp: "Follow the hollow characters through the gravitational distortion, then enter all four.", openHorizonDemo: "Open the full Horizon demo", openGravityDemo: "Open the full Gravity demo", demoOutput: "Your result will appear here.",
+      demoEyebrow: "CAPTCHA MODULES", demoTitle: "Choose a verification.", demoLead: "Gravity bends four characters through a continuous gravitational vortex. Horizon reveals information through motion. Both use the same integration and server-side verification flow.", liveDemo: "LIVE DEMO", tryNexa: "Try NexaCAPTCHA Horizon", tryGravity: "Try NexaCAPTCHA Gravity", ready: "Ready", demoHelp: "Follow each color through the animation. Enter the four characters when you're ready.", gravityHelp: "Follow the hollow characters through the gravitational distortion, then enter all four.", openHorizonDemo: "Open the full Horizon demo", openGravityDemo: "Open the full Gravity demo", demoOutput: "Your result will appear here.",
       integrationButtonTitle: "Integrate NexaCAPTCHA", integrationButtonLead: "Choose a module and add it to your site.", moduleLabel: "Module", moduleLoadersTitle: "Module loaders", horizonLoader: "Horizon loader", gravityLoader: "Gravity loader",
       featuresEyebrow: "HOW IT WORKS", featuresTitle: "Security that remains usable.", featuresLead: "NexaCAPTCHA distributes visual information across time. People follow a clear sequence, while automated systems must reconstruct it from changing frames.",
       experimentEyebrow: "VERIFICATION TEST", experimentTitle: "Verification performance, measured.", experimentLead: "Agents were evaluated after brief, limited familiarization with the verification flow, without access to implementation details or task-specific training data.", experimentVersion: "Tested build", experimentHumanLabel: "Human", verificationSystem: "Verification system", secondsAverage: "seconds average", successRate: "success rate", experimentNote: "These results describe the recorded test runs and are not a guarantee of performance against every model or execution.",
@@ -59,7 +59,7 @@
     tryIt: "查看 CAPTCHA 模組",
     demoEyebrow: "CAPTCHA 模組",
     demoTitle: "選擇驗證方式。",
-    demoLead: "Horizon 透過動態呈現資訊；Gravity 則讓四個字元受到連續的重力漩渦扭曲。兩者共用相同的串接格式與後端驗證流程。",
+    demoLead: "Gravity 讓四個字元受到連續的重力漩渦扭曲；Horizon 則透過動態呈現資訊。兩者共用相同的串接格式與後端驗證流程。",
     tryNexa: "試用 NexaCAPTCHA Horizon",
     integrationButtonTitle: "串接 NexaCAPTCHA",
     integrationButtonLead: "選擇模組，將驗證加入你的網站。",
@@ -93,7 +93,7 @@
     tryIt: "CAPTCHAモジュールを見る",
     demoEyebrow: "CAPTCHA MODULES",
     demoTitle: "認証方式を選択。",
-    demoLead: "Horizonは動きで情報を示し、Gravityは連続した重力の渦で4文字を歪めます。どちらも同じ導入形式とサーバー検証フローを使用します。",
+    demoLead: "Gravityは連続した重力の渦で4文字を歪め、Horizonは動きで情報を示します。どちらも同じ導入形式とサーバー検証フローを使用します。",
     tryNexa: "NexaCAPTCHA Horizonを試す",
     integrationButtonTitle: "NexaCAPTCHAを導入",
     integrationButtonLead: "モジュールを選び、サイトに認証を追加します。",
@@ -189,7 +189,7 @@
   var moduleLoaderName = document.querySelector(".module-loader-name");
   function updateModuleLoader() {
     if (!captchaModuleSelect || !moduleLoaderName) return;
-    var moduleName = captchaModuleSelect.value === "gravity" ? "gravity" : "horizon";
+    var moduleName = captchaModuleSelect.value === "horizon" ? "horizon" : "gravity";
     moduleLoaderName.textContent = moduleName + ".js";
   }
   if (captchaModuleSelect) {
