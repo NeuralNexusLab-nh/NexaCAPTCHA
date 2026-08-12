@@ -11,18 +11,18 @@ NexaCAPTCHA keeps verification clear for legitimate users while increasing the t
 [Explore CAPTCHA modules](https://nexacaptcha.zone.id/#demo) · [View integration](#integration)
 
 - Designed for human readability
-- 11.8% model success in our Horizon test
+- 0% model success in our Horizon test
 - Two attempts before expiry
 
 **CAPTCHA MODULES**
 
 ## Choose a verification.
 
-Gravity bends four characters through a continuous gravitational vortex. Horizon reveals information through motion. Both use the same integration and server-side verification flow.
+Gravity presents four distorted characters in a static image. Horizon reveals information through a GIF animation. Both use the same integration and server-side verification flow.
 
 ### Gravity · Live demo
 
-Follow the hollow characters through the gravitational distortion, then enter all four.
+Read the four hollow characters in the distorted image, then enter them below.
 
 [Try NexaCAPTCHA Gravity](https://nexacaptchademo.zeabur.app/gravity)
 
@@ -38,12 +38,12 @@ Follow each color through the animation and enter the four characters when you'r
 
 ## Verification performance, measured.
 
-Agents were evaluated after brief, limited familiarization with the verification flow, without access to implementation details or task-specific training data.
+For the Horizon result, the agent began with no prior attempts or context, wrote its analysis scripts during the test, and improved them as it went.
 
 | Verification system | Human | GPT 5.6 Sol - Medium |
 | --- | --- | --- |
-| **NexaCAPTCHA Horizon** | **18.3** seconds average | **11.8%** success rate · **60.3** seconds average |
-| **NexaCAPTCHA Gravity** | **4.7** seconds average | **47.1%** success rate · **73.8** seconds average |
+| **NexaCAPTCHA Horizon** | **18.3** seconds average | **0%** success rate · **60.3** seconds average |
+| **NexaCAPTCHA Gravity** | **4.7** seconds average | **35.3%** success rate · **31.6** seconds average |
 | **Google reCAPTCHA** | **1.9** seconds average | **99%** success rate · **7.6** seconds average |
 | **hCaptcha** | **11.8** seconds average | **85.7%** success rate · **49.6** seconds average |
 
