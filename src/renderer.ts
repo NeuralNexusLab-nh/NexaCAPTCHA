@@ -11,7 +11,15 @@ const PALETTE = [
   [221, 255, 220],
   [137, 243, 110],
   [255, 190, 100],
-  [24, 28, 25]
+  [24, 28, 25],
+  [48, 82, 108],
+  [76, 55, 104],
+  [5, 7, 6],
+  [5, 7, 6],
+  [5, 7, 6],
+  [5, 7, 6],
+  [5, 7, 6],
+  [5, 7, 6]
 ];
 
 const GIFEncoder =
@@ -75,6 +83,18 @@ interface RevealMask extends RevealShapeProfile {
   centerY: number;
   width: number;
   animatedPhase: number;
+}
+
+export interface InterferenceLineProfile {
+  baseY: number;
+  amplitude: number;
+  secondaryAmplitude: number;
+  cycles: number;
+  phase: number;
+  drift: number;
+  motionCycles: number;
+  thickness: number;
+  colorIndex: number;
 }
 
 export interface ConcurrentRevealTrack {
@@ -142,6 +162,53 @@ export function randomJitterAt(
   return [
     from[0] + (to[0] - from[0]) * easedProgress,
     from[1] + (to[1] - from[1]) * easedProgress
+  ];
+}
+
+export function createInterferenceLineProfiles(
+  count: number,
+  height: number,
+  random: () => number
+): InterferenceLineProfile[] {
+  return Array.from({ length: count }, (_, index) => ({
+    baseY: height * (0.24 + 0.52 * ((index + 0.5) / count)) +
+      (random() * 2 - 1) * 9,
+    amplitude: 5 + random() * 8,
+    secondaryAmplitude: 1.5 + random() * 3.5,
+    cycles: 1.15 + random() * 1.65,
+    phase: random() * Math.PI * 2,
+    drift: 5 + random() * 10,
+    motionCycles: 0.65 + random() * 1.1,
+    thickness: 0.6 + random() * 0.45,
+    colorIndex: index % 2 === 0 ? 8 : 9
+  }));
+}
+
+export function interferenceLinePoint(
+  profile: InterferenceLineProfile,
+  horizontalProgress: number,
+  frameProgress: number,
+  width: number
+): Point {
+  const horizontalMotion =
+    frameProgress * Math.PI * 2 * profile.motionCycles + profile.phase;
+  const x =
+    -12 + horizontalProgress * (width + 24) +
+    profile.drift * Math.sin(horizontalMotion);
+  const primaryWave =
+    horizontalProgress * Math.PI * 2 * profile.cycles +
+    profile.phase +
+    frameProgress * Math.PI * 2 * profile.motionCycles;
+  const secondaryWave =
+    horizontalProgress * Math.PI * 2 * (profile.cycles * 2.35) -
+    frameProgress * Math.PI * 2 * (profile.motionCycles * 0.73) +
+    profile.phase * 0.6;
+  return [
+    x,
+    profile.baseY +
+      profile.amplitude * Math.sin(primaryWave) +
+      profile.secondaryAmplitude * Math.sin(secondaryWave) +
+      3 * Math.cos(horizontalMotion * 0.8)
   ];
 }
 
@@ -416,6 +483,53 @@ function drawLine(
       characterClipLeft,
       characterClipRight
     );
+  }
+}
+
+function drawInterferenceLines(
+  pixels: Uint8Array,
+  width: number,
+  height: number,
+  profiles: InterferenceLineProfile[],
+  frameProgress: number
+): void {
+  const fullCanvasMask: RevealMask = {
+    phase: 0,
+    cycles: 0,
+    height: height * 2,
+    bend: 0,
+    pinch: 0,
+    edgeWaves: 0,
+    centerX: width / 2,
+    centerY: height / 2,
+    width: width * 2,
+    animatedPhase: 0
+  };
+
+  for (const profile of profiles) {
+    let previous = interferenceLinePoint(profile, 0, frameProgress, width);
+    const segments = 44;
+    for (let segment = 1; segment <= segments; segment += 1) {
+      const current = interferenceLinePoint(
+        profile,
+        segment / segments,
+        frameProgress,
+        width
+      );
+      drawLine(
+        pixels,
+        width,
+        height,
+        previous,
+        current,
+        profile.thickness,
+        profile.colorIndex,
+        fullCanvasMask,
+        Number.NEGATIVE_INFINITY,
+        Number.POSITIVE_INFINITY
+      );
+      previous = current;
+    }
   }
 }
 
@@ -839,6 +953,11 @@ function renderVerificationAnimationAttempt(
     pinch: 0.061 + random() * 0.171,
     edgeWaves: 4.88 + random() * 4.88
   };
+  const interferenceLines = createInterferenceLineProfiles(
+    4 + Math.floor(random() * 2),
+    height,
+    random
+  );
   const textStart = 66;
   const characterSpacing = 62;
   const concurrentRevealTracks = createConcurrentRevealTracks(
@@ -862,6 +981,9 @@ function renderVerificationAnimationAttempt(
       const vignette = Math.abs(y - height / 2) / (height / 2);
       if (vignette > 0.86) pixels.fill(7, y * width, (y + 1) * width);
     }
+    // Persistent low-contrast curves move independently of the glyph masks.
+    // They complicate frame compositing without hiding the brighter characters.
+    drawInterferenceLines(pixels, width, height, interferenceLines, progress);
 
     glyphs.forEach((glyph, characterIndex) => {
       visibleCharacter.fill(0);

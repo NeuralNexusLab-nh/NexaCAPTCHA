@@ -6,12 +6,14 @@ import {
   ambiguityMultiplierForLandmarkRisk,
   compositeCharacterWithinAreaLimit,
   concurrentRevealCenter,
+  createInterferenceLineProfiles,
   createGlyphLandmarks,
   createDistinctColorIndices,
   createConcurrentRevealTracks,
   createRevealSegments,
   estimateGlyphVisibility,
   minimumTrackableVisibleRatio,
+  interferenceLinePoint,
   randomJitterAt,
   reduceGlyphVisibility,
   revealStateForFrame,
@@ -35,6 +37,29 @@ function frameDelays(gif: Buffer): number[] {
 }
 
 describe("verification animation", () => {
+  it("keeps interference lines continuous while they move", () => {
+    let value = 0.17;
+    const profiles = createInterferenceLineProfiles(5, 120, () => {
+      value = (value * 3.71) % 1;
+      return value;
+    });
+
+    expect(profiles).toHaveLength(5);
+    expect(new Set(profiles.map((profile) => profile.colorIndex))).toEqual(
+      new Set([8, 9])
+    );
+    for (const profile of profiles) {
+      const points = Array.from({ length: 45 }, (_, index) =>
+        interferenceLinePoint(profile, index / 44, 0.35, 360)
+      );
+      for (let index = 1; index < points.length; index += 1) {
+        const previous = points[index - 1]!;
+        const current = points[index]!;
+        expect(Math.hypot(current[0] - previous[0], current[1] - previous[1])).toBeLessThan(18);
+      }
+    }
+  });
+
   it("interpolates randomized jitter without abrupt frame jumps", () => {
     const keyframes: [number, number][] = [
       [-2, 1],
