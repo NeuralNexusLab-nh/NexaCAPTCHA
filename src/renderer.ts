@@ -961,7 +961,9 @@ function renderVerificationAnimationAttempt(
     edgeWaves: 4.88 + random() * 4.88
   };
   const interferenceLines = createInterferenceLineProfiles(
-    6 + Math.floor(random() * 3),
+    // One line per glyph color: the minimum that preserves all four color
+    // decoys, and the same upper count used by Gravity's foreground lines.
+    colorIndices.length,
     height,
     random,
     colorIndices

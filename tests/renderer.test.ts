@@ -40,12 +40,12 @@ describe("verification animation", () => {
   it("keeps interference lines continuous while they move", () => {
     let value = 0.17;
     const characterColors = [6, 3, 5, 2];
-    const profiles = createInterferenceLineProfiles(7, 120, () => {
+    const profiles = createInterferenceLineProfiles(4, 120, () => {
       value = (value * 3.71) % 1;
       return value;
     }, characterColors);
 
-    expect(profiles).toHaveLength(7);
+    expect(profiles).toHaveLength(4);
     expect(profiles.slice(0, 4).map((profile) => profile.colorIndex)).toEqual(
       characterColors
     );
