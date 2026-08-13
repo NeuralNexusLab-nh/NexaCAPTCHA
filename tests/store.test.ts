@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -10,14 +10,20 @@ import {
   normalizeAnswer
 } from "../src/store.js";
 
-function publicErrorCode(run: () => unknown): string {
+async function publicErrorCode(run: () => unknown | Promise<unknown>): Promise<string> {
   try {
-    run();
+    await run();
   } catch (error) {
     if (error instanceof PublicError) return error.code;
     throw error;
   }
   throw new Error("Expected a PublicError.");
+}
+
+async function startMedia(store: VerificationStore, mediaUrl: string): Promise<void> {
+  const ticket = mediaUrl.split("/").at(-1)!;
+  const media = await store.claimMedia(ticket);
+  media.release();
 }
 
 describe("VerificationStore", () => {
@@ -101,32 +107,61 @@ describe("VerificationStore", () => {
     const verification = await store.create("gravity");
     expect(verification.captchaType).toBe("gravity");
     if (verification.captchaType !== "gravity") throw new Error("Expected Gravity.");
-    expect(verification.imageUrl).toContain("/image");
-    expect(store.getMediaPath(verification.verificationId, "gravity")).toMatch(/\.png$/);
-    const completion = store.submitAnswer(verification.verificationId, "GRAV");
+    expect(verification.imageUrl).toContain("/api/media/");
+    await startMedia(store, verification.imageUrl);
+    const completion = await store.submitAnswer(verification.verificationId, "GRAV");
     expect(completion.success).toBe(true);
+  });
+
+  it("persists verification state under data and shares pooled media", async () => {
+    const first = await store.create();
+    const second = await store.create();
+    if (first.captchaType !== "horizon" || second.captchaType !== "horizon") {
+      throw new Error("Expected Horizon.");
+    }
+    expect(first.animationUrl).toMatch(/^\/api\/media\/[A-Za-z0-9_-]+$/);
+    expect(first.animationUrl).not.toContain(first.verificationId);
+    const files = await readdir(path.join(directory, "verification"));
+    expect(files).toContain(`${first.verificationId.slice(4)}.json`);
+    const record = JSON.parse(await readFile(
+      path.join(directory, "verification", `${first.verificationId.slice(4)}.json`),
+      "utf8"
+    ));
+    expect(record).toMatchObject({
+      id: first.verificationId,
+      type: "horizon",
+      answer: "NEXA",
+      successful: false,
+      retryAvailableAt: null
+    });
+    const firstMedia = await store.claimMedia(first.animationUrl.split("/").at(-1)!);
+    const secondMedia = await store.claimMedia(second.animationUrl.split("/").at(-1)!);
+    expect(firstMedia.mediaPath).toBe(secondMedia.mediaPath);
+    firstMedia.release();
+    secondMedia.release();
   });
 
   it("expires after two incorrect attempts with a twenty-second cooldown", async () => {
     const verification = await store.create();
-    store.getMediaPath(verification.verificationId);
-    expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
+    if (verification.captchaType !== "horizon") throw new Error("Expected Horizon.");
+    await startMedia(store, verification.animationUrl);
+    expect(await store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
       success: false,
       status: "incorrect",
       attemptsRemaining: 1,
       retryAfterSeconds: 20
     });
     expect(
-      publicErrorCode(() => store.submitAnswer(verification.verificationId, "WRNG"))
+      await publicErrorCode(() => store.submitAnswer(verification.verificationId, "WRNG"))
     ).toBe("answer-cooldown");
     now += 20_000;
-    expect(store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
+    expect(await store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
       success: false,
       status: "verification_failed",
       attemptsRemaining: 0
     });
     expect(
-      publicErrorCode(() => store.submitAnswer(verification.verificationId, "NEXA"))
+      await publicErrorCode(() => store.submitAnswer(verification.verificationId, "NEXA"))
     ).toBe("verification-expired");
   });
 
@@ -134,14 +169,26 @@ describe("VerificationStore", () => {
     const verification = await store.create();
     expect(verification.verificationId).toMatch(/^ver_[A-Za-z0-9_-]{12}$/);
     expect(verification.verificationId).toHaveLength(16);
-    store.getMediaPath(verification.verificationId);
-    const completion = store.submitAnswer(verification.verificationId, "nexa");
+    if (verification.captchaType !== "horizon") throw new Error("Expected Horizon.");
+    await startMedia(store, verification.animationUrl);
+    const completion = await store.submitAnswer(verification.verificationId, "nexa");
     expect(completion.success).toBe(true);
     if (!completion.success) throw new Error("Expected successful completion.");
     expect(completion.responseToken).toMatch(/^[A-Za-z0-9_-]{64}$/);
 
-    expect(store.verify(verification.verificationId, completion.responseToken).success).toBe(true);
-    expect(store.verify(verification.verificationId, completion.responseToken)).toEqual({
+    const tokenPath = path.join(
+      directory,
+      "tokens",
+      `${verification.verificationId.slice(4)}.json`
+    );
+    expect(JSON.parse(await readFile(tokenPath, "utf8"))).toMatchObject({
+      id: verification.verificationId,
+      token: completion.responseToken
+    });
+
+    expect((await store.verify(verification.verificationId, completion.responseToken)).success).toBe(true);
+    await expect(readFile(tokenPath, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+    expect(await store.verify(verification.verificationId, completion.responseToken)).toEqual({
       success: false,
       errorCode: "invalid-or-expired-verification"
     });
@@ -150,39 +197,43 @@ describe("VerificationStore", () => {
   it("rejects a token belonging to a different verification", async () => {
     const first = await store.create();
     const second = await store.create();
-    store.getMediaPath(first.verificationId);
-    store.getMediaPath(second.verificationId);
-    const completion = store.submitAnswer(first.verificationId, "NEXA");
+    if (first.captchaType !== "horizon" || second.captchaType !== "horizon") throw new Error("Expected Horizon.");
+    await startMedia(store, first.animationUrl);
+    await startMedia(store, second.animationUrl);
+    const completion = await store.submitAnswer(first.verificationId, "NEXA");
     if (!completion.success) throw new Error("Expected successful completion.");
-    expect(store.verify(second.verificationId, completion.responseToken).success).toBe(false);
+    expect((await store.verify(second.verificationId, completion.responseToken)).success).toBe(false);
   });
 
   it("starts the two-minute lifetime when animation playback is requested", async () => {
     const verification = await store.create();
     expect(
-      publicErrorCode(() => store.submitAnswer(verification.verificationId, "NEXA"))
+      await publicErrorCode(() => store.submitAnswer(verification.verificationId, "NEXA"))
     ).toBe("verification-not-started");
 
-    store.getMediaPath(verification.verificationId);
+    if (verification.captchaType !== "horizon") throw new Error("Expected Horizon.");
+    await startMedia(store, verification.animationUrl);
     now += 119_999;
-    expect(store.submitAnswer(verification.verificationId, "NEXA").success).toBe(true);
+    expect((await store.submitAnswer(verification.verificationId, "NEXA")).success).toBe(true);
 
     const expired = await store.create();
-    store.getMediaPath(expired.verificationId);
+    if (expired.captchaType !== "horizon") throw new Error("Expected Horizon.");
+    await startMedia(store, expired.animationUrl);
     now += 120_001;
     expect(
-      publicErrorCode(() => store.submitAnswer(expired.verificationId, "NEXA"))
+      await publicErrorCode(() => store.submitAnswer(expired.verificationId, "NEXA"))
     ).toBe("verification-expired");
   });
 
   it("rejects an expired response token", async () => {
     const verification = await store.create();
-    store.getMediaPath(verification.verificationId);
-    const completion = store.submitAnswer(verification.verificationId, "NEXA");
+    if (verification.captchaType !== "horizon") throw new Error("Expected Horizon.");
+    await startMedia(store, verification.animationUrl);
+    const completion = await store.submitAnswer(verification.verificationId, "NEXA");
     if (!completion.success) throw new Error("Expected successful completion.");
 
     now += 300_001;
-    expect(store.verify(verification.verificationId, completion.responseToken)).toEqual({
+    expect(await store.verify(verification.verificationId, completion.responseToken)).toEqual({
       success: false,
       errorCode: "invalid-or-expired-verification"
     });

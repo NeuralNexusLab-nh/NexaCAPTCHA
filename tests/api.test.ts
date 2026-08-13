@@ -43,6 +43,10 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect("Content-Type", /image\/gif/)
       .expect("Cache-Control", /no-store/)
       .expect(200);
+    await request(app)
+      .get(created.body.animationUrl)
+      .expect(410)
+      .expect(({ body }) => expect(body.errorCode).toBe("media-consumed"));
 
     await request(app)
       .get(`/api/verifications/${created.body.verificationId}/status`)
@@ -79,7 +83,7 @@ describe("NexaCAPTCHA HTTP API", () => {
       .send({ captchaType: "gravity" })
       .expect(201);
     expect(created.body.captchaType).toBe("gravity");
-    expect(created.body.imageUrl).toContain("/image");
+    expect(created.body.imageUrl).toContain("/api/media/");
     expect(created.body.animationUrl).toBeUndefined();
 
     await request(app)
@@ -115,6 +119,24 @@ describe("NexaCAPTCHA HTTP API", () => {
     expect(widget.headers["content-security-policy"]).toContain("img-src 'self' data:");
     expect(widget.headers["x-frame-options"]).toBeUndefined();
     expect(widget.headers["cross-origin-opener-policy"]).toBe("unsafe-none");
+  });
+
+  it("serves a localized HTML 404 page without changing API errors", async () => {
+    const page = await request(app)
+      .get("/route-that-does-not-exist")
+      .set("Accept", "text/html")
+      .expect("Content-Type", /html/)
+      .expect(404);
+    expect(page.text).toContain("This route ends here.");
+    expect(page.text).toContain('value="zh-Hant"');
+    expect(page.text).toContain('value="ja"');
+
+    await request(app)
+      .get("/api/route-that-does-not-exist")
+      .set("Accept", "text/html")
+      .expect("Content-Type", /json/)
+      .expect(404)
+      .expect(({ body }) => expect(body.errorCode).toBe("not-found"));
   });
 
   it("enforces cooldown, attempt exhaustion, and expiry through the API", async () => {
@@ -181,6 +203,7 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect("Access-Control-Allow-Origin", "*")
       .expect("Content-Type", /javascript/)
       .expect(200);
+    await request(app).get("/captcha/parallax.js").expect(404);
   });
 
   it("denies cross-origin browser API calls", async () => {
@@ -242,5 +265,16 @@ describe("NexaCAPTCHA HTTP API", () => {
       .post("/api/verifications")
       .send({ unexpected: true })
       .expect(400);
+  });
+
+  it("allows 120 verification creations per IP each minute", async () => {
+    for (let index = 0; index < 120; index += 1) {
+      await request(app).post("/api/verifications").send({}).expect(201);
+    }
+    await request(app)
+      .post("/api/verifications")
+      .send({})
+      .expect(429)
+      .expect(({ body }) => expect(body.errorCode).toBe("rate-limited"));
   });
 });

@@ -1,0 +1,27 @@
+.not-found-page { min-height: 100vh; }
+.not-found-page > :not(.ambient-backdrop):not(.site-header) { position: relative; z-index: 1; }
+.not-found-nav-links { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.not-found-nav-links a { display: inline-flex; align-items: center; gap: 7px; padding-block: 12px; color: #b1b1b4; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; }
+.not-found-nav-links a:hover { color: white; text-decoration: underline; text-underline-offset: 6px; }
+.not-found-nav-links i { color: var(--lavender); font-size: 10px; }
+.not-found-main { display: grid; min-height: calc(100vh - 218px); place-items: center; padding-block: 76px; }
+.not-found-card { position: relative; display: flex; max-width: 920px; align-items: flex-start; flex-direction: column; }
+.not-found-card::before { position: absolute; top: 10%; right: 3%; width: 300px; height: 300px; border-radius: 50%; background: rgba(22, 135, 255, .13); filter: blur(80px); content: ""; pointer-events: none; }
+.not-found-code { position: relative; display: flex; align-items: center; gap: clamp(12px, 2.6vw, 28px); margin-bottom: 26px; color: #dff1ff; font: 560 clamp(78px, 17vw, 176px)/.78 Oxanium, sans-serif; letter-spacing: -.09em; text-shadow: 0 0 50px rgba(22, 135, 255, .2); }
+.not-found-code i { color: var(--violet); font-size: .48em; filter: drop-shadow(0 0 20px rgba(22, 135, 255, .55)); animation: lost-signal 5s ease-in-out infinite; }
+.not-found-card h1 { max-width: 760px; margin-bottom: 20px; font-size: clamp(38px, 6vw, 68px); }
+.not-found-copy { max-width: 620px; margin: 0; color: #b7c6dc; font-size: clamp(16px, 2vw, 19px); }
+.not-found-path { max-width: 100%; margin-top: 22px; padding: 10px 13px; overflow: hidden; border: 1px solid var(--border-soft); border-left: 2px solid var(--violet); background: rgba(3, 12, 27, .78); color: var(--lavender); font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; text-overflow: ellipsis; white-space: nowrap; }
+.not-found-footer { min-height: 150px; }
+@keyframes lost-signal { 0%, 100% { opacity: .7; transform: rotate(0deg) scale(.96); } 50% { opacity: 1; transform: rotate(12deg) scale(1.04); } }
+@media (max-width: 680px) {
+  .not-found-nav-links { display: none; }
+  .not-found-main { min-height: calc(100vh - 252px); padding-block: 60px; }
+  .not-found-code { margin-bottom: 20px; }
+  .not-found-card h1 { font-size: clamp(34px, 10.5vw, 48px); }
+  .not-found-path { width: 100%; }
+  .not-found-footer { min-height: 190px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .not-found-code i { animation: none; }
+}

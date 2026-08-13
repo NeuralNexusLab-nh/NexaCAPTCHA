@@ -80,7 +80,7 @@ export function createApp(store: VerificationStore) {
 
   app.post(
     "/api/verifications",
-    limiter(60_000, 24),
+    limiter(60_000, 120),
     async (_request, response, next) => {
       try {
         const input = createVerificationSchema.parse(_request.body);
@@ -94,39 +94,19 @@ export function createApp(store: VerificationStore) {
   );
 
   app.get(
-    "/api/verifications/:verificationId/animation",
+    "/api/media/:mediaTicket",
     limiter(60_000, 120),
-    (request, response, next) => {
+    async (request, response, next) => {
       try {
-        const mediaPath = store.getMediaPath(
-          routeParameter(request.params.verificationId),
-          "horizon"
-        );
+        const media = await store.claimMedia(routeParameter(request.params.mediaTicket));
         response.setHeader("Cache-Control", "no-store, max-age=0");
-        response.setHeader("Content-Type", "image/gif");
-        response.setHeader("Cross-Origin-Resource-Policy", "same-origin");
-        response.sendFile(mediaPath, (error) => {
-          if (error) next(error);
-        });
-      } catch (error) {
-        next(error);
-      }
-    }
-  );
-
-  app.get(
-    "/api/verifications/:verificationId/image",
-    limiter(60_000, 120),
-    (request, response, next) => {
-      try {
-        const mediaPath = store.getMediaPath(
-          routeParameter(request.params.verificationId),
-          "gravity"
+        response.setHeader(
+          "Content-Type",
+          media.captchaType === "gravity" ? "image/png" : "image/gif"
         );
-        response.setHeader("Cache-Control", "no-store, max-age=0");
-        response.setHeader("Content-Type", "image/png");
         response.setHeader("Cross-Origin-Resource-Policy", "same-origin");
-        response.sendFile(mediaPath, (error) => {
+        response.sendFile(media.mediaPath, (error) => {
+          media.release();
           if (error) next(error);
         });
       } catch (error) {
@@ -138,9 +118,9 @@ export function createApp(store: VerificationStore) {
   app.get(
     "/api/verifications/:verificationId/status",
     limiter(60_000, 120),
-    (request, response, next) => {
+    async (request, response, next) => {
       try {
-        const expiresAt = store.getPlaybackExpiry(
+        const expiresAt = await store.getPlaybackExpiry(
           routeParameter(request.params.verificationId)
         );
         response.setHeader("Cache-Control", "no-store");
@@ -153,11 +133,11 @@ export function createApp(store: VerificationStore) {
 
   app.post(
     "/api/verifications/:verificationId/answer",
-    limiter(60_000, 80),
-    (request, response, next) => {
+    limiter(60_000, 120),
+    async (request, response, next) => {
       try {
         const input = answerSchema.parse(request.body);
-        const result = store.submitAnswer(
+        const result = await store.submitAnswer(
           routeParameter(request.params.verificationId),
           input.answer
         );
@@ -172,10 +152,10 @@ export function createApp(store: VerificationStore) {
   app.post(
     "/api/siteverify",
     limiter(60_000, 120),
-    (request, response, next) => {
+    async (request, response, next) => {
       try {
         const input = verificationSchema.parse(request.body);
-        const result = store.verify(input.verificationId, input.responseToken);
+        const result = await store.verify(input.verificationId, input.responseToken);
         response.setHeader("Cache-Control", "no-store");
         response.json(result);
       } catch (error) {
@@ -249,12 +229,23 @@ export function createApp(store: VerificationStore) {
   );
 
   app.use(websiteHeaders);
+  app.get(["/404", "/404.html"], (_request, response) => {
+    response.status(404).sendFile(path.join(config.publicDirectory, "404.html"));
+  });
   app.use(express.static(config.publicDirectory, { extensions: ["html"], maxAge: "5m" }));
   app.get("/", (_request, response) => {
     response.sendFile(path.join(config.publicDirectory, "index.html"));
   });
 
-  app.use((_request, response) => {
+  app.use((request, response) => {
+    const wantsWebsitePage =
+      (request.method === "GET" || request.method === "HEAD") &&
+      !request.path.startsWith("/api/") &&
+      Boolean(request.accepts("html"));
+    if (wantsWebsitePage) {
+      response.status(404).sendFile(path.join(config.publicDirectory, "404.html"));
+      return;
+    }
     response.status(404).json({
       errorCode: "not-found",
       message: "The requested resource was not found."

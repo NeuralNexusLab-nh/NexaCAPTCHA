@@ -1,6 +1,6 @@
 import { renderVerificationAnimation } from "../dist/renderer.js";
 
-const maximumRss = 200 * 1024 * 1024;
+const maximumRss = 100 * 1024 * 1024;
 const cpuStart = process.cpuUsage();
 const wallStart = performance.now();
 let peakRss = process.memoryUsage().rss;
@@ -21,10 +21,10 @@ const result = {
   cpuMs: Math.round((cpu.user + cpu.system) / 1000),
   peakRssBytes: peakRss,
   peakRssMegabytes: Number((peakRss / 1024 / 1024).toFixed(1)),
-  limitMegabytes: 200
+  limitMegabytes: 100
 };
 
 console.log(JSON.stringify(result));
 if (peakRss > maximumRss) {
-  throw new Error(`Resource check exceeded 200 MB RSS: ${result.peakRssMegabytes} MB`);
+  throw new Error(`Resource check exceeded 100 MB RSS: ${result.peakRssMegabytes} MB`);
 }
