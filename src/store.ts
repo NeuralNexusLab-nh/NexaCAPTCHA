@@ -19,9 +19,8 @@ import { PublicError } from "./errors.js";
 import { MediaDeliveryQueue } from "./media-delivery-queue.js";
 import { RenderQueue } from "./render-queue.js";
 import { renderGravityImage } from "./gravity-renderer.js";
-import { renderVerificationAnimation } from "./renderer.js";
 
-export type CaptchaType = "horizon" | "gravity";
+export type CaptchaType = "gravity";
 export type VerificationStatus = "pending" | "completed" | "consumed" | "expired";
 
 interface VerificationRecord {
@@ -45,23 +44,14 @@ interface TokenRecord {
   expiresAt: number;
 }
 
-export type PublicVerification =
-  | {
-      verificationId: string;
-      captchaType: "horizon";
-      animationUrl: string;
-      expiresInMs: number;
-    }
-  | {
-      verificationId: string;
-      captchaType: "gravity";
-      imageUrl: string;
-      expiresInMs: number;
-    };
+export interface PublicVerification {
+  verificationId: string;
+  captchaType: "gravity";
+  imageUrl: string;
+  expiresInMs: number;
+}
 
 interface VerificationStoreOptions {
-  answerFactory?: () => string;
-  renderer?: (answer: string) => Buffer;
   gravityAnswerFactory?: () => string;
   gravityRenderer?: (answer: string) => Buffer;
   dataDirectory?: string;
@@ -72,8 +62,6 @@ interface VerificationStoreOptions {
 }
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-const REQUIRED_CONFUSABLE = "B836G";
-const REQUIRED_COMPLEX = "KX6VWY";
 const ID_PATTERN = /^[A-Za-z0-9_-]{12}$/;
 type RandomInteger = (maxExclusive: number) => number;
 
@@ -95,34 +83,8 @@ export function normalizeAnswer(value: string): string {
   return value.trim().toUpperCase().replaceAll(/\s+/g, "");
 }
 
-function randomCharacter(characters: string, randomInteger: RandomInteger): string {
-  return characters[randomInteger(characters.length)]!;
-}
-
 function takeRandomCharacter(characters: string[], randomInteger: RandomInteger): string {
   return characters.splice(randomInteger(characters.length), 1)[0]!;
-}
-
-export function generateAnswer(randomInteger: RandomInteger = randomInt): string {
-  const confusable = randomCharacter(REQUIRED_CONFUSABLE, randomInteger);
-  const complexPool = Array.from(REQUIRED_COMPLEX).filter(
-    (character) => character !== confusable
-  );
-  const complex = takeRandomCharacter(complexPool, randomInteger);
-  const remainingPool = Array.from(ALPHABET).filter(
-    (character) => !REQUIRED_CONFUSABLE.includes(character) && character !== complex
-  );
-  const characters = [
-    confusable,
-    complex,
-    takeRandomCharacter(remainingPool, randomInteger),
-    takeRandomCharacter(remainingPool, randomInteger)
-  ];
-  for (let index = characters.length - 1; index > 0; index -= 1) {
-    const swapIndex = randomInteger(index + 1);
-    [characters[index], characters[swapIndex]] = [characters[swapIndex]!, characters[index]!];
-  }
-  return characters.join("");
 }
 
 export function generateGravityAnswer(randomInteger: RandomInteger = randomInt): string {
@@ -146,12 +108,9 @@ export class VerificationStore {
     config.maxMediaDeliveries,
     config.maxMediaDeliveryQueue
   );
-  private readonly answerFactory: () => string;
-  private readonly renderer: (answer: string) => Buffer;
   private readonly gravityAnswerFactory: () => string;
   private readonly gravityRenderer: (answer: string) => Buffer;
   private readonly dataDirectory: string;
-  private readonly animationDirectory: string;
   private readonly imageDirectory: string;
   private readonly verificationDirectory: string;
   private readonly tokenDirectory: string;
@@ -166,18 +125,12 @@ export class VerificationStore {
   private dataBytes = 0;
   private cleanupTimer?: NodeJS.Timeout;
   private readonly poolTimers: NodeJS.Timeout[] = [];
-  private readonly refreshingPools: Record<CaptchaType, boolean> = {
-    horizon: false,
-    gravity: false
-  };
+  private refreshingPool = false;
 
   constructor(options: VerificationStoreOptions = {}) {
-    this.answerFactory = options.answerFactory ?? generateAnswer;
-    this.renderer = options.renderer ?? renderVerificationAnimation;
     this.gravityAnswerFactory = options.gravityAnswerFactory ?? generateGravityAnswer;
     this.gravityRenderer = options.gravityRenderer ?? renderGravityImage;
     this.dataDirectory = options.dataDirectory ?? options.mediaDirectory ?? config.dataDirectory;
-    this.animationDirectory = path.join(this.dataDirectory, "animations");
     this.imageDirectory = path.join(this.dataDirectory, "images");
     this.verificationDirectory = path.join(this.dataDirectory, "verification");
     this.tokenDirectory = path.join(this.dataDirectory, "tokens");
@@ -187,8 +140,8 @@ export class VerificationStore {
   }
 
   async start(): Promise<void> {
+    await rm(path.join(this.dataDirectory, "animations"), { recursive: true, force: true });
     await Promise.all([
-      mkdir(this.animationDirectory, { recursive: true }),
       mkdir(this.imageDirectory, { recursive: true }),
       mkdir(this.verificationDirectory, { recursive: true }),
       mkdir(this.tokenDirectory, { recursive: true })
@@ -196,16 +149,13 @@ export class VerificationStore {
     this.dataBytes = await directorySize(this.dataDirectory);
     await this.rebuildIndexes();
     if (this.maintainPool) {
-      await this.ensureAtLeastOne("horizon");
       await this.ensureAtLeastOne("gravity");
-      for (const type of ["horizon", "gravity"] as const) {
-        const timer = setInterval(
-          () => void this.refreshPool(type),
-          config.poolRefreshIntervalMs
-        );
-        timer.unref();
-        this.poolTimers.push(timer);
-      }
+      const timer = setInterval(
+        () => void this.refreshPool(),
+        config.poolRefreshIntervalMs
+      );
+      timer.unref();
+      this.poolTimers.push(timer);
     }
     this.cleanupTimer = setInterval(() => void this.cleanup(), config.cleanupIntervalMs);
     this.cleanupTimer.unref();
@@ -222,8 +172,14 @@ export class VerificationStore {
     this.verificationCount = 0;
     for (const name of names) {
       if (!name.endsWith(".json")) continue;
-      const record = await this.readJson<VerificationRecord>(path.join(this.verificationDirectory, name));
+      const recordPath = path.join(this.verificationDirectory, name);
+      const record = await this.readJson<VerificationRecord & { type: string }>(recordPath);
       if (!record) continue;
+      if (record.type !== "gravity") {
+        await this.removeTrackedFile(recordPath);
+        await this.removeTrackedFile(path.join(this.tokenDirectory, name));
+        continue;
+      }
       this.verificationCount += 1;
       if (!record.mediaConsumed) {
         this.mediaTickets.set(record.mediaTicketHash, record.id);
@@ -232,12 +188,12 @@ export class VerificationStore {
     }
   }
 
-  private poolDirectory(type: CaptchaType): string {
-    return type === "gravity" ? this.imageDirectory : this.animationDirectory;
+  private poolDirectory(_type: CaptchaType): string {
+    return this.imageDirectory;
   }
 
-  private poolExtension(type: CaptchaType): string {
-    return type === "gravity" ? ".png" : ".gif";
+  private poolExtension(_type: CaptchaType): string {
+    return ".png";
   }
 
   private async poolFiles(type: CaptchaType): Promise<string[]> {
@@ -250,15 +206,15 @@ export class VerificationStore {
     if ((await this.poolFiles(type)).length === 0) await this.generatePoolEntry(type, false);
   }
 
-  private async refreshPool(type: CaptchaType): Promise<void> {
-    if (this.refreshingPools[type]) return;
-    this.refreshingPools[type] = true;
+  private async refreshPool(): Promise<void> {
+    if (this.refreshingPool) return;
+    this.refreshingPool = true;
     try {
-      await this.generatePoolEntry(type, true);
+      await this.generatePoolEntry("gravity", true);
     } catch (error) {
-      console.error(`Unable to refresh ${type} CAPTCHA pool`, error);
+      console.error("Unable to refresh Gravity CAPTCHA pool", error);
     } finally {
-      this.refreshingPools[type] = false;
+      this.refreshingPool = false;
     }
   }
 
@@ -268,15 +224,13 @@ export class VerificationStore {
     let answer = "";
     let target = "";
     for (let attempt = 0; attempt < 12; attempt += 1) {
-      answer = type === "gravity" ? this.gravityAnswerFactory() : this.answerFactory();
+      answer = this.gravityAnswerFactory();
       target = path.join(directory, `${answer}${extension}`);
       if (!(await stat(target).then(() => true).catch(() => false))) break;
       target = "";
     }
     if (!target) return;
-    const media = await this.renderQueue.run(() =>
-      type === "gravity" ? this.gravityRenderer(answer) : this.renderer(answer)
-    );
+    const media = await this.renderQueue.run(() => this.gravityRenderer(answer));
     this.assertStorageAvailable(media.byteLength);
     await this.writeMedia(target, media);
 
@@ -295,7 +249,7 @@ export class VerificationStore {
     }
   }
 
-  async create(captchaType: CaptchaType = "horizon"): Promise<PublicVerification> {
+  async create(captchaType: CaptchaType = "gravity"): Promise<PublicVerification> {
     this.assertStorageAvailable(2_048);
     const files = await this.poolFiles(captchaType);
     if (files.length === 0) {
@@ -326,9 +280,12 @@ export class VerificationStore {
     this.mediaTickets.set(mediaTicketHash, verificationId);
     this.changeMediaReference(record.mediaPath, 1);
     const mediaUrl = `/api/media/${encodeURIComponent(mediaTicket)}`;
-    return captchaType === "gravity"
-      ? { verificationId, captchaType, imageUrl: mediaUrl, expiresInMs: config.verificationLifetimeMs }
-      : { verificationId, captchaType, animationUrl: mediaUrl, expiresInMs: config.verificationLifetimeMs };
+    return {
+      verificationId,
+      captchaType,
+      imageUrl: mediaUrl,
+      expiresInMs: config.verificationLifetimeMs
+    };
   }
 
   async claimMedia(mediaTicket: string): Promise<{

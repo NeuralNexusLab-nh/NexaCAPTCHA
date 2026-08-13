@@ -3,7 +3,7 @@
 
   var parameters = new URLSearchParams(window.location.search);
   var widgetId = parameters.get("widgetId") || "standalone";
-  var captchaType = parameters.get("captchaType") === "gravity" ? "gravity" : "horizon";
+  var captchaType = "gravity";
   var requestedParentOrigin = parameters.get("parentOrigin");
   var parentOrigin = null;
   try {
@@ -34,12 +34,8 @@
 
   document.body.classList.toggle("theme-gravity", captchaType === "gravity");
   stage.classList.toggle("is-gravity", captchaType === "gravity");
-  title.textContent = captchaType === "gravity"
-    ? "NexaCAPTCHA Gravity"
-    : "NexaCAPTCHA Horizon";
-  image.alt = captchaType === "gravity"
-    ? "Distorted verification text"
-    : "Animated verification text";
+  title.textContent = "NexaCAPTCHA Gravity";
+  image.alt = "Distorted verification text";
 
   function send(type, payload) {
     if (!parentOrigin || window.parent === window) return;
@@ -182,12 +178,7 @@
         image.classList.add("is-visible");
         busy = false;
         setPill("Playing", "fa-eye", "");
-        setMessage(
-          captchaType === "gravity"
-            ? "Read the distorted text, then enter all four characters."
-            : "Follow the reveal, then enter all four characters.",
-          ""
-        );
+        setMessage("Read the distorted text, then enter all four characters.", "");
         updateControls();
         armExpiry(Math.max(1_000, (result.expiresInMs || 120_000) - 1_000));
         void fetch(
@@ -212,7 +203,7 @@
         setMessage("The verification image could not be loaded. Try again.", "is-error");
         updateControls();
       };
-      image.src = captchaType === "gravity" ? result.imageUrl : result.animationUrl;
+      image.src = result.imageUrl;
     } catch (_) {
       currentVerificationId = null;
       busy = false;

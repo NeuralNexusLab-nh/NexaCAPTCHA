@@ -8,29 +8,23 @@
 
 NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.
 
-[Explore CAPTCHA modules](https://nexacaptcha.zone.id/#demo) · [View integration](#integration)
+[Try NexaCAPTCHA](https://nexacaptcha.zone.id/#demo) · [View integration](#integration)
 
 - Designed for human readability
-- 0% model success in our Horizon test
+- 17.6% model success in our Gravity test
 - Two attempts before expiry
 
-**CAPTCHA MODULES**
+**LIVE VERIFICATION**
 
-## Choose a verification.
+## Try Gravity.
 
-Gravity presents four distorted characters in a static image. Horizon reveals information through a GIF animation. Both use the same integration and server-side verification flow.
+Gravity presents four distorted characters in a static image and uses a server-enforced verification flow.
 
 ### Gravity · Live demo
 
 Read the four hollow characters in the distorted image, then enter them below.
 
 [Try NexaCAPTCHA Gravity](https://nexacaptchademo.zeabur.app/gravity)
-
-### Horizon · Live demo
-
-Follow each color through the animation and enter the four characters when you're ready.
-
-[Try NexaCAPTCHA Horizon](https://nexacaptchademo.zeabur.app/horizon)
 
 [Integrate NexaCAPTCHA](#integration)
 
@@ -42,8 +36,7 @@ All agents started without prior context and developed their approach during the
 
 | Verification system | Human | GPT 5.6 Sol - Medium |
 | --- | --- | --- |
-| **NexaCAPTCHA Horizon** | **7.3** seconds average | **0%** success rate · **60.3** seconds average |
-| **NexaCAPTCHA Gravity** | **3.8** seconds average | **35.3%** success rate · **31.6** seconds average |
+| **NexaCAPTCHA Gravity** | **3.8** seconds average | **17.6%** success rate · **31.6** seconds average |
 | **Google reCAPTCHA** | **1.9** seconds average | **99%** success rate · **7.6** seconds average |
 | **hCaptcha** | **11.8** seconds average | **85.7%** success rate · **49.6** seconds average |
 
@@ -55,14 +48,13 @@ These results describe the recorded test runs and are not a guarantee of perform
 
 ## Connect NexaCAPTCHA.
 
-Choose a module, add it to your page, then pass the completed result to your backend.
+Add Gravity to your page, then pass the completed result to your backend.
 
 ### Frontend setup
 
-Choose one loader endpoint. The callback name and submission logic are yours to change.
+Load the frontend script. The callback name and submission logic are yours to change.
 
 - Gravity: `https://nexacaptcha.zone.id/captcha/gravity.js`
-- Horizon: `https://nexacaptcha.zone.id/captcha/horizon.js`
 
 ```html
 <script
@@ -162,7 +154,7 @@ if (!result.success) {
 
 ---
 
-Motion-based verification with server-enforced controls.
+Distorted-text verification with server-enforced controls.
 
 25.0330° N · 121.5654° E
 

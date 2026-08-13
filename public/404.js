@@ -11,7 +11,7 @@
       title: "This route ends here.",
       description: "The address may have changed, or the page may no longer exist.",
       returnHome: "Return home",
-      viewModules: "View CAPTCHA modules",
+      viewModules: "Try NexaCAPTCHA",
       footer: "Human verification, engineered for resistance.",
       documentTitle: "Page not found · NexaCAPTCHA"
     },

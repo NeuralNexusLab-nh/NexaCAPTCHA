@@ -22,7 +22,7 @@ const answerSchema = z
 
 const createVerificationSchema = z
   .object({
-    captchaType: z.enum(["horizon", "gravity"]).optional()
+    captchaType: z.literal("gravity").optional()
   })
   .strict();
 
@@ -84,7 +84,7 @@ export function createApp(store: VerificationStore) {
     async (_request, response, next) => {
       try {
         const input = createVerificationSchema.parse(_request.body);
-        const verification = await store.create(input.captchaType ?? "horizon");
+        const verification = await store.create(input.captchaType ?? "gravity");
         response.setHeader("Cache-Control", "no-store");
         response.status(201).json(verification);
       } catch (error) {
@@ -100,10 +100,7 @@ export function createApp(store: VerificationStore) {
       try {
         const media = await store.claimMedia(routeParameter(request.params.mediaTicket));
         response.setHeader("Cache-Control", "no-store, max-age=0");
-        response.setHeader(
-          "Content-Type",
-          media.captchaType === "gravity" ? "image/png" : "image/gif"
-        );
+        response.setHeader("Content-Type", "image/png");
         response.setHeader("Cross-Origin-Resource-Policy", "same-origin");
         response.sendFile(media.mediaPath, (error) => {
           media.release();
@@ -165,12 +162,6 @@ export function createApp(store: VerificationStore) {
   );
 
   app.get("/captcha.js", widgetHeaders, (_request, response) => {
-    response.setHeader("Access-Control-Allow-Origin", "*");
-    response.setHeader("Cache-Control", "public, max-age=300");
-    response.sendFile(path.join(config.publicDirectory, "captcha.js"));
-  });
-
-  app.get("/captcha/horizon.js", widgetHeaders, (_request, response) => {
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Cache-Control", "public, max-age=300");
     response.sendFile(path.join(config.publicDirectory, "captcha.js"));

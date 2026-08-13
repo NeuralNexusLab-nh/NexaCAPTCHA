@@ -16,11 +16,9 @@ describe("NexaCAPTCHA HTTP API", () => {
     directory = await mkdtemp(path.join(tmpdir(), "nexacaptcha-api-"));
     now = 1_700_000_000_000;
     store = new VerificationStore({
-      answerFactory: () => "NEXA",
-      renderer: () => Buffer.from("GIF89a", "ascii"),
       gravityAnswerFactory: () => "GRAV",
       gravityRenderer: () => Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
-      mediaDirectory: directory,
+      dataDirectory: directory,
       clock: () => now
     });
     await store.start();
@@ -39,12 +37,12 @@ describe("NexaCAPTCHA HTTP API", () => {
     expect(created.body.expiresInMs).toBe(120_000);
 
     await request(app)
-      .get(created.body.animationUrl)
-      .expect("Content-Type", /image\/gif/)
+      .get(created.body.imageUrl)
+      .expect("Content-Type", /image\/png/)
       .expect("Cache-Control", /no-store/)
       .expect(200);
     await request(app)
-      .get(created.body.animationUrl)
+      .get(created.body.imageUrl)
       .expect(410)
       .expect(({ body }) => expect(body.errorCode).toBe("media-consumed"));
 
@@ -56,7 +54,7 @@ describe("NexaCAPTCHA HTTP API", () => {
 
     const completed = await request(app)
       .post(`/api/verifications/${created.body.verificationId}/answer`)
-      .send({ answer: "NEXA" })
+      .send({ answer: "GRAV" })
       .expect(200);
     expect(completed.body.success).toBe(true);
     expect(completed.body.responseToken).toMatch(/^[A-Za-z0-9_-]{64}$/);
@@ -77,24 +75,19 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(({ body }) => expect(body.success).toBe(false));
   });
 
-  it("serves Gravity as a PNG with the same answer and siteverify protocol", async () => {
+  it("serves Gravity explicitly with the same answer and siteverify protocol", async () => {
     const created = await request(app)
       .post("/api/verifications")
       .send({ captchaType: "gravity" })
       .expect(201);
     expect(created.body.captchaType).toBe("gravity");
     expect(created.body.imageUrl).toContain("/api/media/");
-    expect(created.body.animationUrl).toBeUndefined();
 
     await request(app)
       .get(created.body.imageUrl)
       .expect("Content-Type", /image\/png/)
       .expect("Cache-Control", /no-store/)
       .expect(200);
-    await request(app)
-      .get(`/api/verifications/${created.body.verificationId}/animation`)
-      .expect(404);
-
     const completed = await request(app)
       .post(`/api/verifications/${created.body.verificationId}/answer`)
       .send({ answer: "GRAV" })
@@ -142,7 +135,7 @@ describe("NexaCAPTCHA HTTP API", () => {
   it("enforces cooldown, attempt exhaustion, and expiry through the API", async () => {
     const created = await request(app).post("/api/verifications").send({}).expect(201);
     const answerUrl = `/api/verifications/${created.body.verificationId}/answer`;
-    await request(app).get(created.body.animationUrl).expect(200);
+    await request(app).get(created.body.imageUrl).expect(200);
 
     await request(app)
       .post(answerUrl)
@@ -155,7 +148,7 @@ describe("NexaCAPTCHA HTTP API", () => {
 
     await request(app)
       .post(answerUrl)
-      .send({ answer: "NEXA" })
+      .send({ answer: "GRAV" })
       .expect(429)
       .expect(({ body }) => expect(body.errorCode).toBe("answer-cooldown"));
 
@@ -171,26 +164,21 @@ describe("NexaCAPTCHA HTTP API", () => {
 
     await request(app)
       .post(answerUrl)
-      .send({ answer: "NEXA" })
+      .send({ answer: "GRAV" })
       .expect(410)
       .expect(({ body }) => expect(body.errorCode).toBe("verification-expired"));
 
     const expiring = await request(app).post("/api/verifications").send({}).expect(201);
-    await request(app).get(expiring.body.animationUrl).expect(200);
+    await request(app).get(expiring.body.imageUrl).expect(200);
     now += 120_001;
     await request(app)
       .post(`/api/verifications/${expiring.body.verificationId}/answer`)
-      .send({ answer: "NEXA" })
+      .send({ answer: "GRAV" })
       .expect(410)
       .expect(({ body }) => expect(body.errorCode).toBe("verification-expired"));
   });
 
-  it("serves the Horizon loader and its compatibility alias", async () => {
-    await request(app)
-      .get("/captcha/horizon.js")
-      .expect("Access-Control-Allow-Origin", "*")
-      .expect("Content-Type", /javascript/)
-      .expect(200);
+  it("serves the Gravity loader and its compatibility alias", async () => {
     await request(app)
       .get("/captcha.js")
       .expect("Access-Control-Allow-Origin", "*")
@@ -259,7 +247,7 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(400);
     await request(app)
       .post("/api/verifications/not-real/answer")
-      .send({ answer: "NEXA", extra: true })
+      .send({ answer: "GRAV", extra: true })
       .expect(400);
     await request(app)
       .post("/api/verifications")

@@ -1,4 +1,4 @@
-import { renderVerificationAnimation } from "../dist/renderer.js";
+import { renderGravityImage } from "../dist/gravity-renderer.js";
 
 const maximumRss = 100 * 1024 * 1024;
 const cpuStart = process.cpuUsage();
@@ -7,7 +7,7 @@ let peakRss = process.memoryUsage().rss;
 let encodedBytes = 0;
 
 for (let index = 0; index < 60; index += 1) {
-  const output = renderVerificationAnimation(index % 2 === 0 ? "N3XA" : "S4FE");
+  const output = renderGravityImage(index % 2 === 0 ? "N3XA" : "S4FE");
   encodedBytes += output.byteLength;
   peakRss = Math.max(peakRss, process.memoryUsage().rss);
   await new Promise((resolve) => setImmediate(resolve));

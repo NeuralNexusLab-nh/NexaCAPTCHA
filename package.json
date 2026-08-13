@@ -2,7 +2,7 @@
   "name": "nexacaptcha",
   "version": "0.1.0",
   "private": true,
-  "description": "Open-source motion-based human verification.",
+  "description": "Open-source distorted-text human verification.",
   "packageManager": "npm@11.6.2",
   "homepage": "https://nexacaptcha.zone.id",
   "repository": {
@@ -34,7 +34,6 @@
     "compression": "^1.8.1",
     "express": "^5.1.0",
     "express-rate-limit": "^8.0.1",
-    "gifenc": "^1.0.3",
     "helmet": "^8.1.0",
     "hershey": "^2.1.7",
     "zod": "^4.0.17"
