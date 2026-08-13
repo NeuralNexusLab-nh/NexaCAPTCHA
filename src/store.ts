@@ -165,9 +165,11 @@ export class VerificationStore {
   private verificationCount = 0;
   private dataBytes = 0;
   private cleanupTimer?: NodeJS.Timeout;
-  private poolTimer?: NodeJS.Timeout;
-  private refreshingPool = false;
-  private nextPoolType: CaptchaType = "horizon";
+  private readonly poolTimers: NodeJS.Timeout[] = [];
+  private readonly refreshingPools: Record<CaptchaType, boolean> = {
+    horizon: false,
+    gravity: false
+  };
 
   constructor(options: VerificationStoreOptions = {}) {
     this.answerFactory = options.answerFactory ?? generateAnswer;
@@ -196,15 +198,22 @@ export class VerificationStore {
     if (this.maintainPool) {
       await this.ensureAtLeastOne("horizon");
       await this.ensureAtLeastOne("gravity");
-      this.poolTimer = setInterval(() => void this.refreshPool(), config.poolRefreshIntervalMs);
-      this.poolTimer.unref();
+      for (const type of ["horizon", "gravity"] as const) {
+        const timer = setInterval(
+          () => void this.refreshPool(type),
+          config.poolRefreshIntervalMs
+        );
+        timer.unref();
+        this.poolTimers.push(timer);
+      }
     }
     this.cleanupTimer = setInterval(() => void this.cleanup(), config.cleanupIntervalMs);
     this.cleanupTimer.unref();
   }
 
   async stop(): Promise<void> {
-    if (this.poolTimer) clearInterval(this.poolTimer);
+    for (const timer of this.poolTimers) clearInterval(timer);
+    this.poolTimers.length = 0;
     if (this.cleanupTimer) clearInterval(this.cleanupTimer);
   }
 
@@ -241,17 +250,15 @@ export class VerificationStore {
     if ((await this.poolFiles(type)).length === 0) await this.generatePoolEntry(type, false);
   }
 
-  private async refreshPool(): Promise<void> {
-    if (this.refreshingPool) return;
-    this.refreshingPool = true;
-    const type = this.nextPoolType;
-    this.nextPoolType = type === "horizon" ? "gravity" : "horizon";
+  private async refreshPool(type: CaptchaType): Promise<void> {
+    if (this.refreshingPools[type]) return;
+    this.refreshingPools[type] = true;
     try {
       await this.generatePoolEntry(type, true);
     } catch (error) {
       console.error(`Unable to refresh ${type} CAPTCHA pool`, error);
     } finally {
-      this.refreshingPool = false;
+      this.refreshingPools[type] = false;
     }
   }
 
