@@ -4,6 +4,8 @@ import { stringToPaths, type Point } from "hershey";
 
 export const GRAVITY_WIDTH = 600;
 export const GRAVITY_HEIGHT = 200;
+export const GRAVITY_GLYPH_MAX_ROTATION_DEGREES = 15;
+export const GRAVITY_GLYPH_MAX_FIELD_SWIRL_DEGREES = 20;
 
 type Rgba = readonly [number, number, number, number];
 type Rgb = readonly [number, number, number];
@@ -213,16 +215,23 @@ function drawLine(
   }
 }
 
-function applyGravityField(point: Point, wells: readonly GravityWell[]): Point {
+function applyGravityField(
+  point: Point,
+  wells: readonly GravityWell[],
+  maxCumulativeSwirl = Number.POSITIVE_INFINITY
+): Point {
   let x = point[0];
   let y = point[1];
+  let remainingSwirl = maxCumulativeSwirl;
   for (const well of wells) {
     const relativeX = x - well.x;
     const relativeY = y - well.y;
     const distance = Math.max(18, Math.hypot(relativeX, relativeY));
     const influence = Math.exp(-0.9 * (distance / well.radius) ** 2);
     const coreEase = Math.min(1, distance / 44);
-    const angle = well.swirl * influence * coreEase;
+    const requestedAngle = well.swirl * influence * coreEase;
+    const angle = Math.max(-remainingSwirl, Math.min(remainingSwirl, requestedAngle));
+    remainingSwirl = Math.max(0, remainingSwirl - Math.abs(angle));
     const radialScale = 1 - well.pull * influence * coreEase;
     const cosine = Math.cos(angle);
     const sine = Math.sin(angle);
@@ -277,7 +286,8 @@ function transformGlyphPoint(
   scaleX: number,
   scaleY: number,
   wells: readonly GravityWell[],
-  warpedCenter: Point
+  warpedCenter: Point,
+  glyphFieldSwirlLimit: number
 ): Point {
   const width = Math.max(1, bounds.maxX - bounds.minX);
   const height = Math.max(1, bounds.maxY - bounds.minY);
@@ -291,7 +301,8 @@ function transformGlyphPoint(
   const rotatedY = localX * sine + localY * cosine;
   const warpedPoint = applyGravityField(
     [centerX + rotatedX, centerY + rotatedY],
-    wells
+    wells,
+    glyphFieldSwirlLimit
   );
   // Apply the field differentially around the glyph center. This keeps reading
   // order stable while allowing the strokes themselves to bend sharply around
@@ -443,7 +454,15 @@ export function renderGravityImage(answer: string): Buffer {
     const glyph = stringToPaths(character);
     const centerX = glyphCenters[index]! + (random() - 0.5) * 18;
     const centerY = GRAVITY_HEIGHT / 2 + (random() - 0.5) * 16;
-    const rotation = ((random() * 20 - 10) * Math.PI) / 180;
+    const rotation = (
+      (random() * 2 - 1) * GRAVITY_GLYPH_MAX_ROTATION_DEGREES * Math.PI
+    ) / 180;
+    // Keep the complete glyph upright enough to preserve identity. Decorative
+    // lines retain the full vortex, while glyph strokes receive at most 20° of
+    // cumulative field rotation on top of their at-most 15° rigid rotation.
+    const glyphFieldSwirlLimit = (
+      GRAVITY_GLYPH_MAX_FIELD_SWIRL_DEGREES * Math.PI
+    ) / 180;
     const shear = random() * 0.24 - 0.12;
     const scaleX = 0.92 + random() * 0.16;
     const scaleY = 0.93 + random() * 0.14;
@@ -455,7 +474,11 @@ export function renderGravityImage(answer: string): Buffer {
     const paletteIndex = (index + paletteOffset) % theme.glyphColors.length;
     const color = theme.glyphColors[paletteIndex]!;
     const innerColor = theme.innerColors[paletteIndex % theme.innerColors.length]!;
-    const warpedCenter = applyGravityField([centerX, centerY], gravityWells);
+    const warpedCenter = applyGravityField(
+      [centerX, centerY],
+      gravityWells,
+      glyphFieldSwirlLimit
+    );
 
     const transformedPaths = glyph.paths.map((glyphPath) =>
       transformGlyphPath(glyphPath, (point) =>
@@ -469,7 +492,8 @@ export function renderGravityImage(answer: string): Buffer {
           scaleX,
           scaleY,
           gravityWells,
-          warpedCenter
+          warpedCenter,
+          glyphFieldSwirlLimit
         )
       )
     );
