@@ -14,15 +14,13 @@ NexaCAPTCHA keeps verification clear for legitimate users while increasing the t
 - 17.6% model success in our Gravity test
 - Two attempts before expiry
 
-**LIVE VERIFICATION**
+**CAPTCHA MODULES**
 
-## Try Gravity.
+## Available verifications.
 
-Gravity presents four distorted characters in a static image and uses a server-enforced verification flow.
+### Try NexaCAPTCHA Gravity
 
-### Gravity · Live demo
-
-Read the four hollow characters in the distorted image, then enter them below.
+Gravity presents four distorted characters in a static image. Read all four, then enter them below.
 
 [Try NexaCAPTCHA Gravity](https://nexacaptchademo.zeabur.app/gravity)
 
