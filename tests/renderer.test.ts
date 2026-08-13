@@ -39,15 +39,17 @@ function frameDelays(gif: Buffer): number[] {
 describe("verification animation", () => {
   it("keeps interference lines continuous while they move", () => {
     let value = 0.17;
-    const profiles = createInterferenceLineProfiles(5, 120, () => {
+    const characterColors = [6, 3, 5, 2];
+    const profiles = createInterferenceLineProfiles(7, 120, () => {
       value = (value * 3.71) % 1;
       return value;
-    });
+    }, characterColors);
 
-    expect(profiles).toHaveLength(5);
-    expect(new Set(profiles.map((profile) => profile.colorIndex))).toEqual(
-      new Set([8, 9])
+    expect(profiles).toHaveLength(7);
+    expect(profiles.slice(0, 4).map((profile) => profile.colorIndex)).toEqual(
+      characterColors
     );
+    expect(profiles.every((profile) => profile.thickness >= 1.8)).toBe(true);
     for (const profile of profiles) {
       const points = Array.from({ length: 45 }, (_, index) =>
         interferenceLinePoint(profile, index / 44, 0.35, 360)

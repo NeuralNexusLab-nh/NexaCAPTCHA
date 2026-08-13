@@ -168,19 +168,25 @@ export function randomJitterAt(
 export function createInterferenceLineProfiles(
   count: number,
   height: number,
-  random: () => number
+  random: () => number,
+  characterColorIndices: number[] = [2, 3, 4, 5]
 ): InterferenceLineProfile[] {
   return Array.from({ length: count }, (_, index) => ({
-    baseY: height * (0.24 + 0.52 * ((index + 0.5) / count)) +
-      (random() * 2 - 1) * 9,
-    amplitude: 5 + random() * 8,
-    secondaryAmplitude: 1.5 + random() * 3.5,
-    cycles: 1.15 + random() * 1.65,
+    // Keep every curve inside the glyph band so it intersects useful strokes
+    // instead of becoming removable background decoration.
+    baseY: height * (0.3 + 0.4 * ((index + 0.5) / count)) +
+      (random() * 2 - 1) * 12,
+    amplitude: 10 + random() * 14,
+    secondaryAmplitude: 3 + random() * 6,
+    cycles: 1.05 + random() * 2.1,
     phase: random() * Math.PI * 2,
-    drift: 5 + random() * 10,
-    motionCycles: 0.65 + random() * 1.1,
-    thickness: 0.6 + random() * 0.45,
-    colorIndex: index % 2 === 0 ? 8 : 9
+    drift: 7 + random() * 13,
+    motionCycles: 0.7 + random() * 1.25,
+    // drawLine uses this value as a radius. Glyph strokes use 2.05, so these
+    // curves occupy essentially the same visual weight.
+    thickness: 1.8 + random() * 0.45,
+    colorIndex:
+      characterColorIndices[index % Math.max(1, characterColorIndices.length)] ?? 4
   }));
 }
 
@@ -954,9 +960,10 @@ function renderVerificationAnimationAttempt(
     edgeWaves: 4.88 + random() * 4.88
   };
   const interferenceLines = createInterferenceLineProfiles(
-    4 + Math.floor(random() * 2),
+    6 + Math.floor(random() * 3),
     height,
-    random
+    random,
+    colorIndices
   );
   const textStart = 66;
   const characterSpacing = 62;
@@ -981,10 +988,6 @@ function renderVerificationAnimationAttempt(
       const vignette = Math.abs(y - height / 2) / (height / 2);
       if (vignette > 0.86) pixels.fill(7, y * width, (y + 1) * width);
     }
-    // Persistent low-contrast curves move independently of the glyph masks.
-    // They complicate frame compositing without hiding the brighter characters.
-    drawInterferenceLines(pixels, width, height, interferenceLines, progress);
-
     glyphs.forEach((glyph, characterIndex) => {
       visibleCharacter.fill(0);
       fullCharacter.fill(0);
@@ -1110,6 +1113,10 @@ function renderVerificationAnimationAttempt(
       if (compositedPixels === 0) containsInactiveCharacter = true;
       frameVisiblePixels += compositedPixels;
     });
+    // Draw foreground curves after the glyphs, as Gravity does. Matching the
+    // four character colors and stroke weight makes color thresholding unable
+    // to discard them without also deleting real glyph structure.
+    drawInterferenceLines(pixels, width, height, interferenceLines, progress);
     if (
       frameVisiblePixels === 0 &&
       !pixels.some((pixel) => pixel >= 2 && pixel <= 6)
