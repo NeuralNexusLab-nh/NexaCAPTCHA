@@ -182,9 +182,10 @@ export function createInterferenceLineProfiles(
     phase: random() * Math.PI * 2,
     drift: 7 + random() * 13,
     motionCycles: 0.7 + random() * 1.25,
-    // drawLine uses this value as a radius. Glyph strokes use 2.05, so these
-    // curves occupy essentially the same visual weight.
-    thickness: 1.8 + random() * 0.45,
+    // Gravity keeps foreground curves visibly thinner than its glyph strokes.
+    // Preserve that hierarchy here while retaining enough weight to cross and
+    // visually merge with the animated character fragments.
+    thickness: 0.9 + random() * 0.45,
     colorIndex:
       characterColorIndices[index % Math.max(1, characterColorIndices.length)] ?? 4
   }));

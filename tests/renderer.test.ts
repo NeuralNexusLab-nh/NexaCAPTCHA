@@ -49,7 +49,8 @@ describe("verification animation", () => {
     expect(profiles.slice(0, 4).map((profile) => profile.colorIndex)).toEqual(
       characterColors
     );
-    expect(profiles.every((profile) => profile.thickness >= 1.8)).toBe(true);
+    expect(profiles.every((profile) => profile.thickness >= 0.9)).toBe(true);
+    expect(profiles.every((profile) => profile.thickness <= 1.35)).toBe(true);
     for (const profile of profiles) {
       const points = Array.from({ length: 45 }, (_, index) =>
         interferenceLinePoint(profile, index / 44, 0.35, 360)
