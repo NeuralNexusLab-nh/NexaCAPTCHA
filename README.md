@@ -22,7 +22,7 @@ NexaCAPTCHA keeps verification clear for legitimate users while increasing the t
 
 Gravity presents four distorted characters in a static image. Read all four, then enter them below.
 
-[Try NexaCAPTCHA Gravity](https://nexacaptchademo.nxlabtw.com/gravity)
+[Try NexaCAPTCHA Gravity](https://nexacaptchademo.zeabur.app/gravity)
 
 [Integrate NexaCAPTCHA](#integration)
 
