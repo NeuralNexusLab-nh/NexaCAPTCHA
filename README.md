@@ -8,7 +8,7 @@
 
 NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.
 
-[Try NexaCAPTCHA](https://nexacaptcha.zone.id/#demo) · [View integration](#integration)
+[Try NexaCAPTCHA](https://nexacaptcha.nxlabtw.com/#demo) · [View integration](#integration)
 
 - Designed for human readability
 - 17.6% model success in our Gravity test
@@ -22,7 +22,7 @@ NexaCAPTCHA keeps verification clear for legitimate users while increasing the t
 
 Gravity presents four distorted characters in a static image. Read all four, then enter them below.
 
-[Try NexaCAPTCHA Gravity](https://nexacaptchademo.zeabur.app/gravity)
+[Try NexaCAPTCHA Gravity](https://nexacaptchademo.nxlabtw.com/gravity)
 
 [Integrate NexaCAPTCHA](#integration)
 
@@ -52,11 +52,11 @@ Add Gravity to your page, then pass the completed result to your backend.
 
 Load the frontend script. The callback name and submission logic are yours to change.
 
-- Gravity: `https://nexacaptcha.zone.id/captcha/gravity.js`
+- Gravity: `https://nexacaptcha.nxlabtw.com/captcha/gravity.js`
 
 ```html
 <script
-  src="https://nexacaptcha.zone.id/captcha/gravity.js"
+  src="https://nexacaptcha.nxlabtw.com/captcha/gravity.js"
   defer
 ></script>
 
@@ -131,7 +131,7 @@ Before accepting a form submission, registration, or login, send both values to 
 
 ```js
 const response = await fetch(
-  "https://nexacaptcha.zone.id/api/siteverify",
+  "https://nexacaptcha.nxlabtw.com/api/siteverify",
   {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -156,4 +156,4 @@ Distorted-text verification with server-enforced controls.
 
 25.0330° N · 121.5654° E
 
-Made by [NeuralNexusLab](https://nxlab.zone.id) · [nexacaptcha@nxlab.zone.id](mailto:nexacaptcha@nxlab.zone.id) · [NexaCAPTCHA](https://nexacaptcha.zone.id)
+Made by [NeuralNexusLab](https://nxlab.zone.id) · [nexacaptcha@nxlab.zone.id](mailto:nexacaptcha@nxlab.zone.id) · [NexaCAPTCHA](https://nexacaptcha.nxlabtw.com)

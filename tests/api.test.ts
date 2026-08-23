@@ -208,13 +208,13 @@ describe("NexaCAPTCHA HTTP API", () => {
   it("handles a strict same-origin OPTIONS preflight", async () => {
     const response = await request(app)
       .options("/api/verifications")
-      .set("Host", "nexacaptcha.zone.id")
-      .set("Origin", "http://nexacaptcha.zone.id")
+      .set("Host", "nexacaptcha.nxlabtw.com")
+      .set("Origin", "http://nexacaptcha.nxlabtw.com")
       .set("Access-Control-Request-Method", "POST")
       .set("Access-Control-Request-Headers", "content-type")
       .expect(204);
     expect(response.headers["access-control-allow-origin"]).toBe(
-      "http://nexacaptcha.zone.id"
+      "http://nexacaptcha.nxlabtw.com"
     );
     expect(response.headers["access-control-allow-methods"]).toBe("GET, POST, OPTIONS");
     expect(response.headers["access-control-allow-credentials"]).toBeUndefined();
@@ -223,8 +223,8 @@ describe("NexaCAPTCHA HTTP API", () => {
   it("rejects disallowed preflight headers", async () => {
     await request(app)
       .options("/api/verifications")
-      .set("Host", "nexacaptcha.zone.id")
-      .set("Origin", "http://nexacaptcha.zone.id")
+      .set("Host", "nexacaptcha.nxlabtw.com")
+      .set("Origin", "http://nexacaptcha.nxlabtw.com")
       .set("Access-Control-Request-Method", "POST")
       .set("Access-Control-Request-Headers", "authorization")
       .expect(403);
@@ -233,8 +233,8 @@ describe("NexaCAPTCHA HTTP API", () => {
   it("rejects disallowed preflight methods", async () => {
     await request(app)
       .options("/api/verifications")
-      .set("Host", "nexacaptcha.zone.id")
-      .set("Origin", "http://nexacaptcha.zone.id")
+      .set("Host", "nexacaptcha.nxlabtw.com")
+      .set("Origin", "http://nexacaptcha.nxlabtw.com")
       .set("Access-Control-Request-Method", "DELETE")
       .set("Access-Control-Request-Headers", "content-type")
       .expect(403);

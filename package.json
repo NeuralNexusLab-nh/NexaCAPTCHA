@@ -4,7 +4,7 @@
   "private": true,
   "description": "Open-source distorted-text human verification.",
   "packageManager": "npm@11.6.2",
-  "homepage": "https://nexacaptcha.zone.id",
+  "homepage": "https://nexacaptcha.nxlabtw.com",
   "repository": {
     "type": "git",
     "url": "https://github.com/NeuralNexusLab-nh/NexaCAPTCHA.git"
