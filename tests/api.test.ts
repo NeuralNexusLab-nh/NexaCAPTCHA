@@ -18,6 +18,12 @@ describe("NexaCAPTCHA HTTP API", () => {
     store = new VerificationStore({
       gravityAnswerFactory: () => "GRAV",
       gravityRenderer: () => Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+      algebraProblemFactory: () => ({
+        answerX: -12,
+        answerY: 34,
+        equations: ["2(x+y)=44", "3(x-y)=-138"]
+      }),
+      algebraRenderer: () => Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
       dataDirectory: directory,
       clock: () => now
     });
@@ -91,6 +97,27 @@ describe("NexaCAPTCHA HTTP API", () => {
     const completed = await request(app)
       .post(`/api/verifications/${created.body.verificationId}/answer`)
       .send({ answer: "GRAV" })
+      .expect(200);
+    await request(app)
+      .post("/api/siteverify")
+      .send({
+        verificationId: created.body.verificationId,
+        responseToken: completed.body.responseToken
+      })
+      .expect(200)
+      .expect(({ body }) => expect(body.success).toBe(true));
+  });
+
+  it("creates Algebra through its own endpoint and reuses answer and siteverify", async () => {
+    const created = await request(app)
+      .post("/api/algebra/verifications")
+      .send({})
+      .expect(201);
+    expect(created.body.captchaType).toBe("algebra");
+    await request(app).get(created.body.imageUrl).expect("Content-Type", /image\/png/).expect(200);
+    const completed = await request(app)
+      .post(`/api/verifications/${created.body.verificationId}/answer`)
+      .send({ answer: "-12,34" })
       .expect(200);
     await request(app)
       .post("/api/siteverify")
@@ -188,6 +215,11 @@ describe("NexaCAPTCHA HTTP API", () => {
     await request(app).get("/captcha/warp.js").expect(404);
     await request(app)
       .get("/captcha/gravity.js")
+      .expect("Access-Control-Allow-Origin", "*")
+      .expect("Content-Type", /javascript/)
+      .expect(200);
+    await request(app)
+      .get("/captcha/algebra.js")
       .expect("Access-Control-Allow-Origin", "*")
       .expect("Content-Type", /javascript/)
       .expect(200);

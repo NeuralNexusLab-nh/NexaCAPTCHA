@@ -35,6 +35,12 @@ describe("VerificationStore", () => {
     store = new VerificationStore({
       gravityAnswerFactory: () => "GRAV",
       gravityRenderer: () => Buffer.from([137, 80, 78, 71]),
+      algebraProblemFactory: () => ({
+        answerX: -12,
+        answerY: 34,
+        equations: ["2(x+y)=44", "3(x-y)=-138"]
+      }),
+      algebraRenderer: () => Buffer.from([137, 80, 78, 71]),
       dataDirectory: directory,
       clock: () => now
     });
@@ -88,6 +94,20 @@ describe("VerificationStore", () => {
     expect(firstMedia.mediaPath).toBe(secondMedia.mediaPath);
     firstMedia.release();
     secondMedia.release();
+  });
+
+  it("uses a separate shared Algebra pool with integer x and y answers", async () => {
+    const first = await store.create("algebra");
+    const second = await store.create("algebra");
+    expect(first.captchaType).toBe("algebra");
+    expect(first.imageUrl).not.toContain(first.verificationId);
+    const firstMedia = await store.claimMedia(first.imageUrl.split("/").at(-1)!);
+    const secondMedia = await store.claimMedia(second.imageUrl.split("/").at(-1)!);
+    expect(firstMedia.mediaPath).toBe(secondMedia.mediaPath);
+    firstMedia.release();
+    secondMedia.release();
+    const completion = await store.submitAnswer(first.verificationId, "-12,34");
+    expect(completion.success).toBe(true);
   });
 
   it("expires after two incorrect attempts with a twenty-second cooldown", async () => {
