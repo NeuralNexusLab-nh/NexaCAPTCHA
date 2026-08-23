@@ -14,9 +14,9 @@
     <link rel="stylesheet" href="/vendor/fonts/space-grotesk/index.css">
     <link rel="stylesheet" href="/vendor/fonts/oxanium/index.css">
     <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/styles.css?v=28">
-    <script src="/app.js?v=33" defer></script>
-    <script src="/captcha/gravity.js?v=5" defer></script>
+    <link rel="stylesheet" href="/styles.css?v=29">
+    <script src="/app.js?v=34" defer></script>
+    <script src="/captcha/gravity.js?v=6" defer></script>
   </head>
   <body>
     <div class="ambient-backdrop" aria-hidden="true">
@@ -97,6 +97,25 @@
                 </output>
               </div>
 
+            </div>
+
+            <div class="module-column reveal">
+              <div class="demo-card algebra-card">
+                <div class="demo-route" aria-hidden="true"><span>NEXA</span><i class="fa-solid fa-arrow-right-long"></i><span>ALGEBRA</span></div>
+                <div class="card-heading">
+                  <div>
+                    <p class="eyebrow"><i class="fa-solid fa-square-root-variable" aria-hidden="true"></i><span data-i18n="liveDemo">LIVE DEMO</span></p>
+                    <h3 data-i18n="tryAlgebra">Try NexaCAPTCHA Algebra</h3>
+                  </div>
+                  <span class="live-pill"><span aria-hidden="true"></span><span data-i18n="ready">Ready</span></span>
+                </div>
+                <p class="card-help" data-i18n="algebraHelp">Algebra displays a distorted system of two equations. Solve it, then enter the integer values of x and y.</p>
+                <div class="nexa-captcha" data-captcha-type="algebra" data-callback="onAlgebraDemoComplete"></div>
+                <output class="demo-output" id="demo-output-algebra" aria-live="polite">
+                  <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                  <span data-i18n="demoOutput">Your result will appear here.</span>
+                </output>
+              </div>
             </div>
 
             <div class="deployment-actions reveal" aria-label="NexaCAPTCHA deployment options">
@@ -183,11 +202,20 @@
                   <span data-i18n="gravityLoader">Gravity loader</span>
                   <code>https://nexacaptcha.nxlabtw.com/captcha/gravity.js</code>
                 </div>
+                <div>
+                  <span data-i18n="algebraLoader">Algebra loader</span>
+                  <code>https://nexacaptcha.nxlabtw.com/captcha/algebra.js</code>
+                </div>
               </div>
               <div class="code-window callback-html-window">
                 <div class="code-toolbar">
                   <span><i class="fa-brands fa-html5" aria-hidden="true"></i><span data-i18n="htmlLocation">HTML · page markup</span></span>
                   <div class="code-toolbar-actions">
+                    <label for="captcha-module-select" data-i18n="selectModule">CAPTCHA</label>
+                    <select id="captcha-module-select" aria-label="CAPTCHA module">
+                      <option value="gravity" selected>Gravity</option>
+                      <option value="algebra">Algebra</option>
+                    </select>
                     <button class="copy-button" type="button" data-copy="callback-html-code"><i class="fa-solid fa-copy" aria-hidden="true"></i><span data-copy-label data-i18n="copy">Copy</span></button>
                   </div>
                 </div>
@@ -198,6 +226,7 @@
 
 &lt;div
   class="nexa-captcha"
+  data-captcha-type="<mark class="module-type-name">gravity</mark>"
   data-callback="<mark class="callback-name">onCaptchaComplete</mark>"
 &gt;&lt;/div&gt;</code></pre>
               </div>

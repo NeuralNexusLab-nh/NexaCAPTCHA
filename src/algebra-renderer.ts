@@ -1,11 +1,11 @@
 import { randomBytes, randomInt } from "node:crypto";
 import { deflateSync } from "node:zlib";
 import { stringToPaths, type Point } from "hershey";
+import { VISUAL_THEMES, type Rgba, type VisualTheme } from "./visual-themes.js";
 
 export const ALGEBRA_WIDTH = 840;
 export const ALGEBRA_HEIGHT = 260;
 
-type Rgba = readonly [number, number, number, number];
 type RandomInteger = (maxExclusive: number) => number;
 
 export interface AlgebraProblem {
@@ -21,6 +21,14 @@ interface EquationShape {
   rightOffset: number;
   canonicalX: number;
   canonicalY: number;
+}
+
+interface AlgebraWell {
+  x: number;
+  y: number;
+  radius: number;
+  pull: number;
+  swirl: number;
 }
 
 const CRC_TABLE = Array.from({ length: 256 }, (_value, index) => {
@@ -125,27 +133,6 @@ function drawLine(
   }
 }
 
-function drawBezier(
-  pixels: Uint8Array,
-  points: readonly [Point, Point, Point, Point],
-  thickness: number,
-  color: Rgba
-): void {
-  let previous = points[0];
-  for (let step = 1; step <= 180; step += 1) {
-    const t = step / 180;
-    const inverse = 1 - t;
-    const current: Point = [
-      inverse ** 3 * points[0][0] + 3 * inverse ** 2 * t * points[1][0]
-        + 3 * inverse * t ** 2 * points[2][0] + t ** 3 * points[3][0],
-      inverse ** 3 * points[0][1] + 3 * inverse ** 2 * t * points[1][1]
-        + 3 * inverse * t ** 2 * points[2][1] + t ** 3 * points[3][1]
-    ];
-    drawLine(pixels, previous, current, thickness, color);
-    previous = current;
-  }
-}
-
 function nonZero(randomInteger: RandomInteger, magnitude = 8): number {
   const value = randomInteger(magnitude) + 1;
   return randomInteger(2) === 0 ? -value : value;
@@ -227,18 +214,94 @@ export function generateAlgebraProblem(
   throw new Error("Unable to generate a non-degenerate Algebra problem.");
 }
 
-function fillBackground(pixels: Uint8Array, random: () => number): void {
+function clampChannel(value: number): number {
+  return Math.max(0, Math.min(255, Math.round(value)));
+}
+
+function fillBackground(
+  pixels: Uint8Array,
+  random: () => number,
+  theme: VisualTheme
+): void {
   for (let y = 0; y < ALGEBRA_HEIGHT; y += 1) {
     for (let x = 0; x < ALGEBRA_WIDTH; x += 1) {
       const index = (y * ALGEBRA_WIDTH + x) * 4;
-      const glow = Math.exp(-((x - 440) ** 2 + (y - 130) ** 2) / 160_000);
-      const wave = Math.sin(x * 0.018 + y * 0.025) * 1.1;
-      const noise = (random() - 0.5) * 3;
-      pixels[index] = Math.round(3 + glow * 5 + wave + noise);
-      pixels[index + 1] = Math.round(2 + glow * 2 + noise * 0.35);
-      pixels[index + 2] = Math.round(8 + glow * 12 + wave + noise);
+      const wave = Math.sin(x * 0.022 + y * 0.035) * 1.5;
+      const noise = (random() - 0.5) * theme.backgroundVariation;
+      pixels[index] = clampChannel(theme.background[0] + wave + noise);
+      pixels[index + 1] = clampChannel(theme.background[1] + wave * 0.6 + noise * 0.7);
+      pixels[index + 2] = clampChannel(theme.background[2] + wave + noise);
       pixels[index + 3] = 255;
     }
+  }
+}
+
+function applyGravityField(
+  point: Point,
+  wells: readonly AlgebraWell[],
+  maxCumulativeSwirl = Number.POSITIVE_INFINITY
+): Point {
+  let x = point[0];
+  let y = point[1];
+  let remainingSwirl = maxCumulativeSwirl;
+  for (const well of wells) {
+    const relativeX = x - well.x;
+    const relativeY = y - well.y;
+    const distance = Math.max(18, Math.hypot(relativeX, relativeY));
+    const influence = Math.exp(-0.9 * (distance / well.radius) ** 2);
+    const coreEase = Math.min(1, distance / 44);
+    const requestedAngle = well.swirl * influence * coreEase;
+    const angle = Math.max(-remainingSwirl, Math.min(remainingSwirl, requestedAngle));
+    remainingSwirl = Math.max(0, remainingSwirl - Math.abs(angle));
+    const radialScale = 1 - well.pull * influence * coreEase;
+    const cosine = Math.cos(angle);
+    const sine = Math.sin(angle);
+    x = well.x + (relativeX * cosine - relativeY * sine) * radialScale;
+    y = well.y + (relativeX * sine + relativeY * cosine) * radialScale;
+  }
+  return [
+    ALGEBRA_WIDTH / 2 + (x - ALGEBRA_WIDTH / 2) * 0.94,
+    ALGEBRA_HEIGHT / 2 + (y - ALGEBRA_HEIGHT / 2) * 0.8
+  ];
+}
+
+function drawGravityBezier(
+  pixels: Uint8Array,
+  points: readonly [Point, Point, Point, Point],
+  thickness: number,
+  color: Rgba,
+  wells: readonly AlgebraWell[]
+): void {
+  let previous = applyGravityField(points[0], wells);
+  for (let step = 1; step <= 180; step += 1) {
+    const t = step / 180;
+    const inverse = 1 - t;
+    const source: Point = [
+      inverse ** 3 * points[0][0] + 3 * inverse ** 2 * t * points[1][0]
+        + 3 * inverse * t ** 2 * points[2][0] + t ** 3 * points[3][0],
+      inverse ** 3 * points[0][1] + 3 * inverse ** 2 * t * points[1][1]
+        + 3 * inverse * t ** 2 * points[2][1] + t ** 3 * points[3][1]
+    ];
+    const current = applyGravityField(source, wells);
+    drawLine(pixels, previous, current, thickness, color);
+    previous = current;
+  }
+}
+
+function drawOptionalGrid(
+  pixels: Uint8Array,
+  random: () => number,
+  theme: VisualTheme
+): void {
+  if (!theme.gridColor) return;
+  const spacing = 18 + Math.floor(random() * 11);
+  const offsetX = Math.floor(random() * spacing);
+  const offsetY = Math.floor(random() * spacing);
+  for (let x = offsetX; x < ALGEBRA_WIDTH; x += spacing) {
+    drawLine(pixels, [x, 0], [x, ALGEBRA_HEIGHT], 0.55, theme.gridColor);
+  }
+  for (let y = offsetY; y < ALGEBRA_HEIGHT; y += spacing) {
+    drawLine(pixels, [0, y], [ALGEBRA_WIDTH, y], 0.55, theme.gridColor);
   }
 }
 
@@ -247,7 +310,10 @@ function renderEquation(
   text: string,
   centerY: number,
   random: () => number,
-  color: Rgba
+  color: Rgba,
+  innerColor: Rgba,
+  ghostColor: Rgba,
+  wells: readonly AlgebraWell[]
 ): void {
   const glyph = stringToPaths(text);
   const sourceWidth = Math.max(1, glyph.bounds.maxX - glyph.bounds.minX);
@@ -255,43 +321,27 @@ function renderEquation(
   const scale = Math.min(745 / sourceWidth, 70 / sourceHeight);
   const left = (ALGEBRA_WIDTH - sourceWidth * scale) / 2;
   const phase = random() * Math.PI * 2;
-  const shear = (random() - 0.5) * 0.1;
-  const wells = [
-    {
-      x: 180 + random() * 480,
-      y: centerY + (random() - 0.5) * 32,
-      radius: 130 + random() * 85,
-      swirl: (random() < 0.5 ? -1 : 1) * (0.28 + random() * 0.18),
-      pull: 0.075 + random() * 0.07
-    },
-    {
-      x: 125 + random() * 590,
-      y: centerY + (random() - 0.5) * 38,
-      radius: 90 + random() * 70,
-      swirl: (random() < 0.5 ? -1 : 1) * (0.12 + random() * 0.14),
-      pull: 0.035 + random() * 0.05
-    }
-  ];
+  const shear = (random() - 0.5) * 0.18;
+  const gravityLimit = 24 * Math.PI / 180;
   const transform = (point: Point): Point => {
     const rawX = left + (point[0] - glyph.bounds.minX) * scale;
     const normalizedY = (point[1] - (glyph.bounds.minY + glyph.bounds.maxY) / 2) * scale;
     const wave = Math.sin(rawX * 0.018 + phase) * 5
       + Math.sin(rawX * 0.007 - phase * 0.6) * 3.1;
-    let warpedX = rawX + normalizedY * shear;
-    let warpedY = centerY - normalizedY + wave;
-    for (const well of wells) {
-      const dx = warpedX - well.x;
-      const dy = warpedY - well.y;
-      const distance = Math.max(18, Math.hypot(dx, dy));
-      const influence = Math.exp(-0.9 * (distance / well.radius) ** 2);
-      const angle = well.swirl * influence;
-      const radialScale = 1 - well.pull * influence;
-      const cosine = Math.cos(angle);
-      const sine = Math.sin(angle);
-      warpedX = well.x + (dx * cosine - dy * sine) * radialScale;
-      warpedY = well.y + (dx * sine + dy * cosine) * radialScale;
-    }
-    return [warpedX, warpedY];
+    const source: Point = [
+      rawX + normalizedY * shear,
+      centerY - normalizedY + wave
+    ];
+    // Gravity bends each large CAPTCHA glyph around its own center. Algebra's
+    // equation is much longer, so use short local anchors to obtain the same
+    // lensing without collapsing or stretching an entire expression.
+    const anchor: Point = [Math.round(rawX / 34) * 34, centerY + wave];
+    const warpedSource = applyGravityField(source, wells, gravityLimit);
+    const warpedAnchor = applyGravityField(anchor, wells, gravityLimit);
+    return [
+      anchor[0] + warpedSource[0] - warpedAnchor[0],
+      anchor[1] + warpedSource[1] - warpedAnchor[1]
+    ];
   };
   const transformedPaths: Point[][] = [];
   for (const path of glyph.paths) {
@@ -312,62 +362,113 @@ function renderEquation(
     if (transformed.length > 1) transformedPaths.push(transformed);
   }
 
-  // Draw the complete outline first. Interleaving outline and foreground
-  // segments would let each new outline cover the preceding bright stroke.
-  for (const path of transformedPaths) {
-    for (let index = 1; index < path.length; index += 1) {
-      drawLine(pixels, path[index - 1]!, path[index]!, 4.5, [22, 8, 36, 230]);
+  const strokeStyle = random();
+  const thickness = strokeStyle < 0.42 ? 0.85 + random() * 0.4 : 1.1 + random() * 0.45;
+  const drawPaths = (lineWidth: number, lineColor: Rgba, offsetX = 0, offsetY = 0) => {
+    for (const path of transformedPaths) {
+      for (let index = 1; index < path.length; index += 1) {
+        drawLine(
+          pixels,
+          [path[index - 1]![0] + offsetX, path[index - 1]![1] + offsetY],
+          [path[index]![0] + offsetX, path[index]![1] + offsetY],
+          lineWidth * (0.92 + Math.sin(index * 1.7 + phase) * 0.08),
+          lineColor
+        );
+      }
     }
-  }
-  for (const path of transformedPaths) {
-    for (let index = 1; index < path.length; index += 1) {
-      drawLine(pixels, path[index - 1]!, path[index]!, 2.25, color);
-    }
+  };
+  if (strokeStyle > 0.82) drawPaths(thickness * 0.72, ghostColor, 2 + random() * 3, random() * 3 - 1.5);
+  drawPaths(thickness, color);
+  if (strokeStyle >= 0.42 && strokeStyle <= 0.82) {
+    drawPaths(thickness * 0.4, innerColor);
   }
 }
 
 export function renderAlgebraImage(problem: AlgebraProblem): Buffer {
   const random = createPrng(randomBytes(4));
   const pixels = new Uint8Array(ALGEBRA_WIDTH * ALGEBRA_HEIGHT * 4);
-  fillBackground(pixels, random);
+  const theme = VISUAL_THEMES[Math.floor(random() * VISUAL_THEMES.length)]!;
+  fillBackground(pixels, random, theme);
+  drawOptionalGrid(pixels, random, theme);
 
-  const pale: Rgba = [151, 80, 213, 112];
-  for (let index = 0; index < 3; index += 1) {
-    const base = 48 + random() * 164;
-    drawBezier(pixels, [
+  const primaryWell: AlgebraWell = {
+    x: 150 + random() * 540,
+    y: 42 + random() * 176,
+    radius: 185 + random() * 90,
+    pull: 0.12 + random() * 0.09,
+    swirl: (random() < 0.5 ? -1 : 1) * (0.82 + random() * 0.52)
+  };
+  const wells: AlgebraWell[] = [primaryWell];
+  if (random() < 0.62) {
+    wells.push({
+      x: Math.max(85, Math.min(ALGEBRA_WIDTH - 85,
+        ALGEBRA_WIDTH - primaryWell.x + (random() - 0.5) * 120)),
+      y: Math.max(32, Math.min(ALGEBRA_HEIGHT - 32,
+        ALGEBRA_HEIGHT - primaryWell.y + (random() - 0.5) * 70)),
+      radius: 145 + random() * 85,
+      pull: 0.055 + random() * 0.065,
+      swirl: (random() < 0.5 ? -1 : 1) * (0.34 + random() * 0.42)
+    });
+  }
+
+  const paleLineCount = 1 + Math.floor(random() * 4);
+  for (let index = 0; index < paleLineCount; index += 1) {
+    const base = 45 + random() * 170;
+    drawGravityBezier(pixels, [
       [-20, base],
       [220 + random() * 120, base + (random() - 0.5) * 115],
       [620 + random() * 120, base + (random() - 0.5) * 115],
       [ALGEBRA_WIDTH + 20, 45 + random() * 170]
-    ], 1.35 + random() * 0.75, pale);
+    ], 1.2 + random() * 1.1, theme.paleLine, wells);
   }
 
-  renderEquation(pixels, problem.equations[0], 80, random, [244, 229, 255, 255]);
-  renderEquation(pixels, problem.equations[1], 180, random, [220, 196, 255, 255]);
-
-  const foregroundColors: readonly Rgba[] = [
-    [178, 91, 237, 170],
-    [116, 81, 207, 155],
-    [205, 125, 255, 142]
-  ];
-  for (let index = 0; index < 3; index += 1) {
+  // Foreground-strength lines are placed before the equations. They retain
+  // Gravity's crossings and thickness variation without erasing a minus sign
+  // or turning a plus sign into a vertical bar.
+  const foregroundLineCount = 1 + Math.floor(random() * 4);
+  for (let index = 0; index < foregroundLineCount; index += 1) {
     const base = 46 + random() * 168;
-    drawBezier(pixels, [
+    drawGravityBezier(pixels, [
       [-16, base],
       [260 + random() * 100, base + (random() - 0.5) * 92],
       [610 + random() * 100, base + (random() - 0.5) * 92],
       [ALGEBRA_WIDTH + 16, 45 + random() * 170]
-    ], 1.45 + random() * 0.9, foregroundColors[index]!);
+    ], 1.4 + random() * 1.4,
+    theme.foregroundColors[index % theme.foregroundColors.length]!, wells);
   }
 
-  for (let index = 0; index < 34; index += 1) {
+  const noiseMarkCount = 18 + Math.floor(random() * 55);
+  for (let index = 0; index < noiseMarkCount; index += 1) {
     drawDisc(
       pixels,
       18 + random() * (ALGEBRA_WIDTH - 36),
       15 + random() * (ALGEBRA_HEIGHT - 30),
-      0.7 + random(),
-      [163, 101, 219, 70]
+      0.8 + random() * 1.4,
+      theme.noiseColor
     );
   }
+
+  const paletteOffset = Math.floor(random() * theme.glyphColors.length);
+  renderEquation(
+    pixels,
+    problem.equations[0],
+    80,
+    random,
+    theme.glyphColors[paletteOffset]!,
+    theme.innerColors[paletteOffset % theme.innerColors.length]!,
+    theme.foregroundColors[(paletteOffset + 1) % theme.foregroundColors.length]!,
+    wells
+  );
+  const secondIndex = (paletteOffset + 1) % theme.glyphColors.length;
+  renderEquation(
+    pixels,
+    problem.equations[1],
+    180,
+    random,
+    theme.glyphColors[secondIndex]!,
+    theme.innerColors[secondIndex % theme.innerColors.length]!,
+    theme.foregroundColors[(secondIndex + 1) % theme.foregroundColors.length]!,
+    wells
+  );
   return encodePng(pixels);
 }
