@@ -1,8 +1,4 @@
 import { renderGravityImage } from "../dist/gravity-renderer.js";
-import {
-  generateAlgebraProblem,
-  renderAlgebraImage
-} from "../dist/algebra-renderer.js";
 
 const maximumRss = 100 * 1024 * 1024;
 const cpuStart = process.cpuUsage();
@@ -11,16 +7,15 @@ let peakRss = process.memoryUsage().rss;
 let encodedBytes = 0;
 
 for (let index = 0; index < 60; index += 1) {
-  const gravity = renderGravityImage(index % 2 === 0 ? "N3XA" : "S4FE");
-  const algebra = renderAlgebraImage(generateAlgebraProblem());
-  encodedBytes += gravity.byteLength + algebra.byteLength;
+  const output = renderGravityImage(index % 2 === 0 ? "N3XA" : "S4FE");
+  encodedBytes += output.byteLength;
   peakRss = Math.max(peakRss, process.memoryUsage().rss);
   await new Promise((resolve) => setImmediate(resolve));
 }
 
 const cpu = process.cpuUsage(cpuStart);
 const result = {
-  rendersPerType: 60,
+  renders: 60,
   encodedBytes,
   wallMs: Math.round(performance.now() - wallStart),
   cpuMs: Math.round((cpu.user + cpu.system) / 1000),

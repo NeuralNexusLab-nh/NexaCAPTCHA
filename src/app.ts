@@ -112,21 +112,6 @@ export function createApp(store: VerificationStore) {
     }
   );
 
-  app.post(
-    "/api/algebra/verifications",
-    limiter(60_000, 120),
-    async (request, response, next) => {
-      try {
-        z.object({}).strict().parse(request.body);
-        const verification = await store.create("algebra");
-        response.setHeader("Cache-Control", "no-store");
-        response.status(201).json(verification);
-      } catch (error) {
-        next(error);
-      }
-    }
-  );
-
   app.get(
     "/api/verifications/:verificationId/status",
     limiter(60_000, 120),
@@ -183,12 +168,6 @@ export function createApp(store: VerificationStore) {
   });
 
   app.get("/captcha/gravity.js", widgetHeaders, (_request, response) => {
-    response.setHeader("Access-Control-Allow-Origin", "*");
-    response.setHeader("Cache-Control", "public, max-age=300");
-    response.sendFile(path.join(config.publicDirectory, "captcha.js"));
-  });
-
-  app.get("/captcha/algebra.js", widgetHeaders, (_request, response) => {
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Cache-Control", "public, max-age=300");
     response.sendFile(path.join(config.publicDirectory, "captcha.js"));

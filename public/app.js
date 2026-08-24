@@ -8,12 +8,12 @@
       skip: "Skip to content", languageLabel: "Language", navTop: "Home", navDemo: "Demo", navFeatures: "How it works", navExperiment: "Results", navCallback: "Integration", navVerify: "Check the result",
       heroEyebrow: "ADAPTIVE HUMAN VERIFICATION", heroTitleLine1: "Human by design.", heroTitleLine2: "Automation denied.", heroLead: "NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.",
       tryIt: "Try NexaCAPTCHA", addToSite: "View integration", noCleanFrame: "Designed for human readability", changingMotion: "17.6% model success in our Gravity test", higherCost: "Two attempts before expiry",
-      demoEyebrow: "CAPTCHA MODULES", demoTitle: "Available verifications.", liveDemo: "LIVE DEMO", tryGravity: "Try NexaCAPTCHA Gravity", tryAlgebra: "Try NexaCAPTCHA Algebra", ready: "Ready", gravityHelp: "Gravity presents four distorted characters in a static image. Read all four, then enter them below.", algebraHelp: "Algebra displays a distorted system of two equations. Solve it, then enter the integer values of x and y.", openGravityDemo: "Open the full Gravity demo", demoOutput: "Your result will appear here.",
-      integrationButtonTitle: "Use the hosted service", integrationButtonLead: "Add NexaCAPTCHA with the official browser loader.", selfHostButtonTitle: "Self-host NexaCAPTCHA", selfHostButtonLead: "Run the compatible service on your own infrastructure.", moduleLoadersTitle: "Frontend loaders", gravityLoader: "Gravity loader", algebraLoader: "Algebra loader", selectModule: "CAPTCHA",
+      demoEyebrow: "CAPTCHA MODULES", demoTitle: "Available verifications.", liveDemo: "LIVE DEMO", tryGravity: "Try NexaCAPTCHA Gravity", ready: "Ready", gravityHelp: "Gravity presents four distorted characters in a static image. Read all four, then enter them below.", openGravityDemo: "Open the full Gravity demo", demoOutput: "Your result will appear here.",
+      integrationButtonTitle: "Use the hosted service", integrationButtonLead: "Add NexaCAPTCHA with the official browser loader.", selfHostButtonTitle: "Self-host NexaCAPTCHA", selfHostButtonLead: "Run the compatible service on your own infrastructure.", moduleLoadersTitle: "Frontend loader", gravityLoader: "Gravity loader",
       featuresEyebrow: "HOW IT WORKS", featuresTitle: "Security that remains usable.", featuresLead: "NexaCAPTCHA distributes visual information across time. People follow a clear sequence, while automated systems must reconstruct it from changing frames.",
       experimentEyebrow: "VERIFICATION TEST", experimentTitle: "Verification performance, measured.", experimentLead: "All agents started without prior context and developed their approach during the test.", experimentVersion: "Tested build", experimentHumanLabel: "Human", verificationSystem: "Verification system", secondsAverage: "seconds average", successRate: "success rate", experimentNote: "These results describe the recorded test runs and are not a guarantee of performance against every model or execution.",
       featureIncompleteTitle: "No complete still image", featureIncompleteBody: "The answer is revealed over time instead of being exposed in a single frame.", featureDistortionTitle: "Independent motion profiles", featureDistortionBody: "Each character moves and rotates on its own schedule, complicating frame-by-frame alignment.", featureMotionTitle: "Stable visual anchors", featureMotionBody: "Distinct colors help people track characters through motion without exposing the answer in metadata.", featureWindowTitle: "Variable reveal path", featureWindowBody: "The visible region changes direction and pace, reducing the value of fixed-window extraction.", featureUniqueTitle: "Per-verification rendering", featureUniqueBody: "Timing, distortion, placement, and masking are regenerated for every verification.", featureCostTitle: "Server-enforced controls", featureCostBody: "Retry limits, expiry, cooldowns, and one-time response tokens are enforced by the server.",
-      callbackEyebrow: "INTEGRATION", callbackTitle: "Connect NexaCAPTCHA.", callbackLead: "Choose a CAPTCHA module, add it to your page, then pass the completed result to your backend.", callbackCodeTitle: "Frontend setup", callbackCodeLead: "Choose Gravity or Algebra below. The callback name and submission logic are yours to change.", callbackNameNote: "Choose your own callback name if you prefer. Use exactly the same name in the HTML and JavaScript.", callbackSecurity: "The callback is a frontend handoff, not final proof. Accept the form only after /api/siteverify returns success: true.", callbackValuesTitle: "Completion result", callbackValuesLead: "Your callback receives one result object with these fields.", resultMeaning: "The object passed into your callback function.", successMeaning: "A boolean. It is true when the verification has been completed.",
+      callbackEyebrow: "INTEGRATION", callbackTitle: "Connect NexaCAPTCHA.", callbackLead: "Add Gravity to your page, then pass the completed result to your backend.", callbackCodeTitle: "Frontend setup", callbackCodeLead: "Load Gravity below. The callback name and submission logic are yours to change.", callbackNameNote: "Choose your own callback name if you prefer. Use exactly the same name in the HTML and JavaScript.", callbackSecurity: "The callback is a frontend handoff, not final proof. Accept the form only after /api/siteverify returns success: true.", callbackValuesTitle: "Completion result", callbackValuesLead: "Your callback receives one result object with these fields.", resultMeaning: "The object passed into your callback function.", successMeaning: "A boolean. It is true when the verification has been completed.",
       htmlLocation: "HTML · page markup", frontendLocation: "JavaScript · frontend", backendLocation: "Node.js · backend", idMeaning: "The 16-character verification ID. Send it to your backend.", tokenMeaning: "The 64-character one-time token. Send it to your backend without changing it.",
       verifyEyebrow: "SERVER VALIDATION", verifyTitle: "Validate every response server-side.", verifyLead: "Before accepting a form submission, registration, or login, send both values to NexaCAPTCHA.", request: "Request", successResponse: "Response · success", failureResponse: "Response · failure", important: "Continue only when the response says success: true. A responseToken works once and expires after five minutes.",
       copy: "Copy", copied: "Copied", copySuccess: "Code copied.", copyFailure: "Could not copy. Select the code manually.", completed: "Verification complete", footerTagline: "Distorted-text verification with server-enforced controls."
@@ -64,15 +64,11 @@
     selfHostButtonLead: "在自己的基礎設施上執行相容服務。",
     moduleLoadersTitle: "前端載入程式",
     gravityLoader: "Gravity 載入程式",
-    algebraLoader: "Algebra 載入程式",
-    selectModule: "驗證方式",
-    tryAlgebra: "試用 NexaCAPTCHA Algebra",
-    algebraHelp: "Algebra 會顯示經過扭曲的二元一次方程組。解出後，輸入 x 與 y 的整數值。",
     callbackEyebrow: "系統串接",
     callbackTitle: "串接 NexaCAPTCHA。",
-    callbackLead: "選擇驗證方式並加入頁面，再把完成結果交給你的後端。",
+    callbackLead: "將 Gravity 加入頁面，再把完成結果交給你的後端。",
     callbackCodeTitle: "前端串接",
-    callbackCodeLead: "在下方選擇 Gravity 或 Algebra。回呼名稱與送出方式都能依你的專案調整。",
+    callbackCodeLead: "載入下方的 Gravity。回呼名稱與送出方式都能依你的專案調整。",
     callbackNameNote: "函式名稱可以自行修改，但 HTML 與 JavaScript 中的名稱必須完全相同。",
     callbackSecurity: "Callback 只負責將結果交給前端，不能當成最終證明。只有 /api/siteverify 回傳 success: true 時才能接受表單。",
     callbackValuesTitle: "完成結果",
@@ -99,15 +95,11 @@
     selfHostButtonLead: "互換サービスを独自のインフラで運用します。",
     moduleLoadersTitle: "フロントエンドローダー",
     gravityLoader: "Gravity ローダー",
-    algebraLoader: "Algebra ローダー",
-    selectModule: "認証方式",
-    tryAlgebra: "NexaCAPTCHA Algebraを試す",
-    algebraHelp: "Algebraは歪んだ二元連立方程式を表示します。解いた後、xとyの整数値を入力してください。",
     callbackEyebrow: "システム導入",
     callbackTitle: "NexaCAPTCHAを導入。",
-    callbackLead: "認証方式を選んでページに追加し、完了結果をバックエンドへ渡します。",
+    callbackLead: "Gravityをページに追加し、完了結果をバックエンドへ渡します。",
     callbackCodeTitle: "フロントエンド導入",
-    callbackCodeLead: "以下でGravityまたはAlgebraを選択できます。コールバック名と送信処理はプロジェクトに合わせて変更できます。",
+    callbackCodeLead: "以下のGravityを読み込みます。コールバック名と送信処理はプロジェクトに合わせて変更できます。",
     callbackNameNote: "関数名は自由に変更できますが、HTMLとJavaScriptでは完全に同じ名前を使用してください。",
     callbackSecurity: "Callbackはフロントエンドへの受け渡しであり、最終的な証明ではありません。/api/siteverifyがsuccess: trueを返した場合のみフォームを受け付けてください。",
     callbackValuesTitle: "完了結果",
@@ -234,21 +226,4 @@
   window.onGravityDemoComplete = function (result) {
     showDemoResult("demo-output-gravity", result);
   };
-
-  window.onAlgebraDemoComplete = function (result) {
-    showDemoResult("demo-output-algebra", result);
-  };
-
-  var captchaModuleSelect = document.getElementById("captcha-module-select");
-  if (captchaModuleSelect) {
-    captchaModuleSelect.addEventListener("change", function () {
-      var moduleName = captchaModuleSelect.value === "algebra" ? "algebra" : "gravity";
-      document.querySelectorAll(".module-loader-name").forEach(function (element) {
-        element.textContent = moduleName + ".js";
-      });
-      document.querySelectorAll(".module-type-name").forEach(function (element) {
-        element.textContent = moduleName;
-      });
-    });
-  }
 })();

@@ -24,10 +24,6 @@ Gravity presents four distorted characters in a static image. Read all four, the
 
 [Try NexaCAPTCHA Gravity](https://nexacaptchademo.zeabur.app/gravity)
 
-### Try NexaCAPTCHA Algebra
-
-Algebra displays a distorted system of two equations. Solve it, then enter the integer values of `x` and `y`.
-
 [Integrate NexaCAPTCHA](#integration)
 
 **VERIFICATION TEST · Tested build**
@@ -50,14 +46,13 @@ These results describe the recorded test runs and are not a guarantee of perform
 
 ## Connect NexaCAPTCHA.
 
-Choose a CAPTCHA module, add it to your page, then pass the completed result to your backend.
+Add Gravity to your page, then pass the completed result to your backend.
 
 ### Frontend setup
 
 Load the frontend script. The callback name and submission logic are yours to change.
 
 - Gravity: `https://nexacaptcha.nxlabtw.com/captcha/gravity.js`
-- Algebra: `https://nexacaptcha.nxlabtw.com/captcha/algebra.js`
 
 ```html
 <script
@@ -67,12 +62,9 @@ Load the frontend script. The callback name and submission logic are yours to ch
 
 <div
   class="nexa-captcha"
-  data-captcha-type="gravity"
   data-callback="onCaptchaComplete"
 ></div>
 ```
-
-For Algebra, use `/captcha/algebra.js` and set `data-captcha-type="algebra"`. The callback and server verification flow remain unchanged.
 
 The callback name is yours to choose. Use exactly the same name in `data-callback` and your frontend JavaScript.
 

@@ -19,13 +19,8 @@ import { PublicError } from "./errors.js";
 import { MediaDeliveryQueue } from "./media-delivery-queue.js";
 import { RenderQueue } from "./render-queue.js";
 import { renderGravityImage } from "./gravity-renderer.js";
-import {
-  generateAlgebraProblem,
-  renderAlgebraImage,
-  type AlgebraProblem
-} from "./algebra-renderer.js";
 
-export type CaptchaType = "gravity" | "algebra";
+export type CaptchaType = "gravity";
 export type VerificationStatus = "pending" | "completed" | "consumed" | "expired";
 
 interface VerificationRecord {
@@ -51,7 +46,7 @@ interface TokenRecord {
 
 export interface PublicVerification {
   verificationId: string;
-  captchaType: CaptchaType;
+  captchaType: "gravity";
   imageUrl: string;
   expiresInMs: number;
 }
@@ -59,8 +54,6 @@ export interface PublicVerification {
 interface VerificationStoreOptions {
   gravityAnswerFactory?: () => string;
   gravityRenderer?: (answer: string) => Buffer;
-  algebraProblemFactory?: () => AlgebraProblem;
-  algebraRenderer?: (problem: AlgebraProblem) => Buffer;
   dataDirectory?: string;
   mediaDirectory?: string;
   poolSizePerType?: number;
@@ -117,8 +110,6 @@ export class VerificationStore {
   );
   private readonly gravityAnswerFactory: () => string;
   private readonly gravityRenderer: (answer: string) => Buffer;
-  private readonly algebraProblemFactory: () => AlgebraProblem;
-  private readonly algebraRenderer: (problem: AlgebraProblem) => Buffer;
   private readonly dataDirectory: string;
   private readonly imageDirectory: string;
   private readonly verificationDirectory: string;
@@ -134,13 +125,11 @@ export class VerificationStore {
   private dataBytes = 0;
   private cleanupTimer?: NodeJS.Timeout;
   private readonly poolTimers: NodeJS.Timeout[] = [];
-  private readonly refreshingPools = new Set<CaptchaType>();
+  private refreshingPool = false;
 
   constructor(options: VerificationStoreOptions = {}) {
     this.gravityAnswerFactory = options.gravityAnswerFactory ?? generateGravityAnswer;
     this.gravityRenderer = options.gravityRenderer ?? renderGravityImage;
-    this.algebraProblemFactory = options.algebraProblemFactory ?? generateAlgebraProblem;
-    this.algebraRenderer = options.algebraRenderer ?? renderAlgebraImage;
     this.dataDirectory = options.dataDirectory ?? options.mediaDirectory ?? config.dataDirectory;
     this.imageDirectory = path.join(this.dataDirectory, "images");
     this.verificationDirectory = path.join(this.dataDirectory, "verification");
@@ -154,22 +143,19 @@ export class VerificationStore {
     await rm(path.join(this.dataDirectory, "animations"), { recursive: true, force: true });
     await Promise.all([
       mkdir(this.imageDirectory, { recursive: true }),
-      mkdir(this.poolDirectory("algebra"), { recursive: true }),
       mkdir(this.verificationDirectory, { recursive: true }),
       mkdir(this.tokenDirectory, { recursive: true })
     ]);
     this.dataBytes = await directorySize(this.dataDirectory);
     await this.rebuildIndexes();
     if (this.maintainPool) {
-      for (const type of ["gravity", "algebra"] as const) {
-        await this.ensureAtLeastOne(type);
-        const timer = setInterval(
-          () => void this.refreshPool(type),
-          config.poolRefreshIntervalMs
-        );
-        timer.unref();
-        this.poolTimers.push(timer);
-      }
+      await this.ensureAtLeastOne("gravity");
+      const timer = setInterval(
+        () => void this.refreshPool(),
+        config.poolRefreshIntervalMs
+      );
+      timer.unref();
+      this.poolTimers.push(timer);
     }
     this.cleanupTimer = setInterval(() => void this.cleanup(), config.cleanupIntervalMs);
     this.cleanupTimer.unref();
@@ -189,7 +175,7 @@ export class VerificationStore {
       const recordPath = path.join(this.verificationDirectory, name);
       const record = await this.readJson<VerificationRecord & { type: string }>(recordPath);
       if (!record) continue;
-      if (record.type !== "gravity" && record.type !== "algebra") {
+      if (record.type !== "gravity") {
         await this.removeTrackedFile(recordPath);
         await this.removeTrackedFile(path.join(this.tokenDirectory, name));
         continue;
@@ -202,8 +188,8 @@ export class VerificationStore {
     }
   }
 
-  private poolDirectory(type: CaptchaType): string {
-    return type === "gravity" ? this.imageDirectory : path.join(this.imageDirectory, "algebra");
+  private poolDirectory(_type: CaptchaType): string {
+    return this.imageDirectory;
   }
 
   private poolExtension(_type: CaptchaType): string {
@@ -220,15 +206,15 @@ export class VerificationStore {
     if ((await this.poolFiles(type)).length === 0) await this.generatePoolEntry(type, false);
   }
 
-  private async refreshPool(type: CaptchaType): Promise<void> {
-    if (this.refreshingPools.has(type)) return;
-    this.refreshingPools.add(type);
+  private async refreshPool(): Promise<void> {
+    if (this.refreshingPool) return;
+    this.refreshingPool = true;
     try {
-      await this.generatePoolEntry(type, true);
+      await this.generatePoolEntry("gravity", true);
     } catch (error) {
-      console.error(`Unable to refresh ${type} CAPTCHA pool`, error);
+      console.error("Unable to refresh Gravity CAPTCHA pool", error);
     } finally {
-      this.refreshingPools.delete(type);
+      this.refreshingPool = false;
     }
   }
 
@@ -237,29 +223,14 @@ export class VerificationStore {
     const extension = this.poolExtension(type);
     let answer = "";
     let target = "";
-    let algebraProblem: AlgebraProblem | undefined;
     for (let attempt = 0; attempt < 12; attempt += 1) {
-      if (type === "gravity") {
-        answer = this.gravityAnswerFactory();
-        target = path.join(directory, `${answer}${extension}`);
-      } else {
-        algebraProblem = this.algebraProblemFactory();
-        answer = `${algebraProblem.answerX},${algebraProblem.answerY}`;
-        const nonce = randomBase64Url(6);
-        target = path.join(
-          directory,
-          `alg_${algebraProblem.answerX}_${algebraProblem.answerY}_${nonce}${extension}`
-        );
-      }
+      answer = this.gravityAnswerFactory();
+      target = path.join(directory, `${answer}${extension}`);
       if (!(await stat(target).then(() => true).catch(() => false))) break;
       target = "";
     }
     if (!target) return;
-    const media = await this.renderQueue.run(() => {
-      if (type === "gravity") return this.gravityRenderer(answer);
-      if (!algebraProblem) throw new Error("Algebra problem was not generated.");
-      return this.algebraRenderer(algebraProblem);
-    });
+    const media = await this.renderQueue.run(() => this.gravityRenderer(answer));
     this.assertStorageAvailable(media.byteLength);
     await this.writeMedia(target, media);
 
@@ -278,14 +249,6 @@ export class VerificationStore {
     }
   }
 
-  private answerFromPoolFile(type: CaptchaType, filename: string): string {
-    const basename = path.parse(filename).name;
-    if (type === "gravity") return basename;
-    const match = /^alg_(-?\d+)_(-?\d+)_/.exec(basename);
-    if (!match) throw new PublicError(503, "service-unavailable", "Invalid Algebra pool entry.");
-    return `${match[1]},${match[2]}`;
-  }
-
   async create(captchaType: CaptchaType = "gravity"): Promise<PublicVerification> {
     this.assertStorageAvailable(2_048);
     const files = await this.poolFiles(captchaType);
@@ -293,7 +256,7 @@ export class VerificationStore {
       throw new PublicError(503, "service-unavailable", "No verification media is ready.");
     }
     const selected = files[randomInt(files.length)]!;
-    const answer = this.answerFromPoolFile(captchaType, selected);
+    const answer = path.parse(selected).name;
     const id = randomBase64Url(9);
     const verificationId = `ver_${id}`;
     const mediaTicket = randomBase64Url(32);
@@ -374,10 +337,7 @@ export class VerificationStore {
       if (record.retryAvailableAt !== null && record.retryAvailableAt > now) {
         throw new PublicError(429, "answer-cooldown", "Wait before submitting another answer.");
       }
-      const normalizedSubmission = record.type === "gravity"
-        ? normalizeAnswer(submittedAnswer)
-        : submittedAnswer.trim().replaceAll(/\s+/g, "");
-      if (normalizedSubmission !== record.answer) {
+      if (normalizeAnswer(submittedAnswer) !== record.answer) {
         record.attemptsUsed += 1;
         const attemptsRemaining = config.maxAttempts - record.attemptsUsed;
         if (attemptsRemaining <= 0) {
