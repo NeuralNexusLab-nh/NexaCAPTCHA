@@ -113,6 +113,25 @@ export function createApp(store: VerificationStore) {
   );
 
   app.get(
+    "/api/audio/:audioTicket",
+    limiter(60_000, 120),
+    async (request, response, next) => {
+      try {
+        const audio = await store.claimAudio(routeParameter(request.params.audioTicket));
+        response.setHeader("Cache-Control", "no-store, max-age=0");
+        response.setHeader("Content-Type", "audio/mpeg");
+        response.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+        response.sendFile(audio.audioPath, (error) => {
+          audio.release();
+          if (error) next(error);
+        });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  app.get(
     "/api/verifications/:verificationId/status",
     limiter(60_000, 120),
     async (request, response, next) => {

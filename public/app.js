@@ -8,7 +8,7 @@
       skip: "Skip to content", languageLabel: "Language", navTop: "Home", navDemo: "Demo", navFeatures: "How it works", navExperiment: "Results", navCallback: "Integration", navVerify: "Check the result",
       heroEyebrow: "ADAPTIVE HUMAN VERIFICATION", heroTitleLine1: "Human by design.", heroTitleLine2: "Automation denied.", heroLead: "NexaCAPTCHA keeps verification clear for legitimate users while increasing the time, computation, and uncertainty required for automated solving.",
       tryIt: "Try NexaCAPTCHA", addToSite: "View integration", noCleanFrame: "Designed for human readability", changingMotion: "17.6% model success in our Gravity test", higherCost: "Two attempts before expiry",
-      demoEyebrow: "CAPTCHA MODULES", demoTitle: "Available verifications.", liveDemo: "LIVE DEMO", tryGravity: "Try NexaCAPTCHA Gravity", ready: "Ready", gravityHelp: "Gravity presents four distorted characters in a static image. Read all four, then enter them below.", openGravityDemo: "Open the full Gravity demo", demoOutput: "Your result will appear here.",
+      demoEyebrow: "CAPTCHA MODULES", demoTitle: "Available verifications.", liveDemo: "LIVE DEMO", tryGravity: "Try NexaCAPTCHA Gravity", ready: "Ready", gravityHelp: "Gravity presents four distorted characters in a static image. Read all four, or use the Audio button to hear them.", openGravityDemo: "Open the full Gravity demo", demoOutput: "Your result will appear here.",
       integrationButtonTitle: "Use the hosted service", integrationButtonLead: "Add NexaCAPTCHA with the official browser loader.", selfHostButtonTitle: "Self-host NexaCAPTCHA", selfHostButtonLead: "Run the compatible service on your own infrastructure.", moduleLoadersTitle: "Frontend loader", gravityLoader: "Gravity loader",
       featuresEyebrow: "HOW IT WORKS", featuresTitle: "Security that remains usable.", featuresLead: "NexaCAPTCHA distributes visual information across time. People follow a clear sequence, while automated systems must reconstruct it from changing frames.",
       experimentEyebrow: "VERIFICATION TEST", experimentTitle: "Verification performance, measured.", experimentLead: "All agents started without prior context and developed their approach during the test.", experimentVersion: "Tested build", experimentHumanLabel: "Human", verificationSystem: "Verification system", secondsAverage: "seconds average", successRate: "success rate", experimentNote: "These results describe the recorded test runs and are not a guarantee of performance against every model or execution.",
@@ -50,7 +50,7 @@
 
   Object.assign(translations["zh-Hant"], {
     tryGravity: "試用 NexaCAPTCHA Gravity",
-    gravityHelp: "Gravity 以靜態圖片呈現四個扭曲字元。辨識全部字元後，在下方輸入答案。",
+    gravityHelp: "Gravity 以靜態圖片呈現四個扭曲字元。你可以直接辨識，也可以按 Audio 聆聽字元。",
     openGravityDemo: "開啟完整 Gravity Demo",
     experimentLead: "所有 Agent 都在沒有既有上下文的情況下開始，並於測試中逐步摸索解法。",
     navDemo: "示範",
@@ -81,7 +81,7 @@
 
   Object.assign(translations.ja, {
     tryGravity: "NexaCAPTCHA Gravityを試す",
-    gravityHelp: "Gravityは静止画像に歪んだ4文字を表示します。すべて読み取り、下に入力してください。",
+    gravityHelp: "Gravityは静止画像に歪んだ4文字を表示します。読み取るか、Audioボタンで文字を聞くことができます。",
     openGravityDemo: "Gravityのフルデモを開く",
     experimentLead: "すべてのAgentは事前コンテキストなしで開始し、テスト中に解法を組み立てました。",
     navDemo: "デモ",

@@ -16,3 +16,7 @@ Inter and Space Grotesk font files are distributed under the SIL Open Font
 License 1.1 through Fontsource packages.
 
 Third-party components retain their own copyright and license notices.
+
+MP3 encoding is provided by the `@breezystack/lamejs` package, distributed
+under the GNU Lesser General Public License v3.0. The package remains a
+separate dependency and retains its own copyright and license terms.

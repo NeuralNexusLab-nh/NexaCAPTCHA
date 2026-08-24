@@ -35,6 +35,7 @@ describe("VerificationStore", () => {
     store = new VerificationStore({
       gravityAnswerFactory: () => "GRAV",
       gravityRenderer: () => Buffer.from([137, 80, 78, 71]),
+      gravityAudioRenderer: () => Buffer.from([255, 251, 144, 100]),
       dataDirectory: directory,
       clock: () => now
     });
@@ -67,6 +68,7 @@ describe("VerificationStore", () => {
     const second = await store.create();
     expect(first.captchaType).toBe("gravity");
     expect(first.imageUrl).toMatch(/^\/api\/media\/[A-Za-z0-9_-]+$/);
+    expect(first.audioUrl).toMatch(/^\/api\/audio\/[A-Za-z0-9_-]+$/);
     expect(first.imageUrl).not.toContain(first.verificationId);
 
     const files = await readdir(path.join(directory, "verification"));
@@ -88,6 +90,13 @@ describe("VerificationStore", () => {
     expect(firstMedia.mediaPath).toBe(secondMedia.mediaPath);
     firstMedia.release();
     secondMedia.release();
+
+    const firstAudio = await store.claimAudio(first.audioUrl.split("/").at(-1)!);
+    expect(firstAudio.audioPath).toBe(path.join(directory, "audio", "GRAV.mp3"));
+    firstAudio.release();
+    expect(await publicErrorCode(
+      () => store.claimAudio(first.audioUrl.split("/").at(-1)!)
+    )).toBe("audio-consumed");
   });
 
   it("expires after two incorrect attempts with a twenty-second cooldown", async () => {

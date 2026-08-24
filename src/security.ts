@@ -10,6 +10,7 @@ const WEBSITE_CSP = [
   "style-src 'self'",
   "font-src 'self'",
   "img-src 'self' data:",
+  "media-src 'self' blob:",
   "connect-src 'self'",
   "frame-src 'self'",
   "manifest-src 'self'"
@@ -25,6 +26,7 @@ const WIDGET_CSP = [
   "style-src 'self'",
   "font-src 'self'",
   "img-src 'self' data:",
+  "media-src 'self' blob:",
   "connect-src 'self'"
 ].join("; ");
 

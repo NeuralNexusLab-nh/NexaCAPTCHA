@@ -18,6 +18,7 @@ describe("NexaCAPTCHA HTTP API", () => {
     store = new VerificationStore({
       gravityAnswerFactory: () => "GRAV",
       gravityRenderer: () => Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+      gravityAudioRenderer: () => Buffer.from([255, 251, 144, 100]),
       dataDirectory: directory,
       clock: () => now
     });
@@ -45,6 +46,16 @@ describe("NexaCAPTCHA HTTP API", () => {
       .get(created.body.imageUrl)
       .expect(410)
       .expect(({ body }) => expect(body.errorCode).toBe("media-consumed"));
+    expect(created.body.audioUrl).toMatch(/^\/api\/audio\/[A-Za-z0-9_-]+$/);
+    await request(app)
+      .get(created.body.audioUrl)
+      .expect("Content-Type", /audio\/mpeg/)
+      .expect("Cache-Control", /no-store/)
+      .expect(200);
+    await request(app)
+      .get(created.body.audioUrl)
+      .expect(410)
+      .expect(({ body }) => expect(body.errorCode).toBe("audio-consumed"));
 
     await request(app)
       .get(`/api/verifications/${created.body.verificationId}/status`)
@@ -110,6 +121,7 @@ describe("NexaCAPTCHA HTTP API", () => {
     const widget = await request(app).get("/widget").expect(200);
     expect(widget.headers["content-security-policy"]).toContain("frame-ancestors *");
     expect(widget.headers["content-security-policy"]).toContain("img-src 'self' data:");
+    expect(widget.headers["content-security-policy"]).toContain("media-src 'self' blob:");
     expect(widget.headers["x-frame-options"]).toBeUndefined();
     expect(widget.headers["cross-origin-opener-policy"]).toBe("unsafe-none");
   });

@@ -19,6 +19,7 @@ import { PublicError } from "./errors.js";
 import { MediaDeliveryQueue } from "./media-delivery-queue.js";
 import { RenderQueue } from "./render-queue.js";
 import { renderGravityImage } from "./gravity-renderer.js";
+import { renderGravityAudio } from "./gravity-audio-renderer.js";
 
 export type CaptchaType = "gravity";
 export type VerificationStatus = "pending" | "completed" | "consumed" | "expired";
@@ -36,6 +37,9 @@ interface VerificationRecord {
   mediaPath: string;
   mediaTicketHash: string;
   mediaConsumed: boolean;
+  audioPath: string;
+  audioTicketHash: string;
+  audioConsumed: boolean;
 }
 
 interface TokenRecord {
@@ -48,12 +52,14 @@ export interface PublicVerification {
   verificationId: string;
   captchaType: "gravity";
   imageUrl: string;
+  audioUrl: string;
   expiresInMs: number;
 }
 
 interface VerificationStoreOptions {
   gravityAnswerFactory?: () => string;
   gravityRenderer?: (answer: string) => Buffer;
+  gravityAudioRenderer?: (answer: string) => Buffer;
   dataDirectory?: string;
   mediaDirectory?: string;
   poolSizePerType?: number;
@@ -110,14 +116,17 @@ export class VerificationStore {
   );
   private readonly gravityAnswerFactory: () => string;
   private readonly gravityRenderer: (answer: string) => Buffer;
+  private readonly gravityAudioRenderer: (answer: string) => Buffer;
   private readonly dataDirectory: string;
   private readonly imageDirectory: string;
+  private readonly audioDirectory: string;
   private readonly verificationDirectory: string;
   private readonly tokenDirectory: string;
   private readonly poolSizePerType: number;
   private readonly maintainPool: boolean;
   private readonly clock: () => number;
   private readonly mediaTickets = new Map<string, string>();
+  private readonly audioTickets = new Map<string, string>();
   private readonly pendingMediaReferences = new Map<string, number>();
   private readonly recordLocks = new Map<string, Promise<void>>();
   private storageTail: Promise<void> = Promise.resolve();
@@ -130,8 +139,10 @@ export class VerificationStore {
   constructor(options: VerificationStoreOptions = {}) {
     this.gravityAnswerFactory = options.gravityAnswerFactory ?? generateGravityAnswer;
     this.gravityRenderer = options.gravityRenderer ?? renderGravityImage;
+    this.gravityAudioRenderer = options.gravityAudioRenderer ?? renderGravityAudio;
     this.dataDirectory = options.dataDirectory ?? options.mediaDirectory ?? config.dataDirectory;
     this.imageDirectory = path.join(this.dataDirectory, "images");
+    this.audioDirectory = path.join(this.dataDirectory, "audio");
     this.verificationDirectory = path.join(this.dataDirectory, "verification");
     this.tokenDirectory = path.join(this.dataDirectory, "tokens");
     this.poolSizePerType = options.poolSizePerType ?? config.poolSizePerType;
@@ -143,10 +154,12 @@ export class VerificationStore {
     await rm(path.join(this.dataDirectory, "animations"), { recursive: true, force: true });
     await Promise.all([
       mkdir(this.imageDirectory, { recursive: true }),
+      mkdir(this.audioDirectory, { recursive: true }),
       mkdir(this.verificationDirectory, { recursive: true }),
       mkdir(this.tokenDirectory, { recursive: true })
     ]);
     this.dataBytes = await directorySize(this.dataDirectory);
+    await this.reconcileGravityPool();
     await this.rebuildIndexes();
     if (this.maintainPool) {
       await this.ensureAtLeastOne("gravity");
@@ -184,6 +197,10 @@ export class VerificationStore {
       if (!record.mediaConsumed) {
         this.mediaTickets.set(record.mediaTicketHash, record.id);
         this.changeMediaReference(record.mediaPath, 1);
+      }
+      if (!record.audioConsumed && record.audioTicketHash && record.audioPath) {
+        this.audioTickets.set(record.audioTicketHash, record.id);
+        this.changeMediaReference(record.audioPath, 1);
       }
     }
   }
@@ -230,22 +247,36 @@ export class VerificationStore {
       target = "";
     }
     if (!target) return;
-    const media = await this.renderQueue.run(() => this.gravityRenderer(answer));
-    this.assertStorageAvailable(media.byteLength);
-    await this.writeMedia(target, media);
+    const [media, audio] = await this.renderQueue.run(() => [
+      this.gravityRenderer(answer),
+      this.gravityAudioRenderer(answer)
+    ]);
+    this.assertStorageAvailable(media.byteLength + audio.byteLength);
+    const audioTarget = path.join(this.audioDirectory, `${answer}.mp3`);
+    await this.writeMedia(audioTarget, audio);
+    try {
+      await this.writeMedia(target, media);
+    } catch (error) {
+      await this.removeTrackedFile(audioTarget);
+      throw error;
+    }
 
     const files = await this.poolFiles(type);
     if (replaceWhenFull && files.length > this.poolSizePerType) {
       const candidates = files.filter((name) => {
         if (name === path.basename(target)) return false;
-        return (this.pendingMediaReferences.get(path.join(directory, name)) ?? 0) === 0;
+        const answerName = path.parse(name).name;
+        return (this.pendingMediaReferences.get(path.join(directory, name)) ?? 0) === 0 &&
+          (this.pendingMediaReferences.get(path.join(this.audioDirectory, `${answerName}.mp3`)) ?? 0) === 0;
       });
       const victim = candidates.length > 0
         ? candidates[randomInt(candidates.length)]
         : undefined;
       // If every old item is waiting to be loaded, discard the new item rather
       // than breaking a verification that has already been handed out.
-      await this.removeTrackedFile(path.join(directory, victim ?? path.basename(target)));
+      const removed = victim ?? path.basename(target);
+      await this.removeTrackedFile(path.join(directory, removed));
+      await this.removeTrackedFile(path.join(this.audioDirectory, `${path.parse(removed).name}.mp3`));
     }
   }
 
@@ -261,6 +292,8 @@ export class VerificationStore {
     const verificationId = `ver_${id}`;
     const mediaTicket = randomBase64Url(32);
     const mediaTicketHash = sha256Text(mediaTicket);
+    const audioTicket = randomBase64Url(32);
+    const audioTicketHash = sha256Text(audioTicket);
     const record: VerificationRecord = {
       id: verificationId,
       type: captchaType,
@@ -273,19 +306,71 @@ export class VerificationStore {
       retryAvailableAt: null,
       mediaPath: path.join(this.poolDirectory(captchaType), selected),
       mediaTicketHash,
-      mediaConsumed: false
+      mediaConsumed: false,
+      audioPath: path.join(this.audioDirectory, `${answer}.mp3`),
+      audioTicketHash,
+      audioConsumed: false
     };
     await this.writeJson(this.verificationPath(verificationId), record, true);
     this.verificationCount += 1;
     this.mediaTickets.set(mediaTicketHash, verificationId);
     this.changeMediaReference(record.mediaPath, 1);
+    this.audioTickets.set(audioTicketHash, verificationId);
+    this.changeMediaReference(record.audioPath, 1);
     const mediaUrl = `/api/media/${encodeURIComponent(mediaTicket)}`;
     return {
       verificationId,
       captchaType,
       imageUrl: mediaUrl,
+      audioUrl: `/api/audio/${encodeURIComponent(audioTicket)}`,
       expiresInMs: config.verificationLifetimeMs
     };
+  }
+
+  private async reconcileGravityPool(): Promise<void> {
+    const images = await readdir(this.imageDirectory).catch(() => [] as string[]);
+    const audio = new Set(await readdir(this.audioDirectory).catch(() => [] as string[]));
+    for (const image of images.filter((name) => name.endsWith(".png"))) {
+      const audioName = `${path.parse(image).name}.mp3`;
+      if (!audio.has(audioName)) await this.removeTrackedFile(path.join(this.imageDirectory, image));
+      audio.delete(audioName);
+    }
+    for (const orphan of audio) {
+      if (orphan.endsWith(".mp3")) await this.removeTrackedFile(path.join(this.audioDirectory, orphan));
+    }
+  }
+
+  async claimAudio(audioTicket: string): Promise<{ audioPath: string; release: () => void }> {
+    const ticketHash = sha256Text(audioTicket);
+    const verificationId = this.audioTickets.get(ticketHash);
+    if (!verificationId) throw new PublicError(410, "audio-consumed", "Audio link expired.");
+    const release = await this.mediaQueue.acquire();
+    try {
+      const result = await this.withRecordLock(verificationId, async () => {
+        const record = await this.requireRecord(verificationId);
+        if (record.audioConsumed || !safeTextEqual(record.audioTicketHash, ticketHash)) {
+          throw new PublicError(410, "audio-consumed", "Audio link expired.");
+        }
+        if (record.expiresAt === null) {
+          throw new PublicError(409, "verification-not-started", "The verification media has not started.");
+        }
+        if (record.expiresAt <= this.clock() || record.status !== "pending") {
+          throw this.statusError(record.expiresAt <= this.clock() ? "expired" : record.status);
+        }
+        if (!(await stat(record.audioPath).then(() => true).catch(() => false))) {
+          throw new PublicError(410, "audio-unavailable", "Verification audio is unavailable.");
+        }
+        record.audioConsumed = true;
+        await this.writeJson(this.verificationPath(verificationId), record);
+        this.audioTickets.delete(ticketHash);
+        this.changeMediaReference(record.audioPath, -1);
+        return { audioPath: record.audioPath };
+      });
+      return { ...result, release };
+    } catch (error) {
+      release();
+      throw error;
+    }
   }
 
   async claimMedia(mediaTicket: string): Promise<{
@@ -430,6 +515,8 @@ export class VerificationStore {
       if (expired || (terminal && now - record.createdAt >= config.responseLifetimeMs)) {
         this.mediaTickets.delete(record.mediaTicketHash);
         if (!record.mediaConsumed) this.changeMediaReference(record.mediaPath, -1);
+        if (record.audioTicketHash) this.audioTickets.delete(record.audioTicketHash);
+        if (!record.audioConsumed && record.audioPath) this.changeMediaReference(record.audioPath, -1);
         await this.removeTrackedFile(filePath);
         this.verificationCount = Math.max(0, this.verificationCount - 1);
       }
