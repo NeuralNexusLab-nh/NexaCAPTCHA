@@ -1,6 +1,7 @@
 import path from "node:path";
+import { readFile } from "node:fs/promises";
 import compression from "compression";
-import express, { type ErrorRequestHandler } from "express";
+import express, { type ErrorRequestHandler, type Request, type Response } from "express";
 import { rateLimit } from "express-rate-limit";
 import helmet from "helmet";
 import { z } from "zod";
@@ -35,6 +36,41 @@ const verificationSchema = z
 
 function routeParameter(value: string | string[] | undefined): string {
   return typeof value === "string" ? value : "";
+}
+
+type WebsiteLanguage = "en" | "zh-Hant" | "ja";
+
+function normalizeWebsiteLanguage(language: string): WebsiteLanguage | null {
+  const normalized = language.trim().toLowerCase().replaceAll("_", "-");
+  if (normalized === "ja" || normalized.startsWith("ja-")) return "ja";
+  if (normalized === "zh" || normalized.startsWith("zh-")) return "zh-Hant";
+  if (normalized === "en" || normalized.startsWith("en-")) return "en";
+  return null;
+}
+
+function requestLanguage(request: Request): WebsiteLanguage {
+  for (const language of request.acceptsLanguages()) {
+    const supported = normalizeWebsiteLanguage(language);
+    if (supported) return supported;
+  }
+  return "en";
+}
+
+async function sendLocalizedPage(
+  request: Request,
+  response: Response,
+  filename: string,
+  statusCode = 200
+): Promise<void> {
+  const language = requestLanguage(request);
+  const source = await readFile(path.join(config.publicDirectory, filename), "utf8");
+  const html = source.replace(
+    '<html lang="en">',
+    `<html lang="${language}" data-language-source="accept-language">`
+  );
+  response.vary("Accept-Language");
+  response.setHeader("Content-Language", language);
+  response.status(statusCode).type("html").send(html);
 }
 
 function limiter(windowMs: number, limit: number) {
@@ -239,21 +275,33 @@ export function createApp(store: VerificationStore) {
   );
 
   app.use(websiteHeaders);
-  app.get(["/404", "/404.html"], (_request, response) => {
-    response.status(404).sendFile(path.join(config.publicDirectory, "404.html"));
+  app.get(["/", "/index.html"], async (request, response, next) => {
+    try {
+      await sendLocalizedPage(request, response, "index.html");
+    } catch (error) {
+      next(error);
+    }
+  });
+  app.get(["/404", "/404.html"], async (request, response, next) => {
+    try {
+      await sendLocalizedPage(request, response, "404.html", 404);
+    } catch (error) {
+      next(error);
+    }
   });
   app.use(express.static(config.publicDirectory, { extensions: ["html"], maxAge: "5m" }));
-  app.get("/", (_request, response) => {
-    response.sendFile(path.join(config.publicDirectory, "index.html"));
-  });
 
-  app.use((request, response) => {
+  app.use(async (request, response, next) => {
     const wantsWebsitePage =
       (request.method === "GET" || request.method === "HEAD") &&
       !request.path.startsWith("/api/") &&
       Boolean(request.accepts("html"));
     if (wantsWebsitePage) {
-      response.status(404).sendFile(path.join(config.publicDirectory, "404.html"));
+      try {
+        await sendLocalizedPage(request, response, "404.html", 404);
+      } catch (error) {
+        next(error);
+      }
       return;
     }
     response.status(404).json({

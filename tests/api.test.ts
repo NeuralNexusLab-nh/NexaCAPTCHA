@@ -144,6 +144,35 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(({ body }) => expect(body.errorCode).toBe("not-found"));
   });
 
+  it("uses Accept-Language when no saved frontend preference exists", async () => {
+    const traditionalChinese = await request(app)
+      .get("/")
+      .set("Accept-Language", "zh-TW,zh;q=0.9,en;q=0.7")
+      .expect("Content-Language", "zh-Hant")
+      .expect("Vary", /Accept-Language/)
+      .expect(200);
+    expect(traditionalChinese.text).toContain(
+      '<html lang="zh-Hant" data-language-source="accept-language">'
+    );
+
+    const japanese404 = await request(app)
+      .get("/missing-in-japanese")
+      .set("Accept", "text/html")
+      .set("Accept-Language", "fr;q=1,ja-JP;q=0.8,en;q=0.5")
+      .expect("Content-Language", "ja")
+      .expect("Vary", /Accept-Language/)
+      .expect(404);
+    expect(japanese404.text).toContain(
+      '<html lang="ja" data-language-source="accept-language">'
+    );
+
+    await request(app)
+      .get("/")
+      .set("Accept-Language", "fr-FR,fr;q=0.9")
+      .expect("Content-Language", "en")
+      .expect(200);
+  });
+
   it("enforces cooldown, attempt exhaustion, and expiry through the API", async () => {
     const created = await request(app).post("/api/verifications").send({}).expect(201);
     const answerUrl = `/api/verifications/${created.body.verificationId}/answer`;

@@ -49,10 +49,35 @@
   function storedLanguage() {
     try {
       var language = window.localStorage.getItem(storageKey);
-      return Object.prototype.hasOwnProperty.call(translations, language) ? language : "en";
+      return Object.prototype.hasOwnProperty.call(translations, language) ? language : null;
     } catch (_) {
-      return "en";
+      return null;
     }
+  }
+
+  function normalizePreferredLanguage(language) {
+    var normalized = String(language || "").trim().toLowerCase().replaceAll("_", "-");
+    if (normalized === "ja" || normalized.indexOf("ja-") === 0) return "ja";
+    if (normalized === "zh" || normalized.indexOf("zh-") === 0) return "zh-Hant";
+    if (normalized === "en" || normalized.indexOf("en-") === 0) return "en";
+    return null;
+  }
+
+  function preferredLanguage() {
+    var stored = storedLanguage();
+    if (stored) return stored;
+    if (document.documentElement.dataset.languageSource === "accept-language") {
+      var serverLanguage = normalizePreferredLanguage(document.documentElement.lang);
+      if (serverLanguage) return serverLanguage;
+    }
+    var browserLanguages = Array.isArray(window.navigator.languages)
+      ? window.navigator.languages
+      : [window.navigator.language];
+    for (var index = 0; index < browserLanguages.length; index += 1) {
+      var browserLanguage = normalizePreferredLanguage(browserLanguages[index]);
+      if (browserLanguage) return browserLanguage;
+    }
+    return "en";
   }
 
   function applyLanguage(language) {
@@ -81,5 +106,5 @@
   });
 
   pathOutput.textContent = window.location.pathname + window.location.search;
-  applyLanguage(storedLanguage());
+  applyLanguage(preferredLanguage());
 })();

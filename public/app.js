@@ -122,10 +122,35 @@
   function storedLanguage() {
     try {
       var language = window.localStorage.getItem(languageStorageKey);
-      return hasLanguage(language) ? language : "en";
+      return hasLanguage(language) ? language : null;
     } catch (_) {
-      return "en";
+      return null;
     }
+  }
+
+  function normalizePreferredLanguage(language) {
+    var normalized = String(language || "").trim().toLowerCase().replaceAll("_", "-");
+    if (normalized === "ja" || normalized.indexOf("ja-") === 0) return "ja";
+    if (normalized === "zh" || normalized.indexOf("zh-") === 0) return "zh-Hant";
+    if (normalized === "en" || normalized.indexOf("en-") === 0) return "en";
+    return null;
+  }
+
+  function preferredLanguage() {
+    var stored = storedLanguage();
+    if (stored) return stored;
+    if (document.documentElement.dataset.languageSource === "accept-language") {
+      var serverLanguage = normalizePreferredLanguage(document.documentElement.lang);
+      if (serverLanguage) return serverLanguage;
+    }
+    var browserLanguages = Array.isArray(window.navigator.languages)
+      ? window.navigator.languages
+      : [window.navigator.language];
+    for (var index = 0; index < browserLanguages.length; index += 1) {
+      var browserLanguage = normalizePreferredLanguage(browserLanguages[index]);
+      if (browserLanguage) return browserLanguage;
+    }
+    return "en";
   }
 
   function rememberLanguage(language) {
@@ -159,7 +184,7 @@
     applyLanguage(languageSelect.value);
     rememberLanguage(currentLanguage);
   });
-  currentLanguage = storedLanguage();
+  currentLanguage = preferredLanguage();
   languageSelect.value = currentLanguage;
   applyLanguage(currentLanguage);
 
