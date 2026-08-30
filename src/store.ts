@@ -252,7 +252,7 @@ export class VerificationStore {
       this.gravityAudioRenderer(answer)
     ]);
     this.assertStorageAvailable(media.byteLength + audio.byteLength);
-    const audioTarget = path.join(this.audioDirectory, `${answer}.mp3`);
+    const audioTarget = path.join(this.audioDirectory, `${answer}.wav`);
     await this.writeMedia(audioTarget, audio);
     try {
       await this.writeMedia(target, media);
@@ -267,7 +267,7 @@ export class VerificationStore {
         if (name === path.basename(target)) return false;
         const answerName = path.parse(name).name;
         return (this.pendingMediaReferences.get(path.join(directory, name)) ?? 0) === 0 &&
-          (this.pendingMediaReferences.get(path.join(this.audioDirectory, `${answerName}.mp3`)) ?? 0) === 0;
+          (this.pendingMediaReferences.get(path.join(this.audioDirectory, `${answerName}.wav`)) ?? 0) === 0;
       });
       const victim = candidates.length > 0
         ? candidates[randomInt(candidates.length)]
@@ -276,7 +276,7 @@ export class VerificationStore {
       // than breaking a verification that has already been handed out.
       const removed = victim ?? path.basename(target);
       await this.removeTrackedFile(path.join(directory, removed));
-      await this.removeTrackedFile(path.join(this.audioDirectory, `${path.parse(removed).name}.mp3`));
+      await this.removeTrackedFile(path.join(this.audioDirectory, `${path.parse(removed).name}.wav`));
     }
   }
 
@@ -307,7 +307,7 @@ export class VerificationStore {
       mediaPath: path.join(this.poolDirectory(captchaType), selected),
       mediaTicketHash,
       mediaConsumed: false,
-      audioPath: path.join(this.audioDirectory, `${answer}.mp3`),
+      audioPath: path.join(this.audioDirectory, `${answer}.wav`),
       audioTicketHash,
       audioConsumed: false
     };
@@ -331,12 +331,14 @@ export class VerificationStore {
     const images = await readdir(this.imageDirectory).catch(() => [] as string[]);
     const audio = new Set(await readdir(this.audioDirectory).catch(() => [] as string[]));
     for (const image of images.filter((name) => name.endsWith(".png"))) {
-      const audioName = `${path.parse(image).name}.mp3`;
+      const audioName = `${path.parse(image).name}.wav`;
       if (!audio.has(audioName)) await this.removeTrackedFile(path.join(this.imageDirectory, image));
       audio.delete(audioName);
     }
     for (const orphan of audio) {
-      if (orphan.endsWith(".mp3")) await this.removeTrackedFile(path.join(this.audioDirectory, orphan));
+      if (orphan.endsWith(".wav") || orphan.endsWith(".mp3")) {
+        await this.removeTrackedFile(path.join(this.audioDirectory, orphan));
+      }
     }
   }
 

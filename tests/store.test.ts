@@ -92,7 +92,7 @@ describe("VerificationStore", () => {
     secondMedia.release();
 
     const firstAudio = await store.claimAudio(first.audioUrl.split("/").at(-1)!);
-    expect(firstAudio.audioPath).toBe(path.join(directory, "audio", "GRAV.mp3"));
+    expect(firstAudio.audioPath).toBe(path.join(directory, "audio", "GRAV.wav"));
     firstAudio.release();
     expect(await publicErrorCode(
       () => store.claimAudio(first.audioUrl.split("/").at(-1)!)

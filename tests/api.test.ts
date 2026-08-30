@@ -49,7 +49,7 @@ describe("NexaCAPTCHA HTTP API", () => {
     expect(created.body.audioUrl).toMatch(/^\/api\/audio\/[A-Za-z0-9_-]+$/);
     await request(app)
       .get(created.body.audioUrl)
-      .expect("Content-Type", /audio\/mpeg/)
+      .expect("Content-Type", /audio\/wav/)
       .expect("Cache-Control", /no-store/)
       .expect(200);
     await request(app)

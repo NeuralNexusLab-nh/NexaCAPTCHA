@@ -1,7 +1,7 @@
 import { renderGravityImage } from "../dist/gravity-renderer.js";
 import { renderGravityAudio } from "../dist/gravity-audio-renderer.js";
 
-const maximumRss = 300 * 1024 * 1024;
+const maximumRss = 110 * 1024 * 1024;
 const cpuStart = process.cpuUsage();
 const wallStart = performance.now();
 let peakRss = process.memoryUsage().rss;
@@ -14,8 +14,9 @@ for (let index = 0; index < 60; index += 1) {
   await new Promise((resolve) => setImmediate(resolve));
 }
 
-for (let index = 0; index < 12; index += 1) {
-  const output = renderGravityAudio(index % 2 === 0 ? "N3XA" : "S4FE");
+const audioAnswers = ["ABCD", "EFGH", "JKLM", "NPQR", "STUV", "WXYZ", "2345", "6789"];
+for (let index = 0; index < 16; index += 1) {
+  const output = renderGravityAudio(audioAnswers[index % audioAnswers.length]);
   encodedBytes += output.byteLength;
   peakRss = Math.max(peakRss, process.memoryUsage().rss);
   await new Promise((resolve) => setImmediate(resolve));
@@ -24,16 +25,16 @@ for (let index = 0; index < 12; index += 1) {
 const cpu = process.cpuUsage(cpuStart);
 const result = {
   imageRenders: 60,
-  audioRenders: 12,
+  audioRenders: 16,
   encodedBytes,
   wallMs: Math.round(performance.now() - wallStart),
   cpuMs: Math.round((cpu.user + cpu.system) / 1000),
   peakRssBytes: peakRss,
   peakRssMegabytes: Number((peakRss / 1024 / 1024).toFixed(1)),
-  limitMegabytes: 300
+  limitMegabytes: 110
 };
 
 console.log(JSON.stringify(result));
 if (peakRss > maximumRss) {
-  throw new Error(`Resource check exceeded 300 MB RSS: ${result.peakRssMegabytes} MB`);
+  throw new Error(`Resource check exceeded 110 MB RSS: ${result.peakRssMegabytes} MB`);
 }

@@ -155,7 +155,7 @@ export function createApp(store: VerificationStore) {
       try {
         const audio = await store.claimAudio(routeParameter(request.params.audioTicket));
         response.setHeader("Cache-Control", "no-store, max-age=0");
-        response.setHeader("Content-Type", "audio/mpeg");
+        response.setHeader("Content-Type", "audio/wav");
         response.setHeader("Cross-Origin-Resource-Policy", "same-origin");
         response.sendFile(audio.audioPath, (error) => {
           audio.release();
