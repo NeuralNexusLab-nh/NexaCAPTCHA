@@ -111,6 +111,10 @@ h3 { letter-spacing: -.025em; }
 .self-host-button:hover { border-color: #b99dff; background: linear-gradient(115deg, rgba(37, 51, 122, .88), rgba(95, 45, 151, .9)); }
 .self-host-button .demo-integration-icon,
 .self-host-button > i { color: #c5adff; }
+.availability-notice { display: flex; grid-column: 1 / -1; align-items: flex-start; gap: 12px; padding: 16px 18px; border: 1px solid rgba(105, 174, 255, .2); border-left: 2px solid rgba(105, 174, 255, .72); background: rgba(4, 18, 39, .66); }
+.availability-notice > i { margin-top: 3px; color: #8fc9ff; font-size: 13px; }
+.availability-notice strong { display: block; margin-bottom: 4px; color: #dcecff; font: 600 12px Oxanium, "Space Grotesk", sans-serif; letter-spacing: .025em; }
+.availability-notice p { margin: 0; color: var(--dim); font-size: 11px; line-height: 1.65; }
 
 .section { padding-block: 120px; }
 .section-heading { max-width: 900px; margin-bottom: 56px; }
