@@ -34,6 +34,10 @@ const verificationSchema = z
   })
   .strict();
 
+const demoSubmissionSchema = verificationSchema.extend({
+  field: z.string().max(500).optional()
+}).strict();
+
 function routeParameter(value: string | string[] | undefined): string {
   return typeof value === "string" ? value : "";
 }
@@ -210,6 +214,36 @@ export function createApp(store: VerificationStore) {
         const result = await store.verify(input.verificationId, input.responseToken);
         response.setHeader("Cache-Control", "no-store");
         response.json(result);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  app.post(
+    "/gravitydemo/submit",
+    sameOriginApi,
+    express.json({ limit: "4kb", strict: true }),
+    limiter(60_000, 30),
+    async (request, response, next) => {
+      try {
+        const input = demoSubmissionSchema.parse(request.body);
+        const verification = await store.verify(input.verificationId, input.responseToken);
+        response.setHeader("Cache-Control", "no-store");
+        if (!verification.success) {
+          response.status(403).json({
+            success: false,
+            errorCode: verification.errorCode,
+            message: "NexaCAPTCHA verification failed."
+          });
+          return;
+        }
+        response.json({
+          success: true,
+          message: "Demo form submitted successfully.",
+          field: input.field ?? "",
+          verifiedAt: verification.verifiedAt
+        });
       } catch (error) {
         next(error);
       }

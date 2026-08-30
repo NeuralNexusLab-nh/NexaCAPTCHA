@@ -113,6 +113,56 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(({ body }) => expect(body.success).toBe(true));
   });
 
+  it("serves the Gravity demo and verifies its one-time form submission", async () => {
+    const page = await request(app).get("/gravitydemo").expect(200);
+    expect(page.text).toContain("NexaCAPTCHA Gravity Demo");
+    expect(page.text).toContain('src="/captcha/gravity.js?v=5"');
+    expect(page.text).toContain('src="/gravitydemo.js?v=1"');
+    expect(page.text).not.toContain("nexacaptchademo.zeabur.app");
+
+    const created = await request(app)
+      .post("/api/verifications")
+      .send({ captchaType: "gravity" })
+      .expect(201);
+    await request(app).get(created.body.imageUrl).expect(200);
+    const completed = await request(app)
+      .post(`/api/verifications/${created.body.verificationId}/answer`)
+      .send({ answer: "GRAV" })
+      .expect(200);
+    const proof = {
+      field: "demo value",
+      verificationId: created.body.verificationId,
+      responseToken: completed.body.responseToken
+    };
+
+    await request(app)
+      .post("/gravitydemo/submit")
+      .send(proof)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.success).toBe(true);
+        expect(body.field).toBe("demo value");
+      });
+    await request(app)
+      .post("/gravitydemo/submit")
+      .send(proof)
+      .expect(403)
+      .expect(({ body }) => expect(body.success).toBe(false));
+  });
+
+  it("rejects cross-origin Gravity demo submissions", async () => {
+    await request(app)
+      .post("/gravitydemo/submit")
+      .set("Origin", "https://example.com")
+      .send({
+        field: "demo value",
+        verificationId: "ver_ABCDEFGHIJKL",
+        responseToken: "A".repeat(64)
+      })
+      .expect(403)
+      .expect(({ body }) => expect(body.errorCode).toBe("cross-origin-request-denied"));
+  });
+
   it("applies separate CSP and frame rules to the website and widget", async () => {
     const website = await request(app).get("/").expect(200);
     expect(website.headers["content-security-policy"]).toContain("frame-ancestors 'self'");

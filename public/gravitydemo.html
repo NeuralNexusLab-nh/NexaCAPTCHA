@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Try NexaCAPTCHA Gravity and verify its one-time response on the server.">
+    <meta name="theme-color" content="#f5f5f5">
+    <title>NexaCAPTCHA Gravity Demo</title>
+    <link rel="icon" href="/favicon-blue.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/vendor/fonts/inter/index.css">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/gravitydemo.css?v=1">
+    <script src="/captcha/gravity.js?v=5" defer></script>
+    <script src="/gravitydemo.js?v=1" defer></script>
+  </head>
+  <body>
+    <main class="container">
+      <a class="back-link" href="/">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+        NexaCAPTCHA
+      </a>
+      <h1>NexaCAPTCHA Gravity Demo</h1>
+      <p class="subtitle">Complete Gravity, then submit the form to test server-side verification.</p>
+
+      <section class="card" aria-labelledby="demo-title">
+        <h2 id="demo-title">Demo form</h2>
+        <form id="demo-form" novalidate>
+          <label for="demo-field">Form field <span>(optional)</span></label>
+          <input id="demo-field" name="field" type="text" maxlength="500" placeholder="Anything you want" autocomplete="off">
+
+          <div class="captcha-area">
+            <div class="nexa-captcha" data-captcha-type="gravity" data-callback="onNexaComplete"></div>
+          </div>
+
+          <div class="token-panel" id="token-panel" hidden>
+            <p class="token-title"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> NexaCAPTCHA completed</p>
+            <dl>
+              <div><dt>Verification ID</dt><dd id="verification-id-value"></dd></div>
+              <div><dt>Response token</dt><dd id="response-token-value"></dd></div>
+            </dl>
+          </div>
+
+          <button class="submit-button" id="submit-button" type="submit">
+            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+            Submit to server
+          </button>
+        </form>
+
+        <div id="result" role="status" aria-live="polite"></div>
+      </section>
+
+      <p class="footer">The server accepts the form only after the one-time NexaCAPTCHA proof is valid.</p>
+    </main>
+  </body>
+</html>
