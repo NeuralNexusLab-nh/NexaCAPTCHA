@@ -38,7 +38,7 @@
     var iframe = document.createElement("iframe");
     iframe.src =
       serviceOrigin +
-      "/widget?v=8&parentOrigin=" +
+      "/widget?v=9&parentOrigin=" +
       encodeURIComponent(window.location.origin) +
       "&widgetId=" +
       encodeURIComponent(widgetId) +
@@ -52,6 +52,7 @@
     iframe.setAttribute("sandbox", "allow-scripts allow-forms allow-same-origin");
     iframe.setAttribute("referrerpolicy", "strict-origin");
     iframe.className = "nexacaptcha-frame";
+    iframe.style.cssText = "display:block;width:100%;max-width:100%;min-width:0;border:0;";
     mount.replaceChildren(iframe);
 
     function notify(payload) {
@@ -73,7 +74,9 @@
       var data = event.data;
       if (!data || data.namespace !== "NexaCAPTCHA" || data.widgetId !== widgetId) return;
       if (data.type === "resize" && Number.isFinite(data.height)) {
-        iframe.height = String(Math.max(260, Math.min(520, data.height)));
+        // A narrow host makes the controls wrap vertically. Do not cap its
+        // reported height, or the image/input area would be cut off.
+        iframe.height = String(Math.max(220, Math.ceil(data.height)));
       }
       if (data.type === "result") notify(data.result);
     }

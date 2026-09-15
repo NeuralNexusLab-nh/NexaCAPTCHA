@@ -7,12 +7,19 @@
 
 * { box-sizing: border-box; }
 
-html, body { margin: 0; min-width: 260px; background: transparent; }
+html, body {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  overflow-x: clip;
+  background: transparent;
+}
 
-body { padding: 6px; }
+body { padding: clamp(3px, 1.5vw, 6px); }
 
 .captcha-shell {
   width: 100%;
+  min-width: 0;
   max-width: 560px;
   margin: 0 auto;
   padding: clamp(11px, 3.5vw, 16px);
@@ -31,11 +38,12 @@ body { padding: 6px; }
 
 .captcha-brand {
   min-height: 30px;
+  min-width: 0;
   font-weight: 700;
   letter-spacing: -.02em;
 }
 
-.captcha-home { display: inline-flex; align-items: center; gap: 9px; border-radius: 2px; color: inherit; text-decoration: none; }
+.captcha-home { display: inline-flex; min-width: 0; align-items: center; gap: 9px; border-radius: 2px; color: inherit; overflow-wrap: anywhere; text-decoration: none; }
 .captcha-home:hover { color: #68baff; }
 .captcha-brand img { display: block; filter: drop-shadow(0 0 9px rgba(22, 135, 255, .38)); }
 
@@ -58,7 +66,8 @@ body { padding: 6px; }
 .verification-stage {
   position: relative;
   display: grid;
-  min-height: 100px;
+  min-width: 0;
+  min-height: 0;
   aspect-ratio: 320 / 116;
   margin: 14px 0;
   overflow: hidden;
@@ -84,8 +93,8 @@ body { padding: 6px; }
   display: none;
   width: 100%;
   height: 100%;
-  min-height: 100px;
-  object-fit: fill;
+  min-height: 0;
+  object-fit: contain;
   image-rendering: auto;
 }
 
@@ -113,7 +122,7 @@ label {
   font-weight: 600;
 }
 
-.input-row { gap: 9px; }
+.input-row { min-width: 0; gap: 9px; }
 
 input {
   width: 100%;
@@ -222,6 +231,20 @@ input:disabled { cursor: not-allowed; opacity: .58; }
 @media (max-width: 360px) {
   .input-row { align-items: stretch; flex-direction: column; }
   .button-primary { width: 100%; }
+}
+
+/* Do not force a minimum widget width: embedded widgets may be very narrow. */
+@media (max-width: 260px) {
+  .captcha-shell { padding: 9px; }
+  .captcha-brand { font-size: .78rem; }
+  .status-pill {
+    max-width: 48%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .verification-stage { margin-block: 9px; }
+  input, .button-primary { min-height: 40px; }
 }
 
 @media (pointer: coarse) {

@@ -359,11 +359,31 @@
     if (!data || data.namespace !== "NexaCAPTCHA" || data.widgetId !== widgetId) return;
     if (data.type === "reset") scheduleVerification();
   });
-  if (window.ResizeObserver) {
-    new ResizeObserver(function () {
-      send("resize", { height: document.documentElement.scrollHeight + 12 });
-    }).observe(document.body);
+  function notifySize() {
+    var height = Math.max(
+      document.documentElement.scrollHeight,
+      document.documentElement.offsetHeight,
+      document.body ? document.body.scrollHeight : 0,
+      document.body ? document.body.offsetHeight : 0
+    );
+    send("resize", { height: height + 12 });
   }
+
+  var resizeFrame = 0;
+  function scheduleSizeNotification() {
+    if (resizeFrame) return;
+    resizeFrame = window.requestAnimationFrame(function () {
+      resizeFrame = 0;
+      notifySize();
+    });
+  }
+
+  if (window.ResizeObserver) {
+    new ResizeObserver(scheduleSizeNotification).observe(document.documentElement);
+  }
+  window.addEventListener("resize", scheduleSizeNotification);
+  window.addEventListener("load", scheduleSizeNotification, { once: true });
+  scheduleSizeNotification();
 
   busy = false;
   updateControls();
