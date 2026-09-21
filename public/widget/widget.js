@@ -360,13 +360,16 @@
     if (data.type === "reset") scheduleVerification();
   });
   function notifySize() {
-    var height = Math.max(
-      document.documentElement.scrollHeight,
-      document.documentElement.offsetHeight,
-      document.body ? document.body.scrollHeight : 0,
-      document.body ? document.body.offsetHeight : 0
-    );
-    send("resize", { height: height + 12 });
+    // Measuring the document includes the iframe viewport itself. Once the
+    // parent enlarges that viewport it would be measured again, creating an
+    // ever-growing feedback loop. Measure only the rendered card instead.
+    var shell = document.querySelector(".captcha-shell");
+    if (!shell) return;
+    var bodyStyle = window.getComputedStyle(document.body);
+    var outerPadding =
+      (Number.parseFloat(bodyStyle.paddingTop) || 0) +
+      (Number.parseFloat(bodyStyle.paddingBottom) || 0);
+    send("resize", { height: Math.ceil(shell.getBoundingClientRect().height + outerPadding) });
   }
 
   var resizeFrame = 0;
@@ -379,7 +382,7 @@
   }
 
   if (window.ResizeObserver) {
-    new ResizeObserver(scheduleSizeNotification).observe(document.documentElement);
+    new ResizeObserver(scheduleSizeNotification).observe(document.querySelector(".captcha-shell"));
   }
   window.addEventListener("resize", scheduleSizeNotification);
   window.addEventListener("load", scheduleSizeNotification, { once: true });
