@@ -1,12 +1,13 @@
 import path from "node:path";
 import { readFile } from "node:fs/promises";
 import compression from "compression";
-import express, { type ErrorRequestHandler, type Request, type Response } from "express";
+import express, { type ErrorRequestHandler, type Request, type RequestHandler, type Response } from "express";
 import { rateLimit } from "express-rate-limit";
 import helmet from "helmet";
 import { z } from "zod";
 import { config } from "./config.js";
 import { PublicError } from "./errors.js";
+import { MemoryRequestQueue } from "./memory-request-queue.js";
 import {
   apiPreflight,
   sameOriginApi,
@@ -90,6 +91,26 @@ function limiter(windowMs: number, limit: number) {
   });
 }
 
+function queueRequests(): RequestHandler {
+  const queue = new MemoryRequestQueue(
+    config.maxHttpRequests,
+    config.maxHttpRequestQueue,
+    config.maxRssBytes,
+    config.memoryPressureRssBytes
+  );
+
+  return (request, response, next) => {
+    // Keep deployment health probes available even while user traffic waits.
+    if (request.path.startsWith("/health/")) return next();
+    void queue.acquire().then((release) => {
+      const cleanup = () => release();
+      response.once("finish", cleanup);
+      response.once("close", cleanup);
+      next();
+    }).catch(next);
+  };
+}
+
 export function createApp(store: VerificationStore) {
   const app = express();
   app.disable("x-powered-by");
@@ -103,6 +124,7 @@ export function createApp(store: VerificationStore) {
     })
   );
   app.use(compression({ threshold: 1024 }));
+  app.use(queueRequests());
 
   app.get("/health/live", (_request, response) => {
     response.setHeader("Cache-Control", "no-store");
