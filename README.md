@@ -152,7 +152,7 @@ if (!result.success) {
 
 **SERVICE AVAILABILITY**
 
-The hosted NexaCAPTCHA service is provided as is, without any guarantee of uninterrupted or permanent availability. If the website or service is interrupted, discontinued, or becomes unavailable, NexaCAPTCHA and NeuralNexusLab accept no liability and provide no compensation for resulting loss or damage.
+The hosted NexaCAPTCHA service is provided as is, without any guarantee of uninterrupted or permanent availability. If the website or service is interrupted, discontinued, or becomes unavailable, NexaCAPTCHA and NXLabTW accept no liability and provide no compensation for resulting loss or damage.
 
 ---
 
@@ -160,4 +160,4 @@ Distorted-text verification with server-enforced controls.
 
 25.0330° N · 121.5654° E
 
-Made by [NeuralNexusLab](https://nxlab.zone.id) · [nexacaptcha@nxlab.zone.id](mailto:nexacaptcha@nxlab.zone.id) · [NexaCAPTCHA](https://nexacaptcha.nxlabtw.com)
+Made by [NXLabTW](https://nxlab.zone.id) · [nexacaptcha@nxlab.zone.id](mailto:nexacaptcha@nxlab.zone.id) · [NexaCAPTCHA](https://nexacaptcha.nxlabtw.com)
