@@ -38,8 +38,6 @@ const demoSubmissionSchema = verificationSchema.extend({
   field: z.string().max(500).optional()
 }).strict();
 
-const ONION_HOSTNAME = "nexacaptcha.nxlabtwhcegzi5f65qb6ri4iv72rtdp5q7s4w457pahcohtmegjregqd.onion";
-
 function routeParameter(value: string | string[] | undefined): string {
   return typeof value === "string" ? value : "";
 }
@@ -81,7 +79,7 @@ async function sendLocalizedPage(
   statusCode = 200
 ): Promise<void> {
   const language = requestLanguage(request);
-  const isOnionService = requestHostname(request) === ONION_HOSTNAME;
+  const isOnionService = requestHostname(request) === config.onionHostname;
   let source = await readFile(path.join(config.publicDirectory, filename), "utf8");
   if (isOnionService) {
     // Keep links and copyable integration endpoints inside the Tor service.

@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { config } from "./config.js";
 
 const WEBSITE_CSP = [
   "default-src 'self'",
@@ -31,7 +32,7 @@ const WIDGET_CSP = [
 ].join("; ");
 
 export function websiteHeaders(
-  _request: Request,
+  request: Request,
   response: Response,
   next: NextFunction
 ): void {
@@ -39,6 +40,16 @@ export function websiteHeaders(
   response.setHeader("Cross-Origin-Opener-Policy", "same-origin");
   response.setHeader("Cross-Origin-Resource-Policy", "same-origin");
   response.setHeader("X-Frame-Options", "SAMEORIGIN");
+  const hostname = (request.get("host") ?? "").split(":")[0]!.toLowerCase();
+  if (
+    (request.method === "GET" || request.method === "HEAD") &&
+    hostname !== config.onionHostname &&
+    request.accepts("html")
+  ) {
+    // Tor Browser uses this header to offer the official Onion mirror while
+    // keeping the requested path unchanged.
+    response.setHeader("Onion-Location", `http://${config.onionHostname}${request.originalUrl}`);
+  }
   next();
 }
 

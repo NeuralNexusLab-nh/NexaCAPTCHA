@@ -2,6 +2,7 @@ import path from "node:path";
 
 export const config = Object.freeze({
   port: Number.parseInt(process.env.PORT ?? "3000", 10),
+  onionHostname: "nexacaptcha.nxlabtwhcegzi5f65qb6ri4iv72rtdp5q7s4w457pahcohtmegjregqd.onion",
   verificationLifetimeMs: 120_000,
   responseLifetimeMs: 300_000,
   retryCooldownMs: 5_000,

@@ -243,6 +243,28 @@ describe("NexaCAPTCHA HTTP API", () => {
     expect(verification.headers["access-control-allow-origin"]).toBe(`http://${onionHost}`);
   });
 
+  it("advertises the official Onion service from the clearnet website", async () => {
+    const onionHost = "nexacaptcha.nxlabtwhcegzi5f65qb6ri4iv72rtdp5q7s4w457pahcohtmegjregqd.onion";
+    await request(app)
+      .get("/")
+      .set("Host", "nexacaptcha.nxlabtw.com")
+      .set("Accept", "text/html")
+      .expect("Onion-Location", `http://${onionHost}/`)
+      .expect(200);
+    await request(app)
+      .get("/gravitydemo")
+      .set("Host", "nexacaptcha.nxlabtw.com")
+      .set("Accept", "text/html")
+      .expect("Onion-Location", `http://${onionHost}/gravitydemo`)
+      .expect(200);
+    const onionPage = await request(app)
+      .get("/")
+      .set("Host", onionHost)
+      .set("Accept", "text/html")
+      .expect(200);
+    expect(onionPage.headers["onion-location"]).toBeUndefined();
+  });
+
   it("enforces cooldown, attempt exhaustion, and expiry through the API", async () => {
     const created = await request(app).post("/api/verifications").send({}).expect(201);
     const answerUrl = `/api/verifications/${created.body.verificationId}/answer`;
