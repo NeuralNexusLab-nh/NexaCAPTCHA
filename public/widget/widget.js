@@ -326,7 +326,7 @@
         setMessage("Two incorrect answers ended this verification.", "is-error");
         updateControls();
       } else {
-        startCooldown(result.retryAfterSeconds || 20);
+        startCooldown(result.retryAfterSeconds || 5);
       }
     } catch (error) {
       busy = false;
@@ -338,7 +338,7 @@
         setMessage("This verification expired after two minutes. Request a new one.", "is-error");
         updateControls();
       } else if (code.includes("answer-cooldown")) {
-        startCooldown(20);
+        startCooldown(5);
       } else {
         setPill("Error", "fa-circle-exclamation", "is-error");
         setMessage("Verification could not be completed. Try again.", "is-error");

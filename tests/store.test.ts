@@ -99,19 +99,19 @@ describe("VerificationStore", () => {
     )).toBe("audio-consumed");
   });
 
-  it("expires after two incorrect attempts with a twenty-second cooldown", async () => {
+  it("expires after two incorrect attempts with a five-second cooldown", async () => {
     const verification = await store.create();
     await startMedia(store, verification.imageUrl);
     expect(await store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
       success: false,
       status: "incorrect",
       attemptsRemaining: 1,
-      retryAfterSeconds: 20
+      retryAfterSeconds: 5
     });
     expect(await publicErrorCode(
       () => store.submitAnswer(verification.verificationId, "WRNG")
     )).toBe("answer-cooldown");
-    now += 20_000;
+    now += 5_000;
     expect(await store.submitAnswer(verification.verificationId, "WRNG")).toEqual({
       success: false,
       status: "verification_failed",
