@@ -4,6 +4,7 @@
   var parameters = new URLSearchParams(window.location.search);
   var widgetId = parameters.get("widgetId") || "standalone";
   var captchaType = "gravity";
+  var onionHostname = "nexacaptcha.nxlabtwhcegzi5f65qb6ri4iv72rtdp5q7s4w457pahcohtmegjregqd.onion";
   var requestedParentOrigin = parameters.get("parentOrigin");
   var parentOrigin = null;
   try {
@@ -27,6 +28,7 @@
   var message = document.getElementById("status-message");
   var pill = document.getElementById("status-pill");
   var title = document.getElementById("captcha-title");
+  var homeLink = document.getElementById("captcha-home");
   var currentVerificationId = null;
   var currentAudioUrl = null;
   var audioObjectUrl = null;
@@ -37,6 +39,10 @@
   var busy = false;
   var coolingDown = false;
   var completed = false;
+
+  var isOnionService = window.location.hostname.toLowerCase() === onionHostname;
+  document.documentElement.classList.toggle("is-onion-service", isOnionService);
+  if (isOnionService && homeLink) homeLink.href = `${window.location.origin}/`;
 
   document.body.classList.toggle("theme-gravity", captchaType === "gravity");
   stage.classList.toggle("is-gravity", captchaType === "gravity");

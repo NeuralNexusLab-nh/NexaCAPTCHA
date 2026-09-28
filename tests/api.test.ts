@@ -223,6 +223,26 @@ describe("NexaCAPTCHA HTTP API", () => {
       .expect(200);
   });
 
+  it("marks the official Onion homepage and keeps its links on the Onion origin", async () => {
+    const onionHost = "nexacaptcha.nxlabtwhcegzi5f65qb6ri4iv72rtdp5q7s4w457pahcohtmegjregqd.onion";
+    const page = await request(app)
+      .get("/")
+      .set("Host", onionHost)
+      .expect(200);
+    expect(page.text).toContain('data-onion-service="true"');
+    expect(page.text).toContain("Dark Web");
+    expect(page.text).toContain(`http://${onionHost}/captcha/gravity.js`);
+    expect(page.text).not.toContain("https://nexacaptcha.nxlabtw.com/captcha/gravity.js");
+
+    const verification = await request(app)
+      .post("/api/verifications")
+      .set("Host", onionHost)
+      .set("Origin", `http://${onionHost}`)
+      .send({})
+      .expect(201);
+    expect(verification.headers["access-control-allow-origin"]).toBe(`http://${onionHost}`);
+  });
+
   it("enforces cooldown, attempt exhaustion, and expiry through the API", async () => {
     const created = await request(app).post("/api/verifications").send({}).expect(201);
     const answerUrl = `/api/verifications/${created.body.verificationId}/answer`;

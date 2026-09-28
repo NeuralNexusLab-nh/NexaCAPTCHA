@@ -46,6 +46,8 @@ body { padding: clamp(3px, 1.5vw, 6px); }
 .captcha-home { display: inline-flex; min-width: 0; align-items: center; gap: 9px; border-radius: 2px; color: inherit; overflow-wrap: anywhere; text-decoration: none; }
 .captcha-home:hover { color: #68baff; }
 .captcha-brand img { display: block; filter: drop-shadow(0 0 9px rgba(22, 135, 255, .38)); }
+.dark-web-label { display: none; padding: 2px 5px; background: #a3a3a3; color: #000; font: 700 8px/1 Oxanium, Inter, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+html.is-onion-service .dark-web-label { display: inline-flex; align-items: center; }
 
 .status-pill {
   display: inline-flex;

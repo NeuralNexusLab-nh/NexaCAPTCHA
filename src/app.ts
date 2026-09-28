@@ -38,6 +38,8 @@ const demoSubmissionSchema = verificationSchema.extend({
   field: z.string().max(500).optional()
 }).strict();
 
+const ONION_HOSTNAME = "nexacaptcha.nxlabtwhcegzi5f65qb6ri4iv72rtdp5q7s4w457pahcohtmegjregqd.onion";
+
 function routeParameter(value: string | string[] | undefined): string {
   return typeof value === "string" ? value : "";
 }
@@ -60,6 +62,18 @@ function requestLanguage(request: Request): WebsiteLanguage {
   return "en";
 }
 
+function requestHostname(request: Request): string {
+  return (request.get("host") ?? "").split(":")[0]!.toLowerCase();
+}
+
+function requestOrigin(request: Request): string {
+  const forwardedProtocol = request.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const protocol = forwardedProtocol === "https" || forwardedProtocol === "http"
+    ? forwardedProtocol
+    : request.protocol;
+  return `${protocol}://${request.get("host")}`;
+}
+
 async function sendLocalizedPage(
   request: Request,
   response: Response,
@@ -67,10 +81,17 @@ async function sendLocalizedPage(
   statusCode = 200
 ): Promise<void> {
   const language = requestLanguage(request);
-  const source = await readFile(path.join(config.publicDirectory, filename), "utf8");
+  const isOnionService = requestHostname(request) === ONION_HOSTNAME;
+  let source = await readFile(path.join(config.publicDirectory, filename), "utf8");
+  if (isOnionService) {
+    // Keep links and copyable integration endpoints inside the Tor service.
+    source = source.replaceAll("https://nexacaptcha.nxlabtw.com", requestOrigin(request));
+  }
   const html = source.replace(
     '<html lang="en">',
-    `<html lang="${language}" data-language-source="accept-language">`
+    `<html lang="${language}" data-language-source="accept-language"${
+      isOnionService ? ' data-onion-service="true"' : ""
+    }>`
   );
   response.vary("Accept-Language");
   response.setHeader("Content-Language", language);
